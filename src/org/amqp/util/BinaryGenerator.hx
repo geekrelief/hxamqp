@@ -17,6 +17,7 @@
  **/
 package org.amqp.util;
 
+	import flash.Error;
     import flash.utils.ByteArray;
     import flash.utils.IDataOutput;
 
@@ -144,9 +145,9 @@ package org.amqp.util;
                         writeOctet(83); // 'S'
                         writeLongstr(cast( value, LongString));
                     }
-                    else if(Std.is( value, int)) {
+                    else if(Std.is( value, Int)) {
                         writeOctet(73); // 'I'
-                        writeShort(cast( value, int));
+                        writeShort(cast( value, Int));
                     }
                     /*
                     else if(value is BigDecimal) {
@@ -164,7 +165,7 @@ package org.amqp.util;
                         writeOctet(84);//'T'
                         writeTimestamp(cast( value, Date));
                     }
-                    else if(Std.is( value, Hash<Dynamic>)) {
+                    else if(Std.is( value, Hash)) {
                         writeOctet(70); // 'F"
                         writeTable(cast( value, Hash<Dynamic>));
                     }
@@ -190,7 +191,7 @@ package org.amqp.util;
         /** Public API - encodes a timestamp argument. */
         public function writeTimestamp(timestamp:Date):Void {
             // AMQP uses POSIX time_t which is in seconds since the epoc
-            writeLonglong( timestamp.valueOf() / 1000);
+            writeLonglong( Math.floor(timestamp.getTime() / 1000) );
         }
 
         /**

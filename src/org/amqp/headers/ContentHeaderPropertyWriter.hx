@@ -17,6 +17,8 @@
  **/
 package org.amqp.headers;
 
+	import flash.Error;
+
     import flash.utils.ByteArray;
     import flash.utils.IDataOutput;
 
@@ -141,16 +143,14 @@ package org.amqp.headers;
         }
 
         /** Protected API - Writes a long integer value to the stream, if it's non-null */
-        public function writeLonglong(x:UInt):Void {
+        public function writeLonglong(x:Float):Void {
             if(argPresent(x)) {
                 _writeLonglong(x);
             }
         }
 
-        public function _writeLonglong(x:UInt):Void {
-
-                outBytes.writeUnsignedInt(x);
-
+        public function _writeLonglong(x:Float):Void {
+                outBytes.writeDouble(x);
         }
 
         /** Protected API - Writes a table value to the stream, if it's non-null */
@@ -162,9 +162,9 @@ package org.amqp.headers;
         public function _writeTable(table:Hash<Dynamic>):Void {
             outBytes.writeInt( FrameHelper.tableSize(table) );
 
-            for (var key:String in table) {
+            for (key in table.keys()) {
                 writeShortstr(key);
-                var value:Dynamic = table.getValue(key);
+                var value:Dynamic = table.get(key);
 
                 if(Std.is( value, String)) {
                     _writeOctet(83); // 'S'
@@ -174,9 +174,9 @@ package org.amqp.headers;
                     _writeOctet(83); // 'S'
                     ___writeLongstr(cast( value, LongString));
                 }
-                else if(Std.is( value, int)) {
+                else if(Std.is( value, Int)) {
                     _writeOctet(73); // 'I'
-                    _writeShort(cast( value, int));
+                    _writeShort(cast( value, Int));
                 }
                 /*
                 else if(value is BigDecimal) {
@@ -194,7 +194,7 @@ package org.amqp.headers;
                     _writeOctet(84);//'T'
                     _writeTimestamp(cast( value, Date));
                 }
-                else if(Std.is( value, Hash<Dynamic>)) {
+                else if(Std.is( value, Hash)) {
                     _writeOctet(70); // 'F"
                     _writeTable(cast( value, Hash<Dynamic>));
                 }
@@ -230,8 +230,6 @@ package org.amqp.headers;
         }
 
         public function _writeTimestamp(x:Date):Void {
-
-                outBytes.writeInt(x.time / 1000);
-
+			outBytes.writeInt( Math.floor(x.getTime() / 1000));
         }
     }

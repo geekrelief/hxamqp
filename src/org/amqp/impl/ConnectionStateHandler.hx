@@ -57,6 +57,7 @@ package org.amqp.impl;
         var state:Int;
 
         public function new(params:ConnectionParameters){
+			super();
             connectionParams = params;
             addEventListener(new Start(), onStart);
             addEventListener(new Tune(), onTune);

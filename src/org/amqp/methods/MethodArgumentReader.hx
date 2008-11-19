@@ -17,6 +17,8 @@
  **/
 package org.amqp.methods;
 
+	import flash.Error;
+
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
     import org.amqp.LongString;
@@ -55,7 +57,7 @@ package org.amqp.methods;
         public static function _readLongstr(input:IDataInput):LongString {
             //final long contentLength = unsignedExtend(in.readInt());
             var contentLength:Int = input.readInt();
-            if(contentLength < int.MAX_VALUE) {
+            if(contentLength < 0xfffffff) { // Int max is platform specific Flash9 28 bits 3 used for typing. 1 missing? Neko 31 bits
                 //final byte [] buffer = new byte[(int)contentLength];
                 //in.readFully(buffer);
 
@@ -67,6 +69,8 @@ package org.amqp.methods;
             else {
                 throw new Error("Very long strings not currently supported");
             }
+
+			return new ByteArrayLongString(new ByteArray());
         }
 
         public static function _readShortstr(input:IDataInput):String {
@@ -99,11 +103,12 @@ package org.amqp.methods;
         }
 
         /** Public API - reads a long integer argument. */
-        public function readLonglong():UInt {
+        public function readLonglong():Float {
             clearBits();
-            var higher:Int = input.readInt();
-            var lower:Int = input.readInt();
-            return lower + higher << 0x100000000;
+//            var higher:Int = input.readInt();
+ //           var lower:Int = input.readInt();
+  //          return lower + higher << 0x100000000;
+			return input.readDouble();
         }
 
         /** Public API - reads a bit/boolean argument. */
@@ -182,8 +187,7 @@ package org.amqp.methods;
 
         /** Public API - convenience method - reads a timestamp argument from the DataInputStream. */
         public static function _readTimestamp(input:IDataInput):Date {
-            var date:Date = new Date();
-            date.setTime(input.readInt() * 1000)
+            var date:Date = Date.fromTime(input.readInt() * 1000);
             return date;
             //return new Date(in.readLong() * 1000);
         }

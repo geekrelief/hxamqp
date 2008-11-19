@@ -50,6 +50,8 @@ package org.amqp.methods;
     import org.amqp.methods.tx.Commit;
     import org.amqp.methods.tx.Rollback;
 
+	
+	import flash.Error;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -124,6 +126,7 @@ package org.amqp.methods;
                         }
 
 
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
 
                     }
                     case 20:
@@ -165,6 +168,7 @@ package org.amqp.methods;
                             return method;
                         }
 
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
 
 
                     }
@@ -193,6 +197,7 @@ package org.amqp.methods;
                             return method;
                         }
 
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
                     }
                     case 50:
                     switch(methodId) {
@@ -238,6 +243,7 @@ package org.amqp.methods;
                             method.readArgumentsFrom(new MethodArgumentReader(input));
                             return method;
                         }
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
 
                     }
                     case 60:
@@ -325,7 +331,7 @@ package org.amqp.methods;
                             return method;
                         }
 
-
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
 
                     }
                     case 90:
@@ -363,6 +369,7 @@ package org.amqp.methods;
                             return method;
                         }
 
+                		default:throw new Error("Could not resolve method: classid = " + classId + ", methodid = " + methodId);
                     }
                     
                 

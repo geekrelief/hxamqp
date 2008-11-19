@@ -30,14 +30,14 @@ package org.amqp.methods.connection;
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
      **/
     class SecureOk extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var response(getResponse, setResponse) : LongString;
+         public var response(_getResponse, setResponse) : LongString;
          public function new() {
          _response = new ByteArrayLongString(new ByteArray());
          }
          
          var _response:LongString ;
 
-         public function getResponse():LongString{return _response;}
+         public function _getResponse():LongString{return _response;}
 
          public function setResponse(x:LongString):LongString{_response = x;	return x;}
 

@@ -31,7 +31,7 @@ package org.amqp.methods.basic;
      **/
     class Deliver extends Method, implements ArgumentReader, implements ArgumentWriter {
          public var consumertag(getConsumertag, setConsumertag) : String;
-         public var deliverytag(getDeliverytag, setDeliverytag) : UInt;
+         public var deliverytag(getDeliverytag, setDeliverytag) : Float;
          public var exchange(getExchange, setExchange) : String;
          public var redelivered(getRedelivered, setRedelivered) : Bool;
          public var routingkey(getRoutingkey, setRoutingkey) : String;
@@ -44,19 +44,19 @@ package org.amqp.methods.basic;
          }
          
          var _consumertag:String ;
-         var _deliverytag:UInt ;
+         var _deliverytag:Float ;
          var _redelivered:Bool ;
          var _exchange:String ;
          var _routingkey:String ;
 
          public function getConsumertag():String{return _consumertag;}
-         public function getDeliverytag():UInt{return _deliverytag;}
+         public function getDeliverytag():Float{return _deliverytag;}
          public function getRedelivered():Bool{return _redelivered;}
          public function getExchange():String{return _exchange;}
          public function getRoutingkey():String{return _routingkey;}
 
          public function setConsumertag(x:String):String{_consumertag = x;	return x;}
-         public function setDeliverytag(x:UInt):UInt{_deliverytag = x;	return x;}
+         public function setDeliverytag(x:Float):Float{_deliverytag = x;	return x;}
          public function setRedelivered(x:Bool):Bool{_redelivered = x;	return x;}
          public function setExchange(x:String):String{_exchange = x;	return x;}
          public function setRoutingkey(x:String):String{_routingkey = x;	return x;}

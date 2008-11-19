@@ -17,6 +17,8 @@
  **/
 package org.amqp;
 
+	import flash.Error;
+
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
@@ -38,15 +40,13 @@ package org.amqp;
         public function readFrom(input:IDataInput):Bool {
 
             type = input.readUnsignedByte();
-
-            if (type == cast( 'A', uint)) {
+            if (type == 'A'.charCodeAt(0)) {
                 /* Probably an AMQP.... header indicating a version mismatch. */
                 /* Otherwise meaningless, so try to read the version, and
                  * throw an exception, whether we read the version okay or
                  * not. */
                 protocolVersionMismatch(input);
             }
-
             channel = input.readUnsignedShort();
             var payloadSize:Int = input.readInt();
 
@@ -71,9 +71,9 @@ package org.amqp;
             var x:Error = null;
 
             try {
-                var gotM:Bool = input.readUnsignedByte() == cast( 'M', uint);
-                var gotQ:Bool = input.readUnsignedByte() == cast( 'Q', uint);
-                var gotP:Bool = input.readUnsignedByte() == cast( 'P', uint);
+                var gotM:Bool = input.readUnsignedByte() == 'M'.charCodeAt(0);
+                var gotQ:Bool = input.readUnsignedByte() == 'Q'.charCodeAt(0);
+                var gotP:Bool = input.readUnsignedByte() == 'P'.charCodeAt(0);
                 var transportHigh:UInt = input.readUnsignedByte();
                 var transportLow:UInt = input.readUnsignedByte();
                 var serverMajor:UInt = input.readUnsignedByte();

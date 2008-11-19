@@ -52,6 +52,7 @@ package org.amqp.impl;
 
         public function new(){
             // TODO Look into whether this is really necessary
+			super();
             
             state = STATE_CONNECTION;
             QUEUE_SIZE = 100;
@@ -145,6 +146,6 @@ package org.amqp.impl;
          * Renders an error according to the attempted transition.
          **/
         function stateError(newState:Int):Void {
-            throw new IllegalStateError("Illegal state transition: " + state + " ---> " + newState)
+            throw new IllegalStateError("Illegal state transition: " + state + " ---> " + newState);
         }
     }

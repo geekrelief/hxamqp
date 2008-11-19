@@ -29,11 +29,11 @@ package org.amqp.impl;
 
 	typedef Rpc = {
 		var command:Command; 
-		var callback:Dynamic;
+		var _callback:Dynamic;
 	}
 
     class SessionImpl implements Session {
-        var QUEUE_SIZE:Int ;
+        //var QUEUE_SIZE:Int ;
 
         var connection:Connection;
         var channel:Int;
@@ -54,9 +54,9 @@ package org.amqp.impl;
 
         public function new(con:Connection, ch:Int, receiver:CommandReceiver) {
             
-            QUEUE_SIZE = 100;
+            //QUEUE_SIZE = 100;
             dispatcher = new EventDispatcher();
-            rpcQueue = new List;
+            rpcQueue = new List();
             lifecycleHandlers = new Array();
             connection = con;
             channel = ch;
@@ -70,9 +70,9 @@ package org.amqp.impl;
             currentCommand.handleFrame(frame);
             if (currentCommand.isComplete()) {
                 /**
-                * The idea is that this callback will always be invoked when a command is
+                * The idea is that this _callback will always be invoked when a command is
                 * to be processed by the session handler, so it can kick off the dequeuing
-                * of any pending RPCs in addition to dispatching to the target callback handler,
+                * of any pending RPCs in addition to dispatching to the target _callback handler,
                 * which is implemented in the super class.
                 */
                 commandReceiver.receive(currentCommand);
@@ -103,7 +103,7 @@ package org.amqp.impl;
                 if (rpcQueue.isEmpty()) {
                     send(cmd);
                 }
-                rpcQueue.add({command:cmd,callback:fun});
+                rpcQueue.add({command:cmd,_callback:fun});
             }
             else {
                 send(cmd);

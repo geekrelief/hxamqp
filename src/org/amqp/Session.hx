@@ -28,7 +28,7 @@ package org.amqp;
         function sendCommand(c:Command, ?fun:Dynamic = null):Void;
         function handleFrame(frame:Frame):Void;
         function rpc(c:Command, fun:Dynamic):Void;
-        function registerLifecycleHandler(handler:LifecycleEventHandler):Void
+        function registerLifecycleHandler(handler:LifecycleEventHandler):Void;
         function emitLifecyleEvent():Void;
 
     }

@@ -23,6 +23,7 @@ package org.amqp.headers;
     class TxProperties extends ContentHeader {
 
 
+        public function new() { }
 
         public override function getClassId():Int {
             return 90;

@@ -19,5 +19,5 @@ package org.amqp;
 
     interface SynchronousCommandClient
     {
-        function rpc(command:Command, callback:Dynamic):Void;
+        function rpc(command:Command, _callback:Dynamic):Void;
     }

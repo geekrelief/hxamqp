@@ -21,6 +21,9 @@ package org.amqp.headers;
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
      **/
     class BasicProperties extends ContentHeader {
+
+        public function new() { }
+
         public var appid(getAppid, setAppid) : String;
         public var clusterid(getClusterid, setClusterid) : String;
         public var contentencoding(getContentencoding, setContentencoding) : String;

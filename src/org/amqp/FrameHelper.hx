@@ -48,7 +48,7 @@ package org.amqp;
                     var optimizeMe:Int = (cast( value, LongString)).length();
                     acc += optimizeMe;
                 }
-                else if(Std.is( value, int)) {
+                else if(Std.is( value, Int)) {
                     acc += 4;
                 }
                 /*
@@ -59,7 +59,7 @@ package org.amqp;
                 else if(Std.is( value, Date)) {
                     acc += 8;
                 }
-                else if(Std.is( value, Hash<Dynamic>)) {
+                else if(Std.is( value, Hash)) {
                     acc += 4;
                     acc += tableSize(cast( value, Hash<Dynamic>));
                 }

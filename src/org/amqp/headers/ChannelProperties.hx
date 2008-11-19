@@ -22,7 +22,7 @@ package org.amqp.headers;
      **/
     class ChannelProperties extends ContentHeader {
 
-
+		public function new() {}
 
         public override function getClassId():Int {
             return 20;

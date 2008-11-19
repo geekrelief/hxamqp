@@ -30,7 +30,7 @@ package org.amqp.methods.basic;
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
      **/
     class Ack extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var deliverytag(getDeliverytag, setDeliverytag) : UInt;
+         public var deliverytag(getDeliverytag, setDeliverytag) : Float;
          public var multiple(getMultiple, setMultiple) : Bool;
 
          public function new() {
@@ -38,13 +38,13 @@ package org.amqp.methods.basic;
 	         _multiple = false;
          }
          
-         var _deliverytag:UInt ;
+         var _deliverytag:Float ;
          var _multiple:Bool ;
 
-         public function getDeliverytag():UInt{return _deliverytag;}
+         public function getDeliverytag():Float{return _deliverytag;}
          public function getMultiple():Bool{return _multiple;}
 
-         public function setDeliverytag(x:UInt):UInt{_deliverytag = x;	return x;}
+         public function setDeliverytag(x:Float):Float{_deliverytag = x;	return x;}
          public function setMultiple(x:Bool):Bool{_multiple = x;	return x;}
 
          public override function hasResponse():Bool {

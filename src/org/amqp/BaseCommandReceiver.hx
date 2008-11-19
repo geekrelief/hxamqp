@@ -24,6 +24,8 @@ package org.amqp;
 
         var session:Session;
 
+		public function new(){ dispatcher = new EventDispatcher(); }
+
         public function registerWithSession(s:Session):Void {
             session = s;
         }

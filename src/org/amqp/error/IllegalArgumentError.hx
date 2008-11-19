@@ -17,6 +17,7 @@
  **/
 package org.amqp.error;
 
+	import flash.Error;
 
     class IllegalArgumentError extends Error {
         inline static var ID:Int = 668;

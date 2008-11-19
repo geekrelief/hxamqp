@@ -30,20 +30,20 @@ package org.amqp.methods.basic;
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
      **/
     class Reject extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var deliverytag(getDeliverytag, setDeliverytag) : UInt;
+         public var deliverytag(getDeliverytag, setDeliverytag) : Float;
          public var requeue(getRequeue, setRequeue) : Bool;
          public function new() {
          _deliverytag = 0;
          _requeue = false;
          }
          
-         var _deliverytag:UInt ;
+         var _deliverytag:Float ;
          var _requeue:Bool ;
 
-         public function getDeliverytag():UInt{return _deliverytag;}
+         public function getDeliverytag():Float{return _deliverytag;}
          public function getRequeue():Bool{return _requeue;}
 
-         public function setDeliverytag(x:UInt):UInt{_deliverytag = x;	return x;}
+         public function setDeliverytag(x:Float):Float{_deliverytag = x;	return x;}
          public function setRequeue(x:Bool):Bool{_requeue = x;	return x;}
 
          public override function hasResponse():Bool {

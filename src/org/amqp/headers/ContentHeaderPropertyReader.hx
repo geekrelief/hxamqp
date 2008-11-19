@@ -64,7 +64,7 @@ package org.amqp.headers;
          * data stream.
          */
         function argPresent():Bool {
-            var word:Int = argumentIndex / 15;
+            var word:Int = Math.floor(argumentIndex / 15);
             var bit:Int = 15 - (argumentIndex % 15);
             argumentIndex++;
             return (flags[word] & (1 << bit)) != 0;
@@ -95,9 +95,9 @@ package org.amqp.headers;
         }
 
         /** Reads and returns an AMQP long integer content header field, or null if absent. */
-        public function readLonglong():UInt {
-            if (!argPresent()) return null;
-            return input.readUnsignedInt();
+        public function readLonglong():Float {
+            if (!argPresent()) return 0;
+            return input.readDouble();
         }
 
         /** Reads and returns an AMQP bit content header field. */

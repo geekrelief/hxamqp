@@ -29,10 +29,10 @@ package org.amqp.io;
         }
 
         public function isConnected():Bool {
-            return super.connected;
+            return connected;
         }
 
         public function open(params:ConnectionParameters):Void {
-            super.connect(params.serverhost, params.port);
+            connect(params.serverhost, params.port);
         }
     }

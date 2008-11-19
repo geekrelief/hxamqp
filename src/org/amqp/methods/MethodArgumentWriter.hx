@@ -17,6 +17,8 @@
  **/
 package org.amqp.methods;
 
+	import flash.Error;
+
     import flash.utils.ByteArray;
     import flash.utils.IDataOutput;
 
@@ -103,10 +105,10 @@ package org.amqp.methods;
         }
 
         /** Public API - encodes a long integer argument. */
-        public function writeLonglong(ll:Int):Void {
-            throw new Error("No longs in Actionscript");
-            //bitflush();
-            //output.writeInt(ll);
+        public function writeLonglong(ll:Float):Void {
+            //throw new Error("No longs in Actionscript");
+            bitflush();
+            output.writeDouble(ll);
         }
 
         /** Public API - encodes a boolean/bit argument. */
@@ -146,9 +148,9 @@ package org.amqp.methods;
                         writeOctet(83); // 'S'
                         writeLongstr(cast( value, LongString));
                     }
-                    else if(Std.is( value, int)) {
+                    else if(Std.is( value, Int)) {
                         writeOctet(73); // 'I'
-                        writeShort(cast( value, int));
+                        writeShort(cast( value, Int));
                     }
                     /*
                     else if(value is BigDecimal) {
@@ -166,7 +168,7 @@ package org.amqp.methods;
                         writeOctet(84);//'T'
                         writeTimestamp(cast( value, Date));
                     }
-                    else if(Std.is( value, Hash<Dynamic>)) {
+                    else if(Std.is( value, Hash)) {
                         writeOctet(70); // 'F"
                         writeTable(cast( value, Hash<Dynamic>));
                     }
@@ -192,7 +194,7 @@ package org.amqp.methods;
         /** Public API - encodes a timestamp argument. */
         public function writeTimestamp(timestamp:Date):Void {
             // AMQP uses POSIX time_t which is in seconds since the epoc
-            writeLonglong( timestamp.valueOf() / 1000);
+            writeLonglong( Math.floor(timestamp.getTime() / 1000));
         }
 
         /**

@@ -43,7 +43,7 @@ package org.amqp;
 
         function registerWithSession(s:Session):Void;
 
-        function addEventListener(method:Method, callback:Dynamic):Void;
+        function addEventListener(method:Method, _callback:Dynamic):Void;
 
-        function removeEventListener(method:Method, callback:Dynamic):Void;
+        function removeEventListener(method:Method, _callback:Dynamic):Void;
     }

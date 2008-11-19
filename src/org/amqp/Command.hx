@@ -17,6 +17,8 @@
  **/
 package org.amqp;
 
+	import flash.Error;
+
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
     import flash.utils.IDataOutput;
@@ -25,7 +27,6 @@ package org.amqp;
     import org.amqp.headers.ContentHeaderReader;
     import org.amqp.methods.MethodReader;
     import org.amqp.error.UnexpectedFrameError;
-    import de.polygonal.ds.Prioritizable;
 
     /**
      * EMPTY_CONTENT_BODY_FRAME_SIZE, 8 = 1 + 2 + 4 + 1
@@ -35,7 +36,7 @@ package org.amqp;
      * - 1 byte of payload trailer FRAME_END byte
      *
      **/
-    class Command extends Prioritizable {
+    class Command {
         inline public static var STATE_EXPECTING_METHOD:Int = 0;
         inline public static var STATE_EXPECTING_CONTENT_HEADER:Int = 1;
         inline public static var STATE_EXPECTING_CONTENT_BODY:Int = 2;
@@ -48,12 +49,11 @@ package org.amqp;
         public var contentHeader:ContentHeader;
         var remainingBodyBytes:Int;
         public  var content:ByteArray ;
+		public var priority:Int;
 
-        public function new(?m:Method = null,
-                                ?c:ContentHeader = null,
-                                ?b:ByteArray = null) {
+        public function new(?m:Method = null, ?c:ContentHeader = null, ?b:ByteArray = null) {
             
-            content = new ByteArray;
+            content = new ByteArray();
             method = m;
             contentHeader = c;
             content = new ByteArray();

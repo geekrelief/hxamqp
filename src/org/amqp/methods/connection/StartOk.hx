@@ -33,7 +33,7 @@ package org.amqp.methods.connection;
          public var clientproperties(getClientproperties, setClientproperties) : Hash<Dynamic>;
          public var locale(getLocale, setLocale) : String;
          public var mechanism(getMechanism, setMechanism) : String;
-         public var response(getResponse, setResponse) : LongString;
+         public var response(_getResponse, setResponse) : LongString;
          public function new() {
          _clientproperties = new Hash();
          _mechanism = "";
@@ -48,7 +48,7 @@ package org.amqp.methods.connection;
 
          public function getClientproperties():Hash<Dynamic>{return _clientproperties;}
          public function getMechanism():String{return _mechanism;}
-         public function getResponse():LongString{return _response;}
+         public function _getResponse():LongString{return _response;}
          public function getLocale():String{return _locale;}
 
          public function setClientproperties(x:Hash<Dynamic>):Hash<Dynamic>{_clientproperties = x;	return x;}

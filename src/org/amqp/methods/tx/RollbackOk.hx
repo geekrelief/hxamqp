@@ -31,6 +31,8 @@ package org.amqp.methods.tx;
      **/
     class RollbackOk extends Method, implements ArgumentReader, implements ArgumentWriter {
 
+        public function new() { }
+
          public override function hasResponse():Bool {
              return null != getResponse();
          }

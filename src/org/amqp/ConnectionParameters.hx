@@ -31,6 +31,10 @@ package org.amqp;
         public var tlsPort:Int ;
         public var options:Dynamic ;
 
+		public function new () {
+			serverport = AMQP.PORT;
+		}
+
         public function getPort():Int {
             return useTLS ? tlsPort : serverport;
         }

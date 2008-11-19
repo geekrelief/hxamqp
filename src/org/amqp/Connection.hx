@@ -17,6 +17,8 @@
  **/
 package org.amqp;
 
+	import flash.Error;
+
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
@@ -26,7 +28,7 @@ package org.amqp;
     import org.amqp.impl.ConnectionStateHandler;
     import org.amqp.impl.SessionImpl;
     import org.amqp.io.SocketDelegate;
-    import org.amqp.io.TLSDelegate;
+//    import org.amqp.io.TLSDelegate;
     import org.amqp.methods.connection.CloseOk;
 
     class Connection
@@ -58,7 +60,8 @@ package org.amqp;
             sessionManager = new SessionManager(this);
 
             if (state.useTLS) {
-                delegate = new TLSDelegate;
+//                delegate = new TLSDelegate();
+				throw new Error("TLS not supported at this time");
             }
             else {
                 delegate = new SocketDelegate();
