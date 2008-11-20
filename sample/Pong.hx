@@ -10,20 +10,21 @@
 
 	import flash.display.Graphics;
 	import flash.display.Shape;
+	import flash.display.Stage;
 	
 	import pong.P2Event;
 	import pong.PongConnection;
 	import pong.Puck;
-	class Pong extends Sprite {public function new() {
-		rs = 0;
-		bs = 0;
-		}
-		
-		
+	
+	class Pong extends Sprite {
+
+		public var _stage:Stage;
+
 		public var redScore:TextField;
 		public var blueScore:TextField;
 
-		public var rs:Int , bs:Int ;
+		public var rs:Int;
+		public var bs:Int ;
 		
 		public var red:Sprite;
 		public var blue:Sprite;
@@ -34,8 +35,16 @@
 
 		public var input:TextField;
 		public var output:TextField;
+		
+		public static function main() {
+			var p:Pong = new Pong();
+		}
 
-        static function main() {
+        public function new() {
+			super();
+
+			_stage = flash.Lib.current.stage;
+
 			input = new TextField();
 			input.x = 430;
 			input.y = 40;
@@ -55,8 +64,8 @@
 
 			init();
 		
-			addChild(input);
-			addChild(output);
+			_stage.addChild(input);
+			_stage.addChild(output);
 		}
 
 		public function logInput(msg:String):Void {
@@ -70,8 +79,8 @@
 		public function createField():Void{
 			var s:Shape = new Shape();
 			var g:Graphics = s.graphics;	
-			var w:Int = stage.stageWidth;
-			var h:Int = stage.stageHeight;
+			var w:Int = _stage.stageWidth;
+			var h:Int = _stage.stageHeight;
 			var y:Int, m:Int;
 			// Create a border
 			g.beginFill(0xffffff);
@@ -84,8 +93,8 @@
 			g.endFill();
 
 			// Create the net
-			g.lineStyle (3,0,0.5)
-			g.moveTo(w/2,0)
+			g.lineStyle (3,0,0.5);
+			g.moveTo(w/2,0);
 			g.lineTo(w/2, h);
 
 			// Create some score fields
@@ -105,9 +114,9 @@
 			blueScore.border = true;
 			blueScore.borderColor = 0x0000ff;
 
-			addChild(s);
-			addChild(redScore);
-			addChild(blueScore);
+			_stage.addChild(s);
+			_stage.addChild(redScore);
+			_stage.addChild(blueScore);
 		}
 
 		public function createPaddle(s:Sprite, color:UInt, func:Dynamic):Void { // enemy
@@ -118,7 +127,7 @@
             g.lineTo(10, 60);
             g.lineTo(0, 60);
             g.lineTo(0, 0); 
-			addChild(s);		
+			_stage.addChild(s);		
 			if(func != null){
 				addEventListener(Event.ENTER_FRAME, func);
 			}
@@ -137,14 +146,14 @@
 				red.y -= 4;
 			}
 			*/
-			red.y = stage.mouseY;
+			red.y = _stage.mouseY;
 
 			if (puck.x<red.x+10) {
 				if (puck.y>red.y && puck.y<red.y+60) {	// if paddle hits ball
 					puck.i *= -1;			// reverse the ball speed
 					puck.j = (puck.y-(red.y+30))/2;
 				} else {
-					redScore.text = String(++rs);			// increase score
+					redScore.text = Std.string(++rs);			// increase score
 					reset();				// reset the game
 				}
 			}		
@@ -152,11 +161,11 @@
 
 		public function createPuck():Void {
 			// draw the circle
-			puck = new Puck;
+			puck = new Puck();
 			var g:Graphics = puck.graphics;
 			g.beginFill(0x00fa00);
 			g.drawCircle(0, 0, 5);
-			addChild(puck);
+			_stage.addChild(puck);
 
 			addEventListener(Event.ENTER_FRAME, updatePuck);
 		}
@@ -164,7 +173,7 @@
 		public function updatePuck(e:Event):Void {
 			puck.x += puck.i;
 			puck.y += puck.j;
-			if(puck.y > stage.stageHeight -5 || puck.y < 5) {
+			if(puck.y > _stage.stageHeight -5 || puck.y < 5) {
 				puck.j *= -1;
 			}
 		}
@@ -181,7 +190,7 @@
 					puck.i *= -1;
 					puck.j = (puck.y -(blue.y+30))/2;
 				} else {
-					blueScore.text = String(++bs);					
+					blueScore.text = Std.string(++bs);					
 					reset();
 				}
 			}			
@@ -189,11 +198,11 @@
 
 		public function reset():Void {
 			red.x = 10;
-			red.y = stage.mouseY; //stage.stageHeight /2;	
+			red.y = _stage.mouseY; //stage.stageHeight /2;	
 
 			// position the ball in the center
-			puck.x = stage.stageWidth/2;
-			puck.y = stage.stageHeight/2;
+			puck.x = _stage.stageWidth/2;
+			puck.y = _stage.stageHeight/2;
 
 			// give it a random direction and speed
 			if (Math.random()*3>1) {
@@ -218,18 +227,19 @@
 
 		public function p2Event(e:P2Event):Void {
 			blue.y = e.y;
-			logInput("y: "+String(blue.y));
+			logInput("y: "+Std.string(blue.y));
 		}
 
 		public function updateConnection(e:Event):Void {
 			var data:ByteArray = new ByteArray();
-			data.writeFloat(stage.mouseY);
+			data.writeFloat(_stage.mouseY);
 			data.writeFloat(puck.i);
 			data.writeFloat(puck.j);
 			data.writeFloat(puck.x);
 			data.writeFloat(puck.y);
-			conn.publish(data);
-			logOutput("y:"+String(stage.mouseY)+" p.i:"+String(puck.i)+" p.j:"+String(puck.j)+" p.x:"+String(puck.x)+" p.y: "+String(puck.y));
+			if(conn != null)
+				conn.publish(data);
+			logOutput("y:"+Std.string(_stage.mouseY)+" p.i:"+Std.string(puck.i)+" p.j:"+Std.string(puck.j)+" p.x:"+Std.string(puck.x)+" p.y: "+Std.string(puck.y));
 		}
 
 		public function init():Void {
@@ -241,6 +251,6 @@
 			rs = bs = 0;
 			reset();
 
-			blue.x = stage.stageWidth-20;		// position on stage
+			blue.x = _stage.stageWidth-20;		// position on stage
 		}
 	}

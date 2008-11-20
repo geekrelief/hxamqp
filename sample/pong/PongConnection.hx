@@ -61,7 +61,8 @@ package pong;
 
 
         public function new() {
-            
+           	super(); 
+
             ax = "";
             q = "pongq";
             q2 = "pongq2";
@@ -92,7 +93,8 @@ package pong;
             publish.routingkey = routing_key;
             var props:BasicProperties = Properties.getBasicProperties();
             var cmd:Command = new Command(publish, props, data);
-            sessionHandler.dispatch(cmd);
+			if(sessionHandler != null)
+	            sessionHandler.dispatch(cmd);
         }
 
 
@@ -106,9 +108,9 @@ package pong;
             openChannel(runPublishTest);
         }
 
-        public function openChannel(callback:Dynamic):Void {
+        public function openChannel(_callback:Dynamic):Void {
             var whoCares:Dynamic = function(event:ProtocolEvent):Void{
-                //log("whoCares called");
+                //log("whoCares _called");
             };
 
             sessionHandler = sessionManager.create();
@@ -116,14 +118,14 @@ package pong;
             var queue:org.amqp.methods.queue.Declare = new org.amqp.methods.queue.Declare();
             queue.queue = q;
             sessionHandler.rpc(new Command(open), whoCares);
-            sessionHandler.rpc(new Command(queue), callback);
+            sessionHandler.rpc(new Command(queue), _callback);
 
             sessionHandler2 = sessionManager2.create();
             open = new Open();
             queue = new org.amqp.methods.queue.Declare();
             queue.queue = q2;
             sessionHandler2.rpc(new Command(open), whoCares);
-            sessionHandler2.rpc(new Command(queue), callback);
+            sessionHandler2.rpc(new Command(queue), _callback);
         }
 
         public function runPublishTest(event:ProtocolEvent):Void {
@@ -150,7 +152,7 @@ package pong;
             var data:ByteArray = body;
             data.position = 0;
             if (data.bytesAvailable > 0) {
-                var y:Int = data.readFloat();
+                var y:Float = data.readFloat();
 				dispatchEvent(new P2Event(y));
             }
         }

@@ -1,4 +1,7 @@
--swf hx-amqpong/Pong.swf
--main hx-amqpong/Pong
+-swf Pong.swf
+-main Pong
 -swf-version 10
 -swf-header 800:600:30:FFFFFF
+-debug
+-D network-sandbox
+-cp ../src
