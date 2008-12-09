@@ -48,8 +48,6 @@ package org.amqp;
             stateHandler.registerWithSession(session);
             sessions.set(channel, session);
 
-            var s:Session = sessions.get(channel);
-
             return stateHandler;
         }
 

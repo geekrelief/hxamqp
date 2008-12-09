@@ -18,7 +18,7 @@
 package org.amqp.methods;
 
     import org.amqp.Method;
-    import flash.utils.IDataInput;
+    import haxe.io.Input;
     import org.amqp.methods.connection.Start;
     import org.amqp.methods.connection.Secure;
     import org.amqp.methods.connection.Tune;
@@ -51,7 +51,7 @@ package org.amqp.methods;
     import org.amqp.methods.tx.Rollback;
 
 	
-	import flash.Error;
+    import org.amqp.Error;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -59,10 +59,11 @@ package org.amqp.methods;
     class MethodReader
      {
         
-        public static function readMethodFrom(input:IDataInput):Method {
-
-            var classId:Int = input.readShort();
-              var methodId:Int = input.readShort();
+        public static function readMethodFrom(input:Input):Method {
+            trace("readMethodFrom");
+            var classId:Int = input.readUInt16();
+              var methodId:Int = input.readUInt16();
+              trace("classId "+classId+ " methodId: "+methodId);
               var method:Method;
 
               switch (classId) {
@@ -70,6 +71,7 @@ package org.amqp.methods;
                     switch(methodId) {
 
                         case 10: {
+                        trace("connection Start");
                             method = new org.amqp.methods.connection.Start();
                             method.readArgumentsFrom(new MethodArgumentReader(input));
                             return method;

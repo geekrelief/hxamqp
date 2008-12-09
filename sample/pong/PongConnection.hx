@@ -83,7 +83,7 @@ package pong;
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "76.204.178.65";
+            params.serverhost = "10.0.0.9";//"76.204.178.65";
             return params;
         }
 

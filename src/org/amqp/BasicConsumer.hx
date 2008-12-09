@@ -17,7 +17,7 @@
  **/
 package org.amqp;
 
-    import flash.utils.ByteArray;
+    import haxe.io.BytesInput;
 
     import org.amqp.headers.BasicProperties;
     import org.amqp.methods.basic.Deliver;
@@ -26,5 +26,5 @@ package org.amqp;
     {
         function onConsumeOk(tag:String):Void;
         function onCancelOk(tag:String):Void;
-        function onDeliver(method:Deliver, properties:BasicProperties, body:ByteArray):Void;
+        function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void;
     }

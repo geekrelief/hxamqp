@@ -17,16 +17,25 @@
  **/
 package org.amqp.impl;
 
-    import flash.utils.IDataInput;
-    import flash.utils.ByteArray;
+    import haxe.io.Input;
+    import haxe.io.Bytes;
+    import haxe.io.BytesOutput;
+    import haxe.io.BytesInput;
     import org.amqp.LongString;
 
     class ByteArrayLongString implements LongString {
 
-        var buf:ByteArray;
+        var buf:BytesOutput;
 
-        public function new(b:ByteArray) {
-            this.buf = b;
+        public function new(?b:BytesOutput=null) {
+            if(b == null) {
+                b = new BytesOutput(); b.bigEndian = true;
+            }
+
+            if(b.bigEndian == false)
+                throw "BytesOutput argument to ByteArrayLongString must be bigEndian";
+
+            buf = b;
         }
 
         public function length():Int
@@ -34,14 +43,15 @@ package org.amqp.impl;
             return buf.length;
         }
 
-        public function getBytes():ByteArray
+        public function getBytes():Bytes
         {
-            return buf;
+            return buf.getBytes();
         }
 
-        public function getStream():IDataInput
+        public function getStream():Input
         {
-            return buf;
+            var b = new BytesInput(buf.getBytes()); b.bigEndian = true;
+            return b;
         }
 
     }

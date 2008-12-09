@@ -17,29 +17,32 @@
  **/
 package org.amqp;
 
-	import flash.Error;
+    import org.amqp.Error;
 
-    import flash.utils.ByteArray;
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
+    import haxe.io.Bytes;
+    import haxe.io.BytesInput;
+    import haxe.io.BytesOutput;
+    import haxe.io.Input;
+    import haxe.io.Output;
     import org.amqp.error.MalformedFrameError;
 
     class Frame
      {
 
-        public var type:UInt;
+        public var type:Int;
         public var channel:Int;
-        var payload:ByteArray;
-        var accumulator:ByteArray;
+        var payload:BytesOutput;
+        var accumulator:BytesOutput;
 
         public function new() {
-            this.payload = new ByteArray();
-            this.accumulator = new ByteArray();
+            payload = new BytesOutput(); payload.bigEndian = true;
+            accumulator = new BytesOutput(); accumulator.bigEndian = true;
         }
 
-        public function readFrom(input:IDataInput):Bool {
-
-            type = input.readUnsignedByte();
+        public function readFrom(input:Input):Bool {
+            trace("readFrom");
+            type = input.readByte();
+            trace("type "+type);
             if (type == 'A'.charCodeAt(0)) {
                 /* Probably an AMQP.... header indicating a version mismatch. */
                 /* Otherwise meaningless, so try to read the version, and
@@ -47,17 +50,20 @@ package org.amqp;
                  * not. */
                 protocolVersionMismatch(input);
             }
-            channel = input.readUnsignedShort();
-            var payloadSize:Int = input.readInt();
 
+            channel = input.readUInt16();
+            trace("channel "+channel);
+
+            var payloadSize:Int = input.readInt31();
+            trace("payloadSize "+payloadSize);
             if (payloadSize > 0) {
-                payload = new ByteArray();
-                input.readBytes(payload, 0, payloadSize);
+                payload = new BytesOutput(); payload.bigEndian = true;
+                payload.write(input.read(payloadSize));
             }
 
             accumulator = null;
 
-            var frameEndMarker:Int = input.readUnsignedByte();
+            var frameEndMarker:Int = input.readByte();
 
             if (frameEndMarker != AMQP.FRAME_END) {
                 throw new MalformedFrameError("Bad frame end marker: " + frameEndMarker);
@@ -66,18 +72,18 @@ package org.amqp;
             return true;
         }
 
-        function protocolVersionMismatch(input:IDataInput):Void {
+        function protocolVersionMismatch(input:Input):Void {
 
             var x:Error = null;
 
             try {
-                var gotM:Bool = input.readUnsignedByte() == 'M'.charCodeAt(0);
-                var gotQ:Bool = input.readUnsignedByte() == 'Q'.charCodeAt(0);
-                var gotP:Bool = input.readUnsignedByte() == 'P'.charCodeAt(0);
-                var transportHigh:UInt = input.readUnsignedByte();
-                var transportLow:UInt = input.readUnsignedByte();
-                var serverMajor:UInt = input.readUnsignedByte();
-                var serverMinor:UInt = input.readUnsignedByte();
+                var gotM:Bool = input.readByte() == 'M'.charCodeAt(0);
+                var gotQ:Bool = input.readByte() == 'Q'.charCodeAt(0);
+                var gotP:Bool = input.readByte() == 'P'.charCodeAt(0);
+                var transportHigh:Int = input.readByte();
+                var transportLow:Int = input.readByte();
+                var serverMajor:Int = input.readByte();
+                var serverMinor:Int = input.readByte();
                 x = new MalformedFrameError("AMQP protocol version mismatch; we are version " +
                                                 AMQP.PROTOCOL_MAJOR + "." +
                                                 AMQP.PROTOCOL_MINOR + ", server is " +
@@ -93,8 +99,7 @@ package org.amqp;
 
         public function finishWriting():Void {
             if (accumulator != null) {
-                payload.writeBytes(accumulator,0,accumulator.bytesAvailable);
-                payload.position = 0;
+                payload.write(accumulator.getBytes());
 
                 accumulator = null;
             }
@@ -103,43 +108,43 @@ package org.amqp;
         /**
          * Public API - writes this Frame to the given DataOutputStream
          */
-        public function writeTo(os:IDataOutput):Void{
+        public function writeTo(os:Output):Void{
             finishWriting();
+            var b:Bytes = payload.getBytes();
+            payload = null;
+
             os.writeByte(type);
             //os.writeByte(0);
-            os.writeShort(channel);
-            os.writeInt(payload.length);
+            os.writeUInt16(channel);
+            os.writeInt31(b.length);
             //accumulator.position = 0;
             //trace("ba = " + accumulator.length);
             //os.writeInt(accumulator.length);
-            os.writeBytes(payload);
+            os.write(b);
             //os.writeBytes(accumulator, 0, accumulator.bytesAvailable);
             os.writeByte(AMQP.FRAME_END);
-        }
-
-        public function toString():String{
-            return "(" + type + ", " + channel + ", length = " +
-                ((accumulator == null) ? payload.length : accumulator.length) + ")";
         }
 
         /**
          * Public API - retrieves the frame payload
          */
-        public function getPayload():ByteArray {
-            return payload;
+        public function getPayload():Bytes {
+            trace("getPayLoad");
+            return payload.getBytes();
         }
 
         /**
          * Public API - retrieves a new DataInputStream streaming over the payload
          */
-        public function getInputStream():IDataInput {
-            return payload;
+        public function getInputStream():Input {
+            var bi:BytesInput = new BytesInput(payload.getBytes()); bi.bigEndian = true;
+            return bi;
         }
 
         /**
          * Public API - retrieves a fresh DataOutputStream streaming into the accumulator
          */
-        public function getOutputStream():IDataOutput {
+        public function getOutputStream():Output {
             return accumulator;
         }
     }

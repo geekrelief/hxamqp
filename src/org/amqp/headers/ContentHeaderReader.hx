@@ -17,12 +17,12 @@
  **/
 package org.amqp.headers;
 
-    import flash.utils.IDataInput;
+    import haxe.io.Input;
 
     class ContentHeaderReader
      {
-        public static function readContentHeaderFrom(input:IDataInput):ContentHeader {
-          var classId:Int = input.readShort();
+        public static function readContentHeaderFrom(input:Input):ContentHeader {
+          var classId:Int = input.readUInt16();
           switch (classId) {
                 case 10: return new ConnectionProperties();
                 case 20: return new ChannelProperties();

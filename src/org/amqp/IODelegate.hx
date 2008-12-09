@@ -17,13 +17,15 @@
  **/
 package org.amqp;
 
-    import flash.events.IEventDispatcher;
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
+    import org.amqp.events.IEventDispatcher;
+    import haxe.io.Input;
+    import haxe.io.Output;
 
-    interface IODelegate implements IEventDispatcher, implements IDataInput, implements IDataOutput{
+    interface IODelegate implements IEventDispatcher {
         function open(params:ConnectionParameters):Void;
         function isConnected():Bool;
         function close():Void;
-        function flush():Void;
+        function getInput():Input;
+        function getOutput():Output;
+        function waitForRead():Void;
     }

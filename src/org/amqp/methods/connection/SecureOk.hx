@@ -24,7 +24,6 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
-    import flash.utils.ByteArray;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -32,7 +31,7 @@ package org.amqp.methods.connection;
     class SecureOk extends Method, implements ArgumentReader, implements ArgumentWriter {
          public var response(_getResponse, setResponse) : LongString;
          public function new() {
-         _response = new ByteArrayLongString(new ByteArray());
+         _response = new ByteArrayLongString();
          }
          
          var _response:LongString ;

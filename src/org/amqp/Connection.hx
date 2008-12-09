@@ -17,12 +17,12 @@
  **/
 package org.amqp;
 
-	import flash.Error;
+    import org.amqp.Error;
 
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.ProgressEvent;
-    import flash.utils.ByteArray;
+//    import flash.events.Event;
+//    import flash.events.IOErrorEvent;
+//    import flash.events.ProgressEvent;
+    import haxe.io.Bytes;
 
     import org.amqp.error.ConnectionError;
     import org.amqp.impl.ConnectionStateHandler;
@@ -48,6 +48,7 @@ package org.amqp;
 
         public function new(state:ConnectionParameters) {
             
+            trace("new");
             currentState = CLOSED;
             shuttingDown = false;
             frameMax = 0;
@@ -61,16 +62,20 @@ package org.amqp;
 
             if (state.useTLS) {
 //                delegate = new TLSDelegate();
-				throw new Error("TLS not supported at this time");
+                throw new Error("TLS not supported at this time");
             }
             else {
                 delegate = new SocketDelegate();
             }
 
+            // add callbacks to delegate
+            // for connect, close, error, ondata
+/*
             delegate.addEventListener(Event.CONNECT, onSocketConnect);
             delegate.addEventListener(Event.CLOSE, onSocketClose);
             delegate.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
             delegate.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
+*/
         }
 
         public function getBaseSession():Session {
@@ -81,27 +86,31 @@ package org.amqp;
             if (currentState < CONNECTING) {
                 currentState = CONNECTING;
                 delegate.open(connectionParams);
+				onSocketConnect();
             }
         }
 
         public function isConnected():Bool {
-          return delegate.isConnected();
+            return delegate.isConnected();
         }
 
-        public function onSocketConnect(event:Event):Void {
+
+        public function onSocketConnect():Void {
             currentState = CONNECTED;
-            var header:ByteArray = AMQP.generateHeader();
-            delegate.writeBytes(header, 0, header.length);
+            var header:Bytes = AMQP.generateHeader();
+            delegate.getOutput().write(header);
+            delegate.getOutput().flush();
         }
 
-        public function onSocketClose(event:Event):Void {
+
+        public function onSocketClose():Void {
             currentState = CLOSED;
             handleForcedShutdown();
         }
 
-        public function onSocketError(event:IOErrorEvent):Void {
+        public function onSocketError():Void {
             currentState = CLOSED;
-            trace(event.text);
+            //trace(event.text);
             delegate.dispatchEvent(new ConnectionError());
         }
 
@@ -116,9 +125,11 @@ package org.amqp;
             }
         }
 
+/*
         public function afterGracefulClose(event:Event):Void {
             delegate.close();
         }
+*/
 
         /**
          * Socket timeout waiting for a frame. Maybe missed heartbeat.
@@ -130,7 +141,6 @@ package org.amqp;
         function handleForcedShutdown():Void {
             if (!shuttingDown) {
                 shuttingDown = true;
-                trace("Calling handleForcedShutdown from connection");
                 sessionManager.forceClose();
                 session0.forceClose();
             }
@@ -139,7 +149,6 @@ package org.amqp;
         function handleGracefulShutdown():Void {
             if (!shuttingDown) {
                 shuttingDown = true;
-                trace("Calling handleGracefulShutdown from connection, so = " + delegate.isConnected());
                 sessionManager.closeGracefully();
                 session0.closeGracefully();
             }
@@ -149,8 +158,10 @@ package org.amqp;
          * This parses frames from the network and hands them to be processed
          * by a frame handler.
          **/
-        public function onSocketData(event:Event):Void {
-            while (delegate.isConnected() && delegate.bytesAvailable > 0) {
+        //public function onSocketData(event:Event):Void {
+        public function onSocketData():Void {
+            while (delegate.isConnected()) {
+                delegate.waitForRead();
                 var frame:Frame = parseFrame(delegate);
                 maybeSendHeartbeat();
                 if (frame != null) {
@@ -170,19 +181,22 @@ package org.amqp;
         }
 
         function parseFrame(delegate:IODelegate):Frame {
+            trace("parseFrame");
             var frame:Frame = new Frame();
-            return frame.readFrom(delegate) ? frame : null;
+            return frame.readFrom(delegate.getInput()) ? frame : null;
         }
 
         public function sendFrame(frame:Frame):Void {
             if (delegate.isConnected()) {
-                frame.writeTo(delegate);
-                delegate.flush();
+                frame.writeTo(delegate.getOutput());
+                //delegate.flush();
                 //lastActivityTime = new Date().valueOf();
             } else {
                 throw new Error("Connection main loop not running");
             }
         }
+
+	/*
 
         public function addSocketEventListener(type:String, listener:Dynamic):Void {
             delegate.addEventListener(type, listener);
@@ -191,6 +205,7 @@ package org.amqp;
         public function removeSocketEventListener(type:String, listener:Dynamic):Void {
             delegate.removeEventListener(type, listener);
         }
+	*/
 
         function maybeSendHeartbeat():Void {}
     }

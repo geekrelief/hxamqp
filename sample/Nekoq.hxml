@@ -1,0 +1,4 @@
+-neko nekoq.n
+-main Nekoq
+-cp ../src
+-cmd neko nekoq.n

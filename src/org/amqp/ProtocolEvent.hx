@@ -17,7 +17,7 @@
  **/
 package org.amqp;
 
-    import flash.events.Event;
+    import org.amqp.events.Event;
 
     class ProtocolEvent extends Event {
         public var command:Command;

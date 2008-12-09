@@ -19,7 +19,6 @@ package org.amqp;
 
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
-    import flash.events.Event;
 
     class Method
     implements Dynamic<Dynamic> {

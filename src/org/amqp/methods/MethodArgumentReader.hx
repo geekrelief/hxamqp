@@ -17,10 +17,12 @@
  **/
 package org.amqp.methods;
 
-	import flash.Error;
 
-    import flash.utils.IDataInput;
-    import flash.utils.ByteArray;
+    import haxe.io.BytesInput;
+    import haxe.io.BytesOutput;
+    import haxe.io.Input;
+    import haxe.io.Bytes;
+    import org.amqp.Error;
     import org.amqp.LongString;
     import org.amqp.impl.ByteArrayLongString;
     import org.amqp.error.MalformedFrameError;
@@ -28,15 +30,15 @@ package org.amqp.methods;
     class MethodArgumentReader
      {
 
-        inline static var INT_MASK:UInt = 0xffff;
-        var input:IDataInput;
+        inline static var INT_MASK:Int = 0xffff;
+        var input:Input;
 
         /** If we are reading one or more bits, holds the current packed collection of bits */
         var bits:Int;
         /** If we are reading one or more bits, keeps track of which bit position we are reading from */
         var bit:Int;
 
-        public function new(input:IDataInput) {
+        public function new(input:Input) {
             this.input = input;
             clearBits();
         }
@@ -54,15 +56,15 @@ package org.amqp.methods;
             return value & INT_MASK;
         }
 
-        public static function _readLongstr(input:IDataInput):LongString {
+        public static function _readLongstr(input:Input):LongString {
             //final long contentLength = unsignedExtend(in.readInt());
-            var contentLength:Int = input.readInt();
+            var contentLength:Int = input.readInt31();
             if(contentLength < 0xfffffff) { // Int max is platform specific Flash9 28 bits 3 used for typing. 1 missing? Neko 31 bits
                 //final byte [] buffer = new byte[(int)contentLength];
                 //in.readFully(buffer);
 
-                var buf:ByteArray = new ByteArray();
-                input.readBytes(buf, 0, contentLength);
+                var buf:BytesOutput = new BytesOutput(); buf.bigEndian = true;
+                buf.write(input.read(contentLength));
 
                 return new ByteArrayLongString(buf);
             }
@@ -70,14 +72,12 @@ package org.amqp.methods;
                 throw new Error("Very long strings not currently supported");
             }
 
-			return new ByteArrayLongString(new ByteArray());
+            return new ByteArrayLongString();
         }
 
-        public static function _readShortstr(input:IDataInput):String {
-            var length:Int = input.readUnsignedByte();
-            //var length3:uint = input.readUnsignedInt();
-            //var length4:int = input.readShort();
-            return input.readUTFBytes(length);
+        public static function _readShortstr(input:Input):String {
+            var length:Int = input.readByte();
+            return input.readString(length);
         }
 
         public function readLongstr():LongString {
@@ -93,28 +93,28 @@ package org.amqp.methods;
         /** Public API - reads a short integer argument. */
         public function readShort():Int {
             clearBits();
-            return input.readShort();
+            return input.readUInt16();
         }
 
         /** Public API - reads an integer argument. */
         public function readLong():Int{
             clearBits();
-            return input.readInt();
+            return input.readInt31();
         }
 
         /** Public API - reads a long integer argument. */
         public function readLonglong():Float {
             clearBits();
 //            var higher:Int = input.readInt();
- //           var lower:Int = input.readInt();
-  //          return lower + higher << 0x100000000;
-			return input.readDouble();
+//            var lower:Int = input.readInt();
+//            return lower + higher << 0x100000000;
+            return input.readDouble();
         }
 
         /** Public API - reads a bit/boolean argument. */
         public function readBit():Bool {
             if (bit > 0x80) {
-                bits = input.readUnsignedByte();
+                bits = input.readByte();
                 bit = 0x01;
             }
 
@@ -133,26 +133,28 @@ package org.amqp.methods;
          * Public API - reads a table argument from a given stream. Also
          * called by {@link ContentHeaderPropertyReader}.
          */
-        public static function _readTable(input:IDataInput):Hash<Dynamic> {
-
+        public static function _readTable(input:Input):Hash<Dynamic> {
+            trace("readTable");
             var table:Hash<Dynamic> = new Hash();
-            var tableLength:Int = input.readInt();//unsignedExtend(in.readInt());
+            var tableLength:Int = input.readInt31();
 
-            var tableIn:ByteArray = new ByteArray();
-            input.readBytes(tableIn, 0, tableLength);
+            trace("tableLength" + tableLength);
+
+            var tableIn:BytesInput = new BytesInput(input.read(tableLength)); tableIn.bigEndian = true;
+
             var value:Dynamic = null;
 
-            while(tableIn.bytesAvailable > 0) {
+            try { while(true) {
 
                 var name:String = _readShortstr(tableIn);
-                var type:UInt = tableIn.readUnsignedByte();
+                var type:Int = tableIn.readByte();
+                trace("type "+ type);
                 switch(type) {
                     case 83 : //'S'
                         value = _readLongstr(tableIn);
-                        //value = _readShortstr(tableIn);
                         break;
                     case 73: //'I'
-                        value = tableIn.readInt();
+                        value = tableIn.readInt31();
                         break;
                     /*
                     case 68: //'D':
@@ -174,7 +176,8 @@ package org.amqp.methods;
 
                 if(!table.exists(name))
                     table.set(name, value);
-            }
+
+            } } catch (eof:haxe.io.Eof) { }
 
             return table;
         }
@@ -182,12 +185,12 @@ package org.amqp.methods;
         /** Public API - reads an octet argument. */
         public function readOctet():Int{
             clearBits();
-            return input.readUnsignedByte();
+            return input.readByte();
         }
 
         /** Public API - convenience method - reads a timestamp argument from the DataInputStream. */
-        public static function _readTimestamp(input:IDataInput):Date {
-            var date:Date = Date.fromTime(input.readInt() * 1000);
+        public static function _readTimestamp(input:Input):Date {
+            var date:Date = Date.fromTime(input.readInt31() * 1000);
             return date;
             //return new Date(in.readLong() * 1000);
         }

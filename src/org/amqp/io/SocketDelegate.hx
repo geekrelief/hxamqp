@@ -17,22 +17,59 @@
  **/
 package org.amqp.io;
 
-    import flash.net.Socket;
+    import neko.net.Socket;
+    import haxe.io.Input;
+    import haxe.io.Output;
 
     import org.amqp.ConnectionParameters;
     import org.amqp.IODelegate;
+    import org.amqp.events.EventDispatcher;
+    import org.amqp.events.Event;
+    import org.amqp.events.Handler;
 
     class SocketDelegate extends Socket, implements IODelegate {
-        public function new(?host:String=null, ?port:Int=0)
+        var dispatcher:EventDispatcher;
+        
+        public function new()
         {
-            super(host, port);
+            super();
+            dispatcher = new EventDispatcher();
         }
 
         public function isConnected():Bool {
-            return connected;
+            try {
+                super.peer();
+            } catch (err: Dynamic) {
+                return false;
+            }
+            return true;
         }
 
         public function open(params:ConnectionParameters):Void {
-            connect(params.serverhost, params.port);
+            connect(new neko.net.Host(params.serverhost), params.port);
+            trace("open "+peer());
+        }
+
+
+        public function addEventListener(type:String, h:Handler):Void {
+            dispatcher.addEventListener(type, h);
+        }
+
+        public function removeEventListener(type:String, h:Handler):Void {
+            dispatcher.removeEventListener(type, h);
+        }
+
+        public function dispatchEvent(e:Event):Void {
+            dispatcher.dispatchEvent(e);
+        }
+
+        public function getInput():Input {
+            input.bigEndian = true;
+            return input;
+        }
+
+        public function getOutput():Output {
+            output.bigEndian = true;
+            return output;
         }
     }

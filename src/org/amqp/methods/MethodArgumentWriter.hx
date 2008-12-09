@@ -17,10 +17,10 @@
  **/
 package org.amqp.methods;
 
-	import flash.Error;
+    import org.amqp.Error;
 
-    import flash.utils.ByteArray;
-    import flash.utils.IDataOutput;
+    import haxe.io.Bytes;
+    import haxe.io.Output;
 
     import org.amqp.FrameHelper;
     import org.amqp.LongString;
@@ -31,7 +31,7 @@ package org.amqp.methods;
     class MethodArgumentWriter
      {
         
-        var output:IDataOutput;
+        var output:Output;
 
         var needBitFlush:Bool;
         /** The current group of bits */
@@ -39,7 +39,7 @@ package org.amqp.methods;
         /** The current position within the group of bits */
         var bitMask:Int;
 
-        public function new(output:IDataOutput) {
+        public function new(output:Output) {
             this.output = output;
             resetBitAccumulator();
         }
@@ -66,18 +66,15 @@ package org.amqp.methods;
             bitflush();
             //byte [] bytes = str.getBytes("utf-8");
 
-            var buf:ByteArray = new ByteArray();
-            buf.writeUTFBytes(str);
-
-            output.writeByte(buf.length);
-            output.writeBytes(buf, 0, 0);
+            output.writeByte(str.length);
+            output.writeString(str);
         }
 
         /** Public API - encodes a long string argument from a LongString. */
         public function writeLongstr(str:LongString):Void {
             bitflush();
             writeLong(str.length());
-            IOUtils.copy(str.getBytes(), output);
+            output.write(str.getBytes());
         }
 
         /** Public API - encodes a long string argument from a String. */
@@ -85,13 +82,13 @@ package org.amqp.methods;
             bitflush();
             //byte [] bytes = str.getBytes("utf-8");
             writeLong(str.length);
-            output.writeUTFBytes(str);
+            output.writeString(str);
         }
 
         /** Public API - encodes a short integer argument. */
         public function writeShort(s:Int):Void {
             bitflush();
-            output.writeShort(s);
+            output.writeUInt16(s);
         }
 
         /** Public API - encodes an integer argument. */
@@ -101,7 +98,7 @@ package org.amqp.methods;
             // reasonable to use ints to represent the unsigned long
             // type - for values < Integer.MAX_VALUE everything works
             // as expected
-            output.writeInt(l);
+            output.writeInt31(l);
         }
 
         /** Public API - encodes a long integer argument. */
@@ -132,9 +129,9 @@ package org.amqp.methods;
             bitflush();
             if (table == null) {
                 // Convenience.
-                output.writeInt(0);
+                output.writeInt31(0);
             } else {
-                output.writeInt( FrameHelper.tableSize(table) );
+                output.writeInt31( FrameHelper.tableSize(table) );
 
                 for (key in table.keys()) {
                     writeShortstr(key);

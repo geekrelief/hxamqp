@@ -17,13 +17,13 @@
  **/
 package org.amqp.util;
 
-    import flash.utils.IDataOutput;
-    import flash.utils.ByteArray;
+    import haxe.io.Output;
+    import haxe.io.Bytes;
 
     class IOUtils
-     {
-        public static function copy(input:ByteArray, output:IDataOutput):Void {
+    {
+        public static function copy(input:Bytes, output:Output):Void {
 
-            output.writeBytes(input);
+            output.write(input);
         }
     }

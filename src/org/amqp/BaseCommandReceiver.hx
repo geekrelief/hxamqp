@@ -17,14 +17,13 @@
  **/
 package org.amqp;
 
-    import flash.events.EventDispatcher;
+    import org.amqp.events.EventDispatcher;
 
     class BaseCommandReceiver implements CommandReceiver {
         var dispatcher:EventDispatcher ;
-
         var session:Session;
 
-		public function new(){ dispatcher = new EventDispatcher(); }
+        public function new(){ dispatcher = new EventDispatcher(); }
 
         public function registerWithSession(s:Session):Void {
             session = s;
@@ -43,6 +42,7 @@ package org.amqp;
         }
 
         public function receive(cmd:Command):Void {
+        trace("receive command method "+cmd.method);
             dispatcher.dispatchEvent(new ProtocolEvent(cmd));
         }
     }

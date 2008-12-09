@@ -17,7 +17,7 @@
  **/
 package org.amqp.error;
 
-	import flash.Error;
+    import org.amqp.Error;
     import org.amqp.Frame;
 
     class IllegalStateError extends Error {

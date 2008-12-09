@@ -18,7 +18,6 @@
 package samp;
 
     import flash.utils.ByteArray;
-    //import flash.utils.Timer;
 
 	import flash.events.EventDispatcher;
 
@@ -98,8 +97,6 @@ package samp;
             var cmd:Command = new Command(publish, props, data);
 //			log("AbstractTest: publish cmd"+cmd);
             sessionHandler.dispatch(cmd);
-//            var timer:Timer = new Timer(DELAY, 1);
-//           timer.start();
         }
 
 		// publish channel

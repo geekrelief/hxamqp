@@ -17,15 +17,15 @@
  **/
 package org.amqp.util;
 
-    import flash.utils.ByteArray;
+    import haxe.io.BytesOutput;
     import org.amqp.LongString;
     import org.amqp.impl.ByteArrayLongString;
 
     class LongStringHelper
      {
         public static function asLongString(str:String):LongString {
-            var b:ByteArray = new ByteArray();
-            b.writeUTFBytes(str);
+            var b:BytesOutput = new BytesOutput(); b.bigEndian = true;
+            b.writeString(str);
             return new ByteArrayLongString(b);
         }
     }

@@ -17,7 +17,7 @@
  **/
 package org.amqp.impl;
 
-    import flash.utils.ByteArray;
+    import haxe.io.BytesOutput;
 
     import org.amqp.BaseCommandReceiver;
     import org.amqp.Command;
@@ -57,10 +57,11 @@ package org.amqp.impl;
         var state:Int;
 
         public function new(params:ConnectionParameters){
-			super();
+            super();
             connectionParams = params;
             addEventListener(new Start(), onStart);
             addEventListener(new Tune(), onTune);
+            trace("new");
         }
 
         public override function forceClose():Void {
@@ -86,9 +87,13 @@ package org.amqp.impl;
         ////////////////////////////////////////////////////////////////
 
         public function onStart(event:ProtocolEvent):Void {
+            trace("onStart");
             var start:Start = cast( event.command.method, Start);
+
+            trace("");
             // Doesn't do anything fancy with the properties from Start yet
             var startOk:StartOk = new StartOk();
+            trace("");
             var props:Hash<Dynamic> = new Hash();
 
             props.set("product", LongStringHelper.asLongString("AS-AMQC"));
@@ -98,10 +103,11 @@ package org.amqp.impl;
             startOk.clientproperties = props;
             startOk.mechanism = "AMQPLAIN";
 
+            trace("");
             var credentials:Hash<Dynamic> = new Hash();
             credentials.set("LOGIN", LongStringHelper.asLongString(connectionParams.username));
             credentials.set("PASSWORD", LongStringHelper.asLongString(connectionParams.password));
-            var buf:ByteArray = new ByteArray();
+            var buf:BytesOutput = new BytesOutput(); buf.bigEndian = true;
             var generator:BinaryGenerator = new BinaryGenerator(buf);
             generator.writeTable(credentials, false);
             startOk.response = new ByteArrayLongString(buf);
@@ -111,6 +117,7 @@ package org.amqp.impl;
         }
 
         public function onTune(event:ProtocolEvent):Void {
+            trace("onTune");
             var tune:Tune = cast( event.command.method, Tune);
             var tuneOk:TuneOk = new TuneOk();
             tuneOk.channelmax = tune.channelmax;
@@ -125,7 +132,9 @@ package org.amqp.impl;
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {
+            trace("!!!!! onOpenOk");
             var openOk:OpenOk = cast( event.command.method, OpenOk);
+          
             // Maybe do something with the knownhosts?
             //openOk.knownhosts;
             if (state == STATE_CLOSE_REQUESTED) {

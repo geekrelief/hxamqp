@@ -17,15 +17,15 @@
  **/
 package org.amqp.error;
 
-	import flash.events.ErrorEvent;
+    import org.amqp.events.Event;
 
-    class ConnectionError extends ErrorEvent {
+    class ConnectionError extends Event {
     	inline public static var CONNECTION_ERROR:String = "connectionError";
         public var message:String ;
         
         public function new() {
             
             message = "Connection failed";
-            super(CONNECTION_ERROR, false, false, message);
+            super(CONNECTION_ERROR);
         }
     }

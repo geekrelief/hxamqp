@@ -17,20 +17,20 @@
  **/
 package org.amqp.headers;
 
-    import flash.utils.IDataInput;
+    import haxe.io.Input;
 
     import org.amqp.LongString;
     import org.amqp.methods.MethodArgumentReader;
 
     class ContentHeaderPropertyReader
      {
-        var input:IDataInput;
+        var input:Input;
         /** Collected field flags */
         public var flags:Array<Dynamic>;
         /** Position in argument stream */
         var argumentIndex:Int;
 
-        public function new(input:IDataInput){
+        public function new(input:Input){
             this.input = input;
             readFlags();
             this.argumentIndex = 0;
@@ -43,7 +43,7 @@ package org.amqp.headers;
         public function readFlags():Void {
             var acc:Array<Dynamic> = new Array();
             do {
-                var flagsWord:Int = input.readShort();
+                var flagsWord:Int = input.readUInt16();
                 acc.push(flagsWord);
                 if ((flagsWord & 1) == 0) {
                     break;
@@ -85,13 +85,13 @@ package org.amqp.headers;
         /** Reads and returns an AMQP short integer content header field, or null if absent. */
         public function readShort():Int{
             if (!argPresent()) return 0;
-            return input.readUnsignedShort();
+            return input.readUInt16();
         }
 
         /** Reads and returns an AMQP integer content header field, or null if absent. */
         public function readLong():Int{
             if (!argPresent()) return 0;
-            return input.readInt();
+            return input.readInt31();
         }
 
         /** Reads and returns an AMQP long integer content header field, or null if absent. */
@@ -114,7 +114,7 @@ package org.amqp.headers;
         /** Reads and returns an AMQP octet content header field, or null if absent. */
         public function readOctet():Int{
             if (!argPresent()) return 0;
-            return input.readUnsignedByte();
+            return input.readByte();
         }
 
         /** Reads and returns an AMQP timestamp content header field, or null if absent. */

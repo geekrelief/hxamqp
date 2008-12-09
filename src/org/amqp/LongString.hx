@@ -17,8 +17,8 @@
  **/
 package org.amqp;
 
-    import flash.utils.IDataInput;
-    import flash.utils.ByteArray;
+    import haxe.io.Input;
+    import haxe.io.Bytes;
 
     interface LongString
     {
@@ -32,7 +32,7 @@ package org.amqp;
          * @return An input stream the reads the content
          * @throws IOException
          */
-        function getStream():IDataInput;
+        function getStream():Input;
 
         /**
          * Get the content as a byte array.
@@ -42,6 +42,6 @@ package org.amqp;
          * @return the content as an array
          * @throws IOException
          */
-        function getBytes():ByteArray;
+        function getBytes():Bytes;
 
     }

@@ -17,11 +17,11 @@
  **/
 package org.amqp;
 
-	import flash.Error;
-
-    import flash.utils.IDataInput;
-    import flash.utils.ByteArray;
-    import flash.utils.IDataOutput;
+    import haxe.io.Input;
+    import haxe.io.Output;
+    import haxe.io.Bytes;
+    import haxe.io.BytesOutput;
+    import haxe.io.BytesInput;
     import org.amqp.headers.ContentHeader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.headers.ContentHeaderReader;
@@ -42,22 +42,22 @@ package org.amqp;
         inline public static var STATE_EXPECTING_CONTENT_BODY:Int = 2;
         inline public static var STATE_COMPLETE:Int = 3;
         inline public static var EMPTY_CONTENT_BODY_FRAME_SIZE:Int = 8;
-        public static var EMPTY_BYTE_ARRAY:ByteArray = new ByteArray();
+        public static var EMPTY_BYTE_ARRAY:Bytes = Bytes.alloc(0);
 
         var state:Int;
         public var method:Method;
         public var contentHeader:ContentHeader;
         var remainingBodyBytes:Int;
-        public  var content:ByteArray ;
-		public var priority:Int;
+        public var content:BytesOutput;
+        public var priority:Int;
 
-        public function new(?m:Method = null, ?c:ContentHeader = null, ?b:ByteArray = null) {
+        public function new(?m:Method = null, ?c:ContentHeader = null, ?b:Bytes = null) {
             
-            content = new ByteArray();
+            content = new BytesOutput(); content.bigEndian = true;
             method = m;
             contentHeader = c;
-            content = new ByteArray();
-            addToContentBody(b);
+			if(b != null)
+	            addToContentBody(b);
             state = (m == null) ? STATE_EXPECTING_METHOD : STATE_COMPLETE;
             priority = (m == null) ? -1 : (m.getClassId() * 100 + m.getMethodId() ) * -1;
             remainingBodyBytes = 0;
@@ -67,10 +67,8 @@ package org.amqp;
             return this.state == STATE_COMPLETE;
         }
 
-        function addToContentBody(b:ByteArray):Void {
-            if (b != null) {
-                content.writeBytes(b,content.position,0);
-            }
+        function addToContentBody(b:Bytes):Void {
+            content.write(b);
         }
 
         /**
@@ -78,19 +76,20 @@ package org.amqp;
          * it to the underlying transport mechanism.
          **/
         public function transmit(channelNumber:Int, connection:Connection):Void {
+            trace("transmit channel "+channelNumber+" method: "+method);
 
             var f:Frame = new Frame();
             f.type = AMQP.FRAME_METHOD;
             f.channel = channelNumber;
 
-            var bodyOut:IDataOutput = f.getOutputStream();
+            var bodyOut:Output = f.getOutputStream();
 
             if (method.getClassId() < 0 || method.getMethodId() < 0) {
-                throw new Error("Method not implemented properly" + method);
+                throw new Error("Method not implemented properly " + method);
             }
 
-            bodyOut.writeShort(method.getClassId());
-            bodyOut.writeShort(method.getMethodId());
+            bodyOut.writeUInt16(method.getClassId());
+            bodyOut.writeUInt16(method.getMethodId());
             var argWriter:MethodArgumentWriter = new MethodArgumentWriter(bodyOut);
             method.writeArgumentsTo(argWriter);
             argWriter.flush();
@@ -102,7 +101,7 @@ package org.amqp;
                 f.type = AMQP.FRAME_HEADER;
                 f.channel = channelNumber;
                 bodyOut = f.getOutputStream();
-                bodyOut.writeShort(contentHeader.getClassId());
+                bodyOut.writeUInt16(contentHeader.getClassId());
                 contentHeader.writeTo(bodyOut, this.content.length);
                 connection.sendFrame(f);
 
@@ -111,18 +110,19 @@ package org.amqp;
                     (frameMax == 0) ? this.content.length : frameMax - EMPTY_CONTENT_BODY_FRAME_SIZE;
 
                 var offset:Int = 0;
-                   while (offset < this.content.length) {
-                    var remaining:Int = this.content.length - offset;
+                var cb = this.content.getBytes();
+                while (offset < cb.length) {
+                    var remaining:Int = cb.length - offset;
 
                     f = new Frame();
                     f.type = AMQP.FRAME_BODY;
                     f.channel = channelNumber;
                     bodyOut = f.getOutputStream();
-                    bodyOut.writeBytes(this.content, offset,
+                    bodyOut.writeBytes(cb, offset,
                                   (remaining < bodyPayloadMax) ? remaining : bodyPayloadMax);
                     connection.sendFrame(f);
-                	offset += bodyPayloadMax;
-                   }
+                    offset += bodyPayloadMax;
+                }
             }
         }
 
@@ -145,7 +145,7 @@ package org.amqp;
               case STATE_EXPECTING_CONTENT_HEADER:
                   switch (frame.type) {
                     case AMQP.FRAME_HEADER: {
-                        var input:IDataInput = frame.getInputStream();
+                        var input:Input = frame.getInputStream();
                         this.contentHeader = ContentHeaderReader.readContentHeaderFrom(input);
                         this.remainingBodyBytes = this.contentHeader.readFrom(input);
                         updateContentBodyState();
@@ -158,7 +158,7 @@ package org.amqp;
                   switch (frame.type) {
                     case AMQP.FRAME_BODY: {
 
-                        var fragment:ByteArray = frame.getPayload();
+                        var fragment:Bytes = frame.getPayload();
                         this.remainingBodyBytes -= fragment.length;
                         updateContentBodyState();
                         if (this.remainingBodyBytes < 0) {
