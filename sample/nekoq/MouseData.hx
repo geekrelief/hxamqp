@@ -41,25 +41,23 @@ package nekoq;
 			super();
             ax = "";
             routing_key = q2;
-            trace("new");
         }
 
 
         public function run():Void {
-			trace("run");
             connection.start();
             connection.baseSession.registerLifecycleHandler(this);
 
             // get data
             // spawn a new thread to read data
             trace("create connection thread");
-            neko.vm.Thread.create(connection.onSocketData);
+            var t = neko.vm.Thread.create(connection.onSocketData);
             neko.Sys.sleep(0.5);
             trace("process in main thread");
             var count = 0;
             var degrees = 0;
             var factor = 3.14159/180;
-            while(count < 1000000) {
+            while(count < 10) {
                 neko.Sys.sleep(0.01);
                 trace("processing main thread "+count);
                 count++;
@@ -70,16 +68,17 @@ package nekoq;
                 b.writeFloat(Math.sin(degrees*factor) * 200 + 400);
                 publish(b.getBytes());
             }
+            trace("sending close message");
+            t.sendMessage(true); // close read thread
+            neko.Sys.sleep(1);
             trace("run done");
         }
 
         public function afterOpen():Void {
-			trace("afterOpen");
             openChannel(runPublishTest);
         }
 
         override function openChannel(_callback:Dynamic):Void {
-			trace("openChannel");
             var whoCares:Dynamic = function(event:ProtocolEvent):Void{
                 //log("whoCares called");
             };

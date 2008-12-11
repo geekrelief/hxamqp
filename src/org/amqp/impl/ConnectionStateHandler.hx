@@ -77,9 +77,10 @@ package org.amqp.impl;
             }
         }
 
-        public function onCloseOk(cmd:Command):Void {
-            var closeOk:CloseOk = cast( cmd.method, CloseOk);
+        public function onCloseOk(event:ProtocolEvent):Void {
+            var closeOk:CloseOk = cast( event.command.method, CloseOk);
             state = STATE_CLOSED;
+            trace("got CloseOk");
         }
 
         ////////////////////////////////////////////////////////////////
@@ -90,10 +91,8 @@ package org.amqp.impl;
             trace("onStart");
             var start:Start = cast( event.command.method, Start);
 
-            trace("");
             // Doesn't do anything fancy with the properties from Start yet
             var startOk:StartOk = new StartOk();
-            trace("");
             var props:Hash<Dynamic> = new Hash();
 
             props.set("product", LongStringHelper.asLongString("AS-AMQC"));
@@ -103,7 +102,6 @@ package org.amqp.impl;
             startOk.clientproperties = props;
             startOk.mechanism = "AMQPLAIN";
 
-            trace("");
             var credentials:Hash<Dynamic> = new Hash();
             credentials.set("LOGIN", LongStringHelper.asLongString(connectionParams.username));
             credentials.set("PASSWORD", LongStringHelper.asLongString(connectionParams.password));
@@ -132,7 +130,7 @@ package org.amqp.impl;
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {
-            trace("!!!!! onOpenOk");
+            trace("onOpenOk");
             var openOk:OpenOk = cast( event.command.method, OpenOk);
           
             // Maybe do something with the knownhosts?
@@ -146,7 +144,7 @@ package org.amqp.impl;
             }
 
             // Call the lifecycle event handlers
-            session.emitLifecyleEvent();
+            session.emitLifecycleEvent();
         }
 
         function close():Void {
@@ -156,6 +154,7 @@ package org.amqp.impl;
             close.classid = 0;
             close.methodid = 0;
             session.rpc(new Command(close), onCloseOk);
+            trace("sent close");
         }
 
     }

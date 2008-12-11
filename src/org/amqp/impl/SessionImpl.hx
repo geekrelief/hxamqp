@@ -81,7 +81,7 @@ package org.amqp.impl;
             lifecycleHandlers.push(handler);
         }
 
-        public function emitLifecyleEvent():Void {
+        public function emitLifecycleEvent():Void {
             for (i in lifecycleHandlers) {
                 i.afterOpen();
             }
@@ -94,15 +94,11 @@ package org.amqp.impl;
         public function sendCommand(cmd:Command, ?fun:Dynamic = null):Void {
 
             if (null != fun) {
-            trace("sendCommand");
                 if (rpcQueue.isEmpty()) {
-            trace("rpcQueue.isEmpty()");
                     send(cmd);
                 }
-            trace("rpcQueue.add");
                 rpcQueue.add({command:cmd,_callback:fun});
-            }
-            else {
+            } else {
                 send(cmd);
             }
         }
@@ -113,10 +109,12 @@ package org.amqp.impl;
 
         public function rpc(cmd:Command, fun:Dynamic):Void {
             var method:Method = cmd.method;
-            trace("rpc "+method);
-            commandReceiver.addEventListener(method.getResponse(), fun);
-            if (null != method.getAltResponse()) {
-                commandReceiver.addEventListener(method.getAltResponse(), fun);
+            //trace("rpc "+method);
+            if(fun != null) {
+                commandReceiver.addEventListener(method.getResponse(), fun);
+                if (null != method.getAltResponse()) {
+                    commandReceiver.addEventListener(method.getAltResponse(), fun);
+                }
             }
             sendCommand(cmd, fun);
             //trace("RPC top half: " + cmd.method);

@@ -67,7 +67,7 @@ package org.amqp.impl;
         }
 
         public override function closeGracefully():Void{
-            trace("closeGracefully called");
+            //trace("closeGracefully called");
             transition(STATE_CLOSED);
         }
 

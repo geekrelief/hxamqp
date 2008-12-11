@@ -24,15 +24,11 @@ package nekoq;
     import org.amqp.Command;
     import org.amqp.Connection;
     import org.amqp.ConnectionParameters;
-    import org.amqp.ProtocolEvent;
     import org.amqp.Session;
     import org.amqp.SessionManager;
     import org.amqp.headers.BasicProperties;
     import org.amqp.impl.SessionStateHandler;
     import org.amqp.methods.basic.Publish;
-    import org.amqp.methods.channel.Open;
-    import org.amqp.methods.exchange.Declare;
-    import org.amqp.methods.queue.Bind;
     import org.amqp.util.Properties;
 
     class AbstractTest extends EventDispatcher {
@@ -57,13 +53,13 @@ package nekoq;
         public function new() {
 			super();
 			
-			ax = "ax";
+			//ax = "ax";
 			q = "q";
 			q2 = "q2";
-			x_type = "topic";
-			bind_key = "a.b.c.*";
-			routing_key = "a.b.c.d";
-			routing_key2 = "a.b.c.e";
+			//x_type = "topic";
+			//bind_key = "a.b.c.*";
+			//routing_key = "a.b.c.d";
+			//routing_key2 = "a.b.c.e";
 
             trace("new creating connection");
             connection = new Connection(buildConnectionParams());
@@ -83,47 +79,16 @@ package nekoq;
         }
 
         public function publish(data:Bytes):Void {
-			trace("publish");
             var publish:Publish = new Publish();
             publish.exchange = ax;
             publish.routingkey = routing_key;
-//			trace("publish "+publish);
             var props:BasicProperties = Properties.getBasicProperties();
-//			trace("publish props"+props);
             var cmd:Command = new Command(publish, props, data);
-//			trace("publish cmd"+cmd);
             sessionHandler.dispatch(cmd);
         }
 
 		// publish channel
         // override in subclass
         public function openChannel(_callback:Dynamic):Void {
-        /*
-			trace("openChannel");
-            sessionHandler = sessionManager.create();
-
-            var open:Open = new Open();
-
-            var exchange:org.amqp.methods.exchange.Declare = new org.amqp.methods.exchange.Declare();
-            exchange.exchange = ax;
-            exchange.type = x_type;
-
-            var queue:org.amqp.methods.queue.Declare = new org.amqp.methods.queue.Declare();
-            queue.queue = q;
-
-            var bind:Bind = new Bind();
-            bind.exchange = ax;
-            bind.queue = q;
-            bind.routingkey = bind_key;
-
-            var devNull:Dynamic = function(event:ProtocolEvent):Void{
-                trace("devNull called for " + event.command.method);
-            };
-
-            sessionHandler.rpc(new Command(open), devNull);
-            sessionHandler.rpc(new Command(exchange), devNull);
-            sessionHandler.rpc(new Command(queue), devNull);
-            sessionHandler.rpc(new Command(bind), _callback);//addAsync(_callback, TIMEOUT));
-            */
         }
     }

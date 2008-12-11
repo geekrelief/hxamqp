@@ -125,12 +125,6 @@ package org.amqp;
             }
         }
 
-/*
-        public function afterGracefulClose(event:Event):Void {
-            delegate.close();
-        }
-*/
-
         /**
          * Socket timeout waiting for a frame. Maybe missed heartbeat.
          **/
@@ -148,9 +142,11 @@ package org.amqp;
 
         function handleGracefulShutdown():Void {
             if (!shuttingDown) {
+                trace("handleGracefulShutdown");
                 shuttingDown = true;
                 sessionManager.closeGracefully();
                 session0.closeGracefully();
+                trace("sessionManager, session0 closed");
             }
         }
 
@@ -160,8 +156,13 @@ package org.amqp;
          **/
         //public function onSocketData(event:Event):Void {
         public function onSocketData():Void {
-            while (delegate.isConnected()) {
-                delegate.waitForRead();
+            while (true) {
+                var select = neko.net.Socket.select([cast(delegate, neko.net.Socket)], [], [], 0.01);
+                // check for close signal
+                var closeFlag = neko.vm.Thread.readMessage(false);
+                if(closeFlag == true) { trace("got close signal"); close();}
+                if(select.read.length == 0) continue;
+
                 var frame:Frame = parseFrame(delegate);
                 maybeSendHeartbeat();
                 if (frame != null) {
