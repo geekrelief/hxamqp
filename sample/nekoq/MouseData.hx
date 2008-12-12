@@ -17,6 +17,8 @@
  **/
 package nekoq;
 
+    import neko.vm.Thread;
+    import neko.vm.Mutex;
     import haxe.io.BytesInput;
     import haxe.io.BytesOutput;
 
@@ -35,24 +37,29 @@ package nekoq;
         implements LifecycleEventHandler {
 
         var consumerTag:String;
+        var t:Thread;
+        var mu:Mutex;
 
         public function new()
         {
 			super();
             ax = "";
             routing_key = q2;
+            mu = new Mutex();
         }
-
 
         public function run():Void {
             connection.start();
             connection.baseSession.registerLifecycleHandler(this);
-
-            // get data
-            // spawn a new thread to read data
             trace("create connection thread");
-            var t = neko.vm.Thread.create(connection.onSocketData);
-            neko.Sys.sleep(0.5);
+            t = neko.vm.Thread.create(callback(connection.onSocketData, Thread.current()));
+
+            trace("block till done");
+            Thread.readMessage(true);
+            trace("run done");
+       }
+
+        public function runLoop():Void {
             trace("process in main thread");
             var count = 0;
             var degrees = 0;
@@ -68,10 +75,12 @@ package nekoq;
                 b.writeFloat(Math.sin(degrees*factor) * 200 + 400);
                 publish(b.getBytes());
             }
+        }
+
+        public function _runLoop():Void {
+            runLoop();
             trace("sending close message");
-            t.sendMessage(true); // close read thread
-            neko.Sys.sleep(1);
-            trace("run done");
+            t.sendMessage(true); // close socket thread
         }
 
         public function afterOpen():Void {
@@ -114,7 +123,8 @@ package nekoq;
 
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
-            //log("onConsumeOk: " + tag);
+            trace("onConsumeOk: " + tag);
+            _runLoop();
         }
 
         public function onCancelOk(tag:String):Void {

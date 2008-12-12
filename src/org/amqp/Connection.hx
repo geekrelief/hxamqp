@@ -19,6 +19,7 @@ package org.amqp;
 
     import org.amqp.Error;
 
+    import neko.vm.Thread;
 //    import flash.events.Event;
 //    import flash.events.IOErrorEvent;
 //    import flash.events.ProgressEvent;
@@ -46,6 +47,8 @@ package org.amqp;
         public var sessionManager:SessionManager;
         public var frameMax:Int ;
 
+        var openCB:Dynamic;
+
         public function new(state:ConnectionParameters) {
             
             trace("new");
@@ -53,6 +56,7 @@ package org.amqp;
             shuttingDown = false;
             frameMax = 0;
             connectionParams = state;
+
             var stateHandler:ConnectionStateHandler = new ConnectionStateHandler(state);
 
             session0 = new SessionImpl(this, 0, stateHandler);
@@ -155,7 +159,8 @@ package org.amqp;
          * by a frame handler.
          **/
         //public function onSocketData(event:Event):Void {
-        public function onSocketData():Void {
+        public function onSocketData(_mainThread:Thread):Void {
+            try{
             while (true) {
                 var select = neko.net.Socket.select([cast(delegate, neko.net.Socket)], [], [], 0.01);
                 // check for close signal
@@ -179,6 +184,14 @@ package org.amqp;
                     handleSocketTimeout();
                 }
             }
+            } catch (err:Dynamic) {
+                if(Std.is(err, haxe.io.Eof)) {
+                    trace("end of stream");
+                } else {
+                    trace(err+" this should be logged and reported!");
+                }
+            }
+            _mainThread.sendMessage("close");
         }
 
         function parseFrame(delegate:IODelegate):Frame {
