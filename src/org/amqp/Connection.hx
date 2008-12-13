@@ -58,7 +58,7 @@ package org.amqp;
 
         public function new(state:ConnectionParameters) {
             
-            trace("new");
+            //trace("new");
             currentState = CLOSED;
             shuttingDown = false;
             frameMax = 0;
@@ -170,11 +170,11 @@ package org.amqp;
 
         function handleGracefulShutdown():Void {
             if (!shuttingDown) {
-                trace("handleGracefulShutdown");
+                //trace("handleGracefulShutdown");
                 shuttingDown = true;
                 sessionManager.closeGracefully();
                 session0.closeGracefully();
-                trace("sessionManager, session0 closed");
+                //trace("sessionManager, session0 closed");
             }
         }
 

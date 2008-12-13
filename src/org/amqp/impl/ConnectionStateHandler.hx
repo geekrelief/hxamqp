@@ -65,11 +65,11 @@ package org.amqp.impl;
             connectionParams = params;
             addEventListener(new Start(), onStart);
             addEventListener(new Tune(), onTune);
-            trace("new");
+            //trace("new");
         }
 
         public override function forceClose():Void {
-            trace("forceClose called");
+            //trace("forceClose called");
         }
 
         public override function closeGracefully():Void {
@@ -84,7 +84,7 @@ package org.amqp.impl;
         public function onCloseOk(event:ProtocolEvent):Void {
             var closeOk:CloseOk = cast( event.command.method, CloseOk);
             state = STATE_CLOSED;
-            trace("got CloseOk");
+            //trace("got CloseOk");
         }
 
         ////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ package org.amqp.impl;
         ////////////////////////////////////////////////////////////////
 
         public function onStart(event:ProtocolEvent):Void {
-            trace("onStart");
+            //trace("onStart");
             var start:Start = cast( event.command.method, Start);
 
             // Doesn't do anything fancy with the properties from Start yet
@@ -123,7 +123,7 @@ package org.amqp.impl;
         }
 
         public function onTune(event:ProtocolEvent):Void {
-            trace("onTune");
+            //trace("onTune");
             var tune:Tune = cast( event.command.method, Tune);
             var tuneOk:TuneOk = new TuneOk();
             tuneOk.channelmax = tune.channelmax;
@@ -138,7 +138,7 @@ package org.amqp.impl;
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {
-            trace("onOpenOk");
+            //trace("onOpenOk");
             var openOk:OpenOk = cast( event.command.method, OpenOk);
           
             // Maybe do something with the knownhosts?
@@ -162,7 +162,7 @@ package org.amqp.impl;
             close.classid = 0;
             close.methodid = 0;
             session.rpc(new Command(close), onCloseOk);
-            trace("sent close");
+            //trace("sent close");
         }
 
     }

@@ -69,7 +69,7 @@ package org.amqp;
             #elseif neko
             type = input.readByte();
             #end
-            trace("type "+type);
+            //trace("type "+type);
 
             if (type == 'A'.charCodeAt(0)) {
                 /* Probably an AMQP.... header indicating a version mismatch. */
@@ -84,14 +84,14 @@ package org.amqp;
             #elseif neko
             channel = input.readUInt16();
             #end
-            trace("channel "+channel);
+            //trace("channel "+channel);
 
             #if flash9
             var payloadSize = input.readInt();
             #elseif neko
             var payloadSize = input.readInt31();
             #end
-            trace("payloadSize "+payloadSize);
+            //trace("payloadSize "+payloadSize);
 
             if (payloadSize > 0) {
                 #if flash9
