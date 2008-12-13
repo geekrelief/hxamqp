@@ -150,6 +150,7 @@ package org.amqp;
          * by a frame handler.
          **/
         public function onSocketData(event:Event):Void {
+            try {
             while (delegate.isConnected() && delegate.bytesAvailable > 0) {
                 var frame:Frame = parseFrame(delegate);
                 maybeSendHeartbeat();
@@ -166,7 +167,7 @@ package org.amqp;
                 } else {
                     handleSocketTimeout();
                 }
-            }
+            } }catch(err:Dynamic) { /* ignore errors */ }
         }
 
         function parseFrame(delegate:IODelegate):Frame {
