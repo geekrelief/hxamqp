@@ -83,7 +83,7 @@ package org.amqp;
 			if(b != null){
                 #if flash9
                 content.writeBytes(b);
-                #elseif
+                #elseif neko
 	            content.write(b);
                 #end
             }
