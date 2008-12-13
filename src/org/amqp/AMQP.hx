@@ -18,7 +18,12 @@
 package org.amqp;
 
 
+    #if flash9
     import flash.utils.ByteArray;
+    #elseif neko
+    import haxe.io.Bytes;
+    import haxe.io.BytesOutput;
+    #end
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -55,13 +60,23 @@ package org.amqp;
         inline public static var PROTOCOL_MINOR:Int = 0;
         inline public static var PORT:Int = 5672;
 
+        #if flash9
         public static function generateHeader():ByteArray {
-            var buffer:ByteArray = new ByteArray();
+            var buffer =  new ByteArray();
             buffer.writeUTFBytes("AMQP");
+        #elseif neko
+        public static function generateHeader():Bytes {
+            var buffer:BytesOutput = new BytesOutput(); buffer.bigEndian = true;
+            buffer.writeString("AMQP");
+        #end
             buffer.writeByte(1);
             buffer.writeByte(1);
             buffer.writeByte(PROTOCOL_MAJOR);
             buffer.writeByte(PROTOCOL_MINOR);
+            #if flash9
             return buffer;
+            #elseif neko
+            return buffer.getBytes();
+            #end
         }
     }

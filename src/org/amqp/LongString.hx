@@ -17,31 +17,22 @@
  **/
 package org.amqp;
 
+    #if flash9
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
+    #elseif neko
+    import haxe.io.Input;
+    import haxe.io.Bytes;
+    #end
 
     interface LongString
     {
-
         function length():Int;
-
-        /**
-         * Get the content stream.
-         * Repeated calls to this function return the same stream,
-         * which may not support rewind.
-         * @return An input stream the reads the content
-         * @throws IOException
-         */
+        #if flash9
         function getStream():IDataInput;
-
-        /**
-         * Get the content as a byte array.
-         * Repeated calls to this function return the same array.
-         * This function will fail if getContentLength() > Integer.MAX_VALUE
-         * throwing an IllegalStateException.
-         * @return the content as an array
-         * @throws IOException
-         */
         function getBytes():ByteArray;
-
+        #elseif neko
+        function getStream():Input;
+        function getBytes():Bytes;
+        #end
     }

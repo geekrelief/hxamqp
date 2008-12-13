@@ -17,12 +17,20 @@
  **/
 package org.amqp.headers;
 
+    #if flash9
     import flash.utils.IDataInput;
+    #elseif neko
+    import haxe.io.Input;
+    #end
 
-    class ContentHeaderReader
-     {
+    class ContentHeaderReader {
+        #if flash9
         public static function readContentHeaderFrom(input:IDataInput):ContentHeader {
-          var classId:Int = input.readShort();
+            var classId:Int = input.readShort();
+        #elseif neko
+        public static function readContentHeaderFrom(input:Input):ContentHeader {
+            var classId:Int = input.readUInt16();
+        #end
           switch (classId) {
                 case 10: return new ConnectionProperties();
                 case 20: return new ChannelProperties();
@@ -33,5 +41,4 @@ package org.amqp.headers;
                 default: return null;
           }
         }
-
     }

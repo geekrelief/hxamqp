@@ -17,13 +17,27 @@
  **/
 package org.amqp;
 
+    #if flash9
     import flash.events.IEventDispatcher;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
+    #elseif neko
+    import org.amqp.events.IEventDispatcher;
+    import haxe.io.Input;
+    import haxe.io.Output;
+    #end
 
-    interface IODelegate implements IEventDispatcher, implements IDataInput, implements IDataOutput{
+    #if flash9
+    interface IODelegate implements IEventDispatcher, implements IDataInput, implements IDataOutput {
+    #elseif neko
+    interface IODelegate implements IEventDispatcher {
+    #end
         function open(params:ConnectionParameters):Void;
         function isConnected():Bool;
         function close():Void;
+        #if neko
+        function getInput():Input;
+        function getOutput():Output;
+        #end
         function flush():Void;
     }

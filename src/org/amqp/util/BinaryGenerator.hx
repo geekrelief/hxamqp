@@ -17,17 +17,27 @@
  **/
 package org.amqp.util;
 
-	import flash.Error;
-    import flash.utils.ByteArray;
+    #if flash9
+    import flash.Error;
     import flash.utils.IDataOutput;
+    import flash.utils.ByteArray;
+    #elseif neko
+    import org.amqp.Error;
+    import haxe.io.BytesOutput;
+    import haxe.io.Output;
+    #end
 
     import org.amqp.FrameHelper;
     import org.amqp.LongString;
     import org.amqp.error.IllegalArgumentError;
 
-    class BinaryGenerator
-     {
+    class BinaryGenerator {
+
+        #if flash9
         var output:IDataOutput;
+        #elseif neko
+        var output:Output;
+        #end
 
         var needBitFlush:Bool;
         /** The current group of bits */
@@ -35,7 +45,11 @@ package org.amqp.util;
         /** The current position within the group of bits */
         var bitMask:Int;
 
+        #if flash9
         public function new(output:IDataOutput) {
+        #elseif neko
+        public function new(output:Output) {
+        #end 
             this.output = output;
             resetBitAccumulator();
         }
@@ -62,18 +76,23 @@ package org.amqp.util;
             bitflush();
             //byte [] bytes = str.getBytes("utf-8");
 
-            var buf:ByteArray = new ByteArray();
-            buf.writeUTFBytes(str);
-
-            output.writeByte(buf.length);
-            output.writeBytes(buf, 0, 0);
+            output.writeByte(str.length);
+            #if flash9
+            output.writeUTFBytes(str);
+            #elseif neko
+            output.writeString(str);
+            #end
         }
 
         /** Public API - encodes a long string argument from a LongString. */
         public function writeLongstr(str:LongString):Void {
             bitflush();
             writeLong(str.length());
-            IOUtils.copy(str.getBytes(), output);
+            #if flash9
+            output.writeBytes(str.getBytes());
+            #elseif neko
+            output.write(str.getBytes());
+            #end
         }
 
         /** Public API - encodes a long string argument from a String. */
@@ -81,13 +100,21 @@ package org.amqp.util;
             bitflush();
             //byte [] bytes = str.getBytes("utf-8");
             writeLong(str.length);
+            #if flash9
             output.writeUTFBytes(str);
+            #elseif neko
+            output.writeString(str);
+            #end
         }
 
         /** Public API - encodes a short integer argument. */
         public function writeShort(s:Int):Void {
             bitflush();
+            #if flash9
             output.writeShort(s);
+            #elseif neko
+            output.writeUInt16(s);
+            #end
         }
 
         /** Public API - encodes an integer argument. */
@@ -97,12 +124,20 @@ package org.amqp.util;
             // reasonable to use ints to represent the unsigned long
             // type - for values < Integer.MAX_VALUE everything works
             // as expected
+            #if flash9
             output.writeInt(l);
+            #elseif neko
+            output.writeInt31(l);
+            #end
         }
 
         /** Public API - encodes a long integer argument. */
         public function writeLonglong(ll:Int):Void {
-            throw new Error("No longs in Actionscript");
+            #if flash9
+            throw new Error("No 64 bit integers in Flash");
+            #elseif neko
+            throw new Error("No 64 bit integers in Neko");
+            #end
             //bitflush();
             //output.writeInt(ll);
         }
@@ -128,10 +163,18 @@ package org.amqp.util;
             bitflush();
             if (table == null) {
                 // Convenience.
+                #if flash9
                 output.writeInt(0);
+                #elseif neko
+                output.writeInt31(0);
+                #end
             } else {
                 if (encodeSize) {
+                    #if flash9
                     output.writeInt( FrameHelper.tableSize(table) );
+                    #elseif neko
+                    output.writeInt31( FrameHelper.tableSize(table) );
+                    #end
                  }
                 for (key in table.keys()) {
                     writeShortstr(key);

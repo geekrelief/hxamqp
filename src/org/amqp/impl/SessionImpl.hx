@@ -17,8 +17,6 @@
  **/
 package org.amqp.impl;
 
-    import flash.events.EventDispatcher;
-
     import org.amqp.Command;
     import org.amqp.CommandReceiver;
     import org.amqp.Connection;
@@ -40,22 +38,18 @@ package org.amqp.impl;
         var commandReceiver:CommandReceiver;
         var currentCommand:Command;
 
-        var dispatcher:EventDispatcher ;
-
         /**
         * I'm not too happy about this new RPC queue - the whole queueing
         * thing needs a complete refactoring so that RPCs are executed serially
         * but also so that different intra-class RPC order is guaranteed.
         */
         //protected var rpcQueue:PriorityQueue = new PriorityQueue(QUEUE_SIZE);
-        var rpcQueue:List<Rpc> ;
-
+        var rpcQueue:List<Rpc> ; 
         var lifecycleHandlers:Array<LifecycleEventHandler> ;
 
         public function new(con:Connection, ch:Int, receiver:CommandReceiver) {
             
             //QUEUE_SIZE = 100;
-            dispatcher = new EventDispatcher();
             rpcQueue = new List();
             lifecycleHandlers = new Array();
             connection = con;
@@ -87,7 +81,7 @@ package org.amqp.impl;
             lifecycleHandlers.push(handler);
         }
 
-        public function emitLifecyleEvent():Void {
+        public function emitLifecycleEvent():Void {
             for (i in lifecycleHandlers) {
                 i.afterOpen();
             }
@@ -104,8 +98,7 @@ package org.amqp.impl;
                     send(cmd);
                 }
                 rpcQueue.add({command:cmd,_callback:fun});
-            }
-            else {
+            } else {
                 send(cmd);
             }
         }
@@ -116,12 +109,12 @@ package org.amqp.impl;
 
         public function rpc(cmd:Command, fun:Dynamic):Void {
             var method:Method = cmd.method;
+            
             commandReceiver.addEventListener(method.getResponse(), fun);
             if (null != method.getAltResponse()) {
                 commandReceiver.addEventListener(method.getAltResponse(), fun);
             }
             sendCommand(cmd, fun);
-            //trace("RPC top half: " + cmd.method);
         }
 
         function rpcBottomHalf():Void {

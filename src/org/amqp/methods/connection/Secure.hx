@@ -24,7 +24,6 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
-    import flash.utils.ByteArray;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -32,7 +31,7 @@ package org.amqp.methods.connection;
     class Secure extends Method, implements ArgumentReader, implements ArgumentWriter {
          public var challenge(getChallenge, setChallenge) : LongString;
          public function new() {
-    	     _challenge = new ByteArrayLongString(new ByteArray());
+    	     _challenge = new ByteArrayLongString();
          }
          
          var _challenge:LongString ;

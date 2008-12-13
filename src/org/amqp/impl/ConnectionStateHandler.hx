@@ -17,7 +17,11 @@
  **/
 package org.amqp.impl;
 
+    #if flash9
     import flash.utils.ByteArray;
+    #elseif neko
+    import haxe.io.BytesOutput;
+    #end
 
     import org.amqp.BaseCommandReceiver;
     import org.amqp.Command;
@@ -57,10 +61,11 @@ package org.amqp.impl;
         var state:Int;
 
         public function new(params:ConnectionParameters){
-			super();
+            super();
             connectionParams = params;
             addEventListener(new Start(), onStart);
             addEventListener(new Tune(), onTune);
+            trace("new");
         }
 
         public override function forceClose():Void {
@@ -76,9 +81,10 @@ package org.amqp.impl;
             }
         }
 
-        public function onCloseOk(cmd:Command):Void {
-            var closeOk:CloseOk = cast( cmd.method, CloseOk);
+        public function onCloseOk(event:ProtocolEvent):Void {
+            var closeOk:CloseOk = cast( event.command.method, CloseOk);
             state = STATE_CLOSED;
+            trace("got CloseOk");
         }
 
         ////////////////////////////////////////////////////////////////
@@ -86,7 +92,9 @@ package org.amqp.impl;
         ////////////////////////////////////////////////////////////////
 
         public function onStart(event:ProtocolEvent):Void {
+            trace("onStart");
             var start:Start = cast( event.command.method, Start);
+
             // Doesn't do anything fancy with the properties from Start yet
             var startOk:StartOk = new StartOk();
             var props:Hash<Dynamic> = new Hash();
@@ -101,7 +109,11 @@ package org.amqp.impl;
             var credentials:Hash<Dynamic> = new Hash();
             credentials.set("LOGIN", LongStringHelper.asLongString(connectionParams.username));
             credentials.set("PASSWORD", LongStringHelper.asLongString(connectionParams.password));
+            #if flash9
             var buf:ByteArray = new ByteArray();
+            #elseif neko
+            var buf:BytesOutput = new BytesOutput(); buf.bigEndian = true;
+            #end
             var generator:BinaryGenerator = new BinaryGenerator(buf);
             generator.writeTable(credentials, false);
             startOk.response = new ByteArrayLongString(buf);
@@ -111,6 +123,7 @@ package org.amqp.impl;
         }
 
         public function onTune(event:ProtocolEvent):Void {
+            trace("onTune");
             var tune:Tune = cast( event.command.method, Tune);
             var tuneOk:TuneOk = new TuneOk();
             tuneOk.channelmax = tune.channelmax;
@@ -125,7 +138,9 @@ package org.amqp.impl;
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {
+            trace("onOpenOk");
             var openOk:OpenOk = cast( event.command.method, OpenOk);
+          
             // Maybe do something with the knownhosts?
             //openOk.knownhosts;
             if (state == STATE_CLOSE_REQUESTED) {
@@ -137,7 +152,7 @@ package org.amqp.impl;
             }
 
             // Call the lifecycle event handlers
-            session.emitLifecyleEvent();
+            session.emitLifecycleEvent();
         }
 
         function close():Void {
@@ -147,6 +162,7 @@ package org.amqp.impl;
             close.classid = 0;
             close.methodid = 0;
             session.rpc(new Command(close), onCloseOk);
+            trace("sent close");
         }
 
     }

@@ -24,7 +24,6 @@ package org.amqp.methods.exchange;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
-    import flash.utils.ByteArray;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!

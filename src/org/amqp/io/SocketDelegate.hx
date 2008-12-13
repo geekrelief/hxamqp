@@ -17,22 +17,79 @@
  **/
 package org.amqp.io;
 
+    #if flash9
     import flash.net.Socket;
+    #elseif neko
+    import neko.net.Socket;
+    import haxe.io.Input;
+    import haxe.io.Output;
+    #end
 
     import org.amqp.ConnectionParameters;
     import org.amqp.IODelegate;
 
+    #if neko
+    import org.amqp.events.EventDispatcher;
+    import org.amqp.events.Event;
+    import org.amqp.events.Handler;
+    #end
+
     class SocketDelegate extends Socket, implements IODelegate {
-        public function new(?host:String=null, ?port:Int=0)
-        {
+        #if flash9
+        public function new(?host:String=null, ?port:Int=0){
             super(host, port);
         }
+        #elseif neko
+        var dispatcher:EventDispatcher;
+        
+        public function new() {
+            super();
+            dispatcher = new EventDispatcher();
+        }
+        #end
 
         public function isConnected():Bool {
+            #if flash9
             return connected;
+            #elseif neko
+            try {
+                super.peer();
+            } catch (err: Dynamic) {
+                return false;
+            }
+            return true;
+            #end
         }
 
         public function open(params:ConnectionParameters):Void {
+            #if flash9
             connect(params.serverhost, params.port);
+            #elseif neko
+            connect(new neko.net.Host(params.serverhost), params.port);
+            #end
         }
+
+        #if neko
+        public function addEventListener(type:String, h:Handler):Void {
+            dispatcher.addEventListener(type, h);
+        }
+
+        public function removeEventListener(type:String, h:Handler):Void {
+            dispatcher.removeEventListener(type, h);
+        }
+
+        public function dispatchEvent(e:Event):Void {
+            dispatcher.dispatchEvent(e);
+        }
+
+        public function getInput():Input {
+            input.bigEndian = true;
+            return input;
+        }
+
+        public function getOutput():Output {
+            output.bigEndian = true;
+            return output;
+        }
+        #end
     }

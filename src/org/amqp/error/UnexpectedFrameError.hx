@@ -17,7 +17,12 @@
  **/
 package org.amqp.error;
 
-	import flash.Error;
+    #if neko
+    import org.amqp.Error;
+    #elseif flash9
+    import flash.Error;
+    #end
+
     import org.amqp.Frame;
     
     class UnexpectedFrameError extends Error {

@@ -20,10 +20,8 @@ package org.amqp.util;
     import flash.utils.IDataOutput;
     import flash.utils.ByteArray;
 
-    class IOUtils
-     {
+    class IOUtils {
         public static function copy(input:ByteArray, output:IDataOutput):Void {
-
             output.writeBytes(input);
         }
     }

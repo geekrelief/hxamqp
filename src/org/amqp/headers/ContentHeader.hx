@@ -17,20 +17,36 @@
  **/
 package org.amqp.headers;
 
+    #if flash9
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
+    #elseif neko
+    import haxe.io.Input;
+    import haxe.io.Output;
+    #end
 
-    class ContentHeader
-     {
+    class ContentHeader {
+        #if flash9
         public function readFrom(input:IDataInput):Int {
-            var weight:Int = input.readShort();
+            var weight = input.readShort();
             // TODO this is a workaround because AS doesn't support 64 bit integers
-            var bodySizeUpperBytes:Int = input.readInt();
-            var bodySize:Int = input.readInt();
+            var bodySizeUpperBytes = input.readInt();
+            var bodySize = input.readInt();
             readPropertiesFrom(new ContentHeaderPropertyReader(input));
             return bodySize;
         }
+        #elseif neko
+        public function readFrom(input:Input):Int {
+            var weight:Int = input.readUInt16();
+            // TODO this is a workaround because AS doesn't support 64 bit integers
+            var bodySizeUpperBytes:Int = input.readInt31();
+            var bodySize:Int = input.readInt31();
+            readPropertiesFrom(new ContentHeaderPropertyReader(input));
+            return bodySize;
+        }
+        #end
 
+        #if flash9
         public function writeTo(out:IDataOutput, bodySize:Int):Void{
             out.writeShort(0); // weight
 
@@ -44,13 +60,27 @@ package org.amqp.headers;
             writePropertiesTo(writer);
             writer.dumpTo(out);
         }
+        #elseif neko
+        public function writeTo(out:Output, bodySize:Int):Void{
+            out.writeUInt16(0); // weight
+
+            // This is a hack because AS doesn't support 64-bit integers
+            // The java code calls out.writeLong(bodySize)
+            // so to fake this, write out 4 zero bytes before writing the body size
+            out.writeInt31(0);
+            out.writeInt31(bodySize);
+
+            var writer:ContentHeaderPropertyWriter = new ContentHeaderPropertyWriter();
+            writePropertiesTo(writer);
+            writer.dumpTo(out);
+        }
+        #end
 
         public function getClassId():Int{
             return -1;
         }
 
         public function readPropertiesFrom(reader:ContentHeaderPropertyReader):Void{}
-
 
         public function writePropertiesTo(writer:ContentHeaderPropertyWriter):Void{}
     }

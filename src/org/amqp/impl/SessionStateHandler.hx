@@ -17,7 +17,11 @@
  **/
 package org.amqp.impl;
 
+    #if flash9
     import flash.utils.ByteArray;
+    #elseif neko
+    import haxe.io.BytesInput;
+    #end
 
     import org.amqp.BaseCommandReceiver;
     import org.amqp.BasicConsumer;
@@ -52,7 +56,7 @@ package org.amqp.impl;
 
         public function new(){
             // TODO Look into whether this is really necessary
-			super();
+            super();
             
             state = STATE_CONNECTION;
             QUEUE_SIZE = 100;
@@ -62,12 +66,12 @@ package org.amqp.impl;
         }
 
         public override function forceClose():Void{
-            trace("forceClose called");
+            // trace("forceClose called");
             transition(STATE_CLOSED);
         }
 
         public override function closeGracefully():Void{
-            trace("closeGracefully called");
+            //trace("closeGracefully called");
             transition(STATE_CLOSED);
         }
 
@@ -97,6 +101,7 @@ package org.amqp.impl;
         public function onConsumeOk(event:ProtocolEvent):Void {
             var consumeOk:ConsumeOk = cast( event.command.method, ConsumeOk);
             var consumer:BasicConsumer = pendingConsumers.pop();
+
             var tag:String = consumeOk.consumertag;
             consumers.set(tag, consumer);
             consumer.onConsumeOk(tag);
@@ -107,7 +112,7 @@ package org.amqp.impl;
             var tag:String = cancelOk.consumertag;
             var consumer:BasicConsumer = consumers.get(tag);
             if (null != consumer) {
-				consumers.remove(tag);
+                consumers.remove(tag);
                 consumer.onCancelOk(tag);
             }
         }
@@ -115,8 +120,11 @@ package org.amqp.impl;
         public function onDeliver(event:ProtocolEvent):Void {
             var deliver:Deliver = cast( event.command.method, Deliver);
             var props:BasicProperties = cast( event.command.contentHeader, BasicProperties);
+            #if flash9
             var body:ByteArray = cast( event.command.content, ByteArray);
-            body.position = 0;
+            #elseif neko
+            var body:BytesInput = new BytesInput(event.command.content.getBytes()); body.bigEndian = true;
+            #end
             var consumer:BasicConsumer = consumers.get(deliver.consumertag);
             consumer.onDeliver(deliver, props, body);
         }

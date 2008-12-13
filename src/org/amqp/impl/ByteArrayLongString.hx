@@ -17,31 +17,66 @@
  **/
 package org.amqp.impl;
 
+    #if flash9
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
+    #elseif neko
+    import haxe.io.Input;
+    import haxe.io.Bytes;
+    import haxe.io.BytesOutput;
+    import haxe.io.BytesInput;
+    #end
+
     import org.amqp.LongString;
 
     class ByteArrayLongString implements LongString {
 
+        #if flash9
         var buf:ByteArray;
+        #elseif neko
+        var buf:BytesOutput;
+        #end
 
-        public function new(b:ByteArray) {
-            this.buf = b;
+        #if flash9
+        public function new(?b:ByteArray=null) {
+            buf = b==null? new ByteArray() : b;
         }
+        #elseif neko
+        public function new(?b:BytesOutput=null) {
+            if(b == null) {
+                b = new BytesOutput(); b.bigEndian = true;
+            }
+
+            if(b.bigEndian == false)
+                throw "BytesOutput argument to ByteArrayLongString must be bigEndian";
+
+            buf = b;
+        }
+        #end
 
         public function length():Int
         {
             return buf.length;
         }
 
-        public function getBytes():ByteArray
-        {
+        #if flash9
+        public function getBytes():ByteArray {
             return buf;
         }
 
-        public function getStream():IDataInput
-        {
+        public function getStream():IDataInput {
             return buf;
         }
+        #elseif neko
+        public function getBytes():Bytes
+        {
+            return buf.getBytes();
+        }
 
+        public function getStream():Input
+        {
+            var b = new BytesInput(buf.getBytes()); b.bigEndian = true;
+            return b;
+        }
+        #end
     }

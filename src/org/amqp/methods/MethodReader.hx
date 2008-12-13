@@ -18,7 +18,6 @@
 package org.amqp.methods;
 
     import org.amqp.Method;
-    import flash.utils.IDataInput;
     import org.amqp.methods.connection.Start;
     import org.amqp.methods.connection.Secure;
     import org.amqp.methods.connection.Tune;
@@ -50,8 +49,13 @@ package org.amqp.methods;
     import org.amqp.methods.tx.Commit;
     import org.amqp.methods.tx.Rollback;
 
-	
-	import flash.Error;
+    #if flash9
+    import flash.Error;
+    import flash.utils.IDataInput;
+    #elseif neko
+    import org.amqp.Error;
+    import haxe.io.Input;
+    #end
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -59,13 +63,24 @@ package org.amqp.methods;
     class MethodReader
      {
         
+        #if flash9
         public static function readMethodFrom(input:IDataInput):Method {
+        #elseif neko
+        public static function readMethodFrom(input:Input):Method {
+        #end
+        //    trace("readMethodFrom");
 
+            #if flash9
             var classId:Int = input.readShort();
-              var methodId:Int = input.readShort();
-              var method:Method;
+            var methodId:Int = input.readShort();
+            #elseif neko
+            var classId:Int = input.readUInt16();
+            var methodId:Int = input.readUInt16();
+            #end
+              //trace("classId "+classId+ " methodId: "+methodId);
+            var method:Method;
 
-              switch (classId) {
+            switch (classId) {
                 case 10:
                     switch(methodId) {
 

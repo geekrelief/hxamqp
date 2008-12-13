@@ -24,7 +24,6 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
-    import flash.utils.ByteArray;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -37,7 +36,7 @@ package org.amqp.methods.connection;
          public function new() {
          _clientproperties = new Hash();
          _mechanism = "";
-         _response = new ByteArrayLongString(new ByteArray());
+         _response = new ByteArrayLongString();
          _locale = "";
          }
          

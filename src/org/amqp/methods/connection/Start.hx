@@ -24,7 +24,6 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
-    import flash.utils.ByteArray;
 
     /**
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
@@ -39,8 +38,8 @@ package org.amqp.methods.connection;
          _versionmajor = 0;
          _versionminor = 0;
          _serverproperties = new Hash();
-         _mechanisms = new ByteArrayLongString(new ByteArray());
-         _locales = new ByteArrayLongString(new ByteArray());
+         _mechanisms = new ByteArrayLongString();
+         _locales = new ByteArrayLongString();
          }
          
          var _versionmajor:Int ;

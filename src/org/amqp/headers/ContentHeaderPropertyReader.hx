@@ -17,20 +17,32 @@
  **/
 package org.amqp.headers;
 
+    #if flash9
     import flash.utils.IDataInput;
+    #elseif neko
+    import haxe.io.Input;
+    #end
 
     import org.amqp.LongString;
     import org.amqp.methods.MethodArgumentReader;
 
     class ContentHeaderPropertyReader
      {
+        #if flash9
         var input:IDataInput;
+        #elseif neko
+        var input:IDataInput;
+        #end
         /** Collected field flags */
         public var flags:Array<Dynamic>;
         /** Position in argument stream */
         var argumentIndex:Int;
 
+        #if flash9
         public function new(input:IDataInput){
+        #elseif neko
+        public function new(input:Input){
+        #end
             this.input = input;
             readFlags();
             this.argumentIndex = 0;
@@ -43,7 +55,11 @@ package org.amqp.headers;
         public function readFlags():Void {
             var acc:Array<Dynamic> = new Array();
             do {
-                var flagsWord:Int = input.readShort();
+                #if flash9
+                var flagsWord = input.readShort();
+                #elseif neko
+                var flagsWord = input.readUInt16();
+                #end
                 acc.push(flagsWord);
                 if ((flagsWord & 1) == 0) {
                     break;
@@ -85,13 +101,21 @@ package org.amqp.headers;
         /** Reads and returns an AMQP short integer content header field, or null if absent. */
         public function readShort():Int{
             if (!argPresent()) return 0;
+            #if flash9
             return input.readUnsignedShort();
+            #elseif neko
+            return input.readUInt16();
+            #end
         }
 
         /** Reads and returns an AMQP integer content header field, or null if absent. */
         public function readLong():Int{
             if (!argPresent()) return 0;
+            #if flash9
             return input.readInt();
+            #elseif neko
+            return input.readInt31();
+            #end
         }
 
         /** Reads and returns an AMQP long integer content header field, or null if absent. */
@@ -114,7 +138,11 @@ package org.amqp.headers;
         /** Reads and returns an AMQP octet content header field, or null if absent. */
         public function readOctet():Int{
             if (!argPresent()) return 0;
+            #if flash9
             return input.readUnsignedByte();
+            #elseif neko
+            return input.readByte();
+            #end
         }
 
         /** Reads and returns an AMQP timestamp content header field, or null if absent. */
