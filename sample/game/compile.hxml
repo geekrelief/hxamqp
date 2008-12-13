@@ -1,0 +1,4 @@
+-neko gs.n
+-main GS
+-cp ../../src
+-cmd neko gs.n
