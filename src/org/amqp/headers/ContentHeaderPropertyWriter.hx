@@ -279,7 +279,7 @@ package org.amqp.headers;
         public function _writeTimestamp(x:Date):Void {
             #if flash9
             outBytes.writeInt( Math.floor(x.getTime() / 1000));
-            #else neko
+            #elseif neko
             outBytes.writeInt31( Math.floor(x.getTime() / 1000));
             #end
         }

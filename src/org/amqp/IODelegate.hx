@@ -35,9 +35,10 @@ package org.amqp;
         function open(params:ConnectionParameters):Void;
         function isConnected():Bool;
         function close():Void;
-        #if neko
+        #if flash9
+        function flush():Void;
+        #elseif neko
         function getInput():Input;
         function getOutput():Output;
         #end
-        function flush():Void;
     }

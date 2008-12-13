@@ -256,10 +256,11 @@ package org.amqp;
             if (delegate.isConnected()) {
                 #if flash9
                 frame.writeTo(delegate);
+                delegate.flush();
                 #elseif neko
                 frame.writeTo(delegate.getOutput());
+                delegate.getOutput().flush();
                 #end
-                delegate.flush();
             } else {
                 throw new Error("Connection main loop not running");
             }

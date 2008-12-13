@@ -31,7 +31,7 @@ package org.amqp.headers;
         #if flash9
         var input:IDataInput;
         #elseif neko
-        var input:IDataInput;
+        var input:Input;
         #end
         /** Collected field flags */
         public var flags:Array<Dynamic>;

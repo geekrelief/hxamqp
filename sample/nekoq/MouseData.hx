@@ -38,6 +38,7 @@ package nekoq;
 
         var consumerTag:String;
         var t:Thread;
+        var mt:Thread;
         var mu:Mutex;
 
         public function new()
@@ -51,9 +52,13 @@ package nekoq;
         public function run():Void {
             connection.start();
             connection.baseSession.registerLifecycleHandler(this);
+            mt =  Thread.current();
             trace("create connection thread");
-            t = neko.vm.Thread.create(callback(connection.onSocketData, Thread.current()));
-
+            t = neko.vm.Thread.create(callback(connection.onSocketData, mt));
+            Thread.readMessage(true);
+            runLoop();
+            trace("sending close message");
+            t.sendMessage(true);
             trace("block till done");
             Thread.readMessage(true);
             trace("run done");
@@ -77,14 +82,8 @@ package nekoq;
             }
         }
 
-        public function _runLoop():Void {
-            runLoop();
-            trace("sending close message");
-            t.sendMessage(true); // close socket thread
-        }
-
         public function afterOpen():Void {
-            openChannel(runPublishTest);
+            openChannel(setupConsumer);
         }
 
         override function openChannel(_callback:Dynamic):Void {
@@ -107,8 +106,8 @@ package nekoq;
             sessionHandler2.rpc(new Command(queue), _callback);
         }
 
-        public function runPublishTest(event:ProtocolEvent):Void {
-			trace("runPublishTest");
+        public function setupConsumer(event:ProtocolEvent):Void {
+			trace("setupConsumer");
             var consume:Consume = new Consume();
             consume.queue = q;
             consume.noack = true;
@@ -124,7 +123,7 @@ package nekoq;
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
             trace("onConsumeOk: " + tag);
-            _runLoop();
+            mt.sendMessage("start");
         }
 
         public function onCancelOk(tag:String):Void {
