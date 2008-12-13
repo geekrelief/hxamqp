@@ -58,7 +58,7 @@ package nekoq;
             Thread.readMessage(true);
             runLoop();
             trace("sending close message");
-            t.sendMessage(true);
+            t.sendMessage("close");
             trace("block till done");
             Thread.readMessage(true);
             trace("run done");
