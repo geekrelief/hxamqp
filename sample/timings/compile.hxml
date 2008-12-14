@@ -8,3 +8,4 @@
 --next 
 -neko ts.n
 -main TS
+-cp ../../src
