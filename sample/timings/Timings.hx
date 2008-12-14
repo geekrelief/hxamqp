@@ -134,11 +134,12 @@
  //       }
 
         public function onConsumeOk(tag:String):Void {
+            try{
             consumerTag = tag;
             trace("onConsumeOk");
             beginTime = startTime = Lib.getTimer();
             publish(new ByteArray());
-
+            } catch (err:Dynamic) { trace(err); }
         }
 
         public function onCancelOk(tag:String):Void {
@@ -147,6 +148,7 @@
         public function onDeliver(method:Deliver,
                                   properties:BasicProperties,
                                   body:ByteArray):Void {
+            try{
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
             if(trun < 10) {
@@ -160,10 +162,13 @@
                     }
                     trace("run: "+trun+" samples: "+timings.length+" avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
                     ++trun;
-                    timings = tpool[trun];
-                    beginTime = startTime = Lib.getTimer();
-                    publish(new ByteArray());
+                    if(trun < 10) {
+                        timings = tpool[trun];
+                        beginTime = startTime = Lib.getTimer();
+                        publish(new ByteArray());
+                    }
                 }
             }
+            } catch (err:Dynamic) { trace(err); }
         }
     }
