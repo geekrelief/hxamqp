@@ -42,8 +42,8 @@
         var messages:Deque<BytesInput>;
 
         public static function main() {
-            var g = new GS();
-            g.run();
+            var s = new TS();
+            s.run();
         }
 
         public function new()
@@ -102,16 +102,16 @@
             // implement this
             trace("process in main thread");
             var msg:BytesInput;
-
+            var count = 0;
             while(true) {
-                neko.Sys.sleep(0.01);
-                trace("processing main thread "+count);
-                if((msg = messages.pop(false)) != null){
-                    trace("got ping");
-                    var b = new BytesOutput();
-                    b.bigEndian = true;
-                    publish(b.getBytes());
-                }
+//                neko.Sys.sleep(0.01);
+                msg = messages.pop(true);
+                trace("got ping "+count+" @"+neko.Sys.time());
+                var b = new BytesOutput();
+                b.bigEndian = true;
+                publish(b.getBytes());
+                trace("bounce back @"+neko.Sys.time());
+                count++;
             }
         }
 

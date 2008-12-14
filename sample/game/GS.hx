@@ -71,7 +71,6 @@
         }
 
         public function publish(data:Bytes):Void {
-            trace("publish");
             var publish:Publish = new Publish();
             publish.exchange = ax;
             publish.routingkey = routing_key;
