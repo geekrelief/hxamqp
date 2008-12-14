@@ -71,7 +71,7 @@
         }
 
         public function publish(data:Bytes):Void {
-            trace("publish");
+            //trace("publish");
             var publish:Publish = new Publish();
             publish.exchange = ax;
             publish.routingkey = routing_key;
@@ -103,13 +103,13 @@
             trace("process in main thread");
             var msg:BytesInput;
             var count = 0;
+            var b = new BytesOutput();
+            b.bigEndian = true;
+            var by = b.getBytes();
             while(true) {
-//                neko.Sys.sleep(0.01);
                 msg = messages.pop(true);
                 trace("got ping "+count+" @"+neko.Sys.time());
-                var b = new BytesOutput();
-                b.bigEndian = true;
-                publish(b.getBytes());
+                publish(by);
                 trace("bounce back @"+neko.Sys.time());
                 count++;
             }
@@ -121,7 +121,7 @@
 
         function openChannel(_callback:Dynamic):Void {
             var whoCares:Dynamic = function(event:ProtocolEvent):Void{
-                trace(event);
+                //trace(event);
             };
 
             sessionHandler = sessionManager.create();
@@ -140,7 +140,7 @@
         }
 
         public function setupConsumer(event:ProtocolEvent):Void {
-			trace("setupConsumer");
+			//trace("setupConsumer");
             var consume:Consume = new Consume();
             consume.queue = q;
             consume.noack = true;
@@ -155,7 +155,7 @@
 
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
-            trace("onConsumeOk: " + tag);
+            //trace("onConsumeOk: " + tag);
             mt.sendMessage("start");
         }
 
