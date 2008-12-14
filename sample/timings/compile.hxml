@@ -1,0 +1,10 @@
+-swf timings.swf
+-main Timings
+-swf-version 10
+-swf-header 800:600:60:FFFFFF
+-D network-sandbox
+-cp ../../src
+
+--next 
+-neko ts.n
+-main TS
