@@ -186,7 +186,7 @@ package org.amqp;
         public function onSocketData(event:Event):Void {
             try{ while (delegate.isConnected() && delegate.bytesAvailable > 0) {
                 var frame:Frame = parseFrame(delegate);
-                maybeSendHeartbeat();
+                //maybeSendHeartbeat();
                 if (frame != null) {
                     // missedHeartbeats = 0;
                         if (frame.type == AMQP.FRAME_HEARTBEAT) {

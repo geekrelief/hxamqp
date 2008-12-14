@@ -46,7 +46,9 @@
         var beginTime:Int;
         var startTime:Int;
         var endTime:Int;
+        var tpool:Vector<Vector<Float>>;
         var timings:Vector<Float>;
+        var trun:Int;
 
         static function main() {
     		var a = new Timings();
@@ -55,6 +57,7 @@
 
         public function new()
         {
+            trun = 0;
             ax = "";
 			q = "q";
 			q2 = "q2";
@@ -63,7 +66,12 @@
             connection = new Connection(buildConnectionParams());
             sessionManager = connection.sessionManager;
 
-            timings = new Vector();
+            tpool = new Vector();
+            for(i in 0...10) {
+                tpool[i] = new Vector();
+            }
+
+            timings = tpool[trun];
         }
 
         public function buildConnectionParams():ConnectionParameters {
@@ -126,11 +134,12 @@
  //       }
 
         public function onConsumeOk(tag:String):Void {
+            try{
             consumerTag = tag;
             trace("onConsumeOk");
             beginTime = startTime = Lib.getTimer();
             publish(new ByteArray());
-
+            } catch (err:Dynamic) { trace(err); }
         }
 
         public function onCancelOk(tag:String):Void {
@@ -139,17 +148,27 @@
         public function onDeliver(method:Deliver,
                                   properties:BasicProperties,
                                   body:ByteArray):Void {
+            try{
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
-            if(endTime < 10000) {
-                startTime = endTime;
-                publish(new ByteArray());
-            } else {
-                var sum:Float = 0;
-                for(t in timings) {
-                    sum += t;
+            if(trun < 10) {
+                if(endTime < 10000+beginTime) {
+                    startTime = Lib.getTimer();
+                    publish(new ByteArray());
+                } else {
+                    var sum:Float = 0;
+                    for(t in timings) {
+                        sum += t;
+                    }
+                    trace("run: "+trun+" samples: "+timings.length+" avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
+                    ++trun;
+                    if(trun < 10) {
+                        timings = tpool[trun];
+                        beginTime = startTime = Lib.getTimer();
+                        publish(new ByteArray());
+                    }
                 }
-                trace("samples: "+timings.length+" avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
             }
+            } catch (err:Dynamic) { trace(err); }
         }
     }
