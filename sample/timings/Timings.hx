@@ -149,7 +149,7 @@
                 for(t in timings) {
                     sum += t;
                 }
-                trace("avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
+                trace("samples: "+timings.length+"avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
             }
         }
     }
