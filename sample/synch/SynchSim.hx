@@ -27,6 +27,11 @@
     typedef Client = String
     typedef Tag = String
     typedef Queue = String
+    typedef Delivery = { var method:Deliver; var properties:BasicProperties; var body:BytesInput; }
+
+    enum Sams {
+        JoinRequest(iq:Queue);
+    }
 
     class SynchSim implements LifecycleEventHandler {
 
@@ -44,8 +49,10 @@
         var gct:Tag; 
         public var ct:Thread;
         public var mt:Thread;
-        public var ms:Deque<Dynamic>;
-        var ams:Deque<Dynamic>;
+        public var at:Thread;
+
+        var ms:Deque<Delivery>;
+        var ams:Deque<Delivery>;
 
         var appName:String;
         var oqcount:Int;
@@ -72,6 +79,7 @@
             ms = new Deque();
             ams = new Deque();
 
+
             appName = "SynchSim-";
             oqcount = 0;
 
@@ -89,17 +97,17 @@
         }
 
         public function publish(q:Queue, data:Bytes):Void {
-            trace("ready publish "); 
             var p:Publish = new Publish();
             p.exchange = xdirect;
             p.routingkey = q;
             var b:BasicProperties = Properties.getBasicProperties();
             var cmd:Command = new Command(p, b, data);
+          
             var is = iss.get(q);
-            if(is != null)
+            if(is != null) {
                 is.dispatch(cmd);
-
-            trace("publish with "+is);
+                //trace("published to "+q);
+            }
         }
 
 
@@ -109,8 +117,8 @@
             mt =  Thread.current();
             trace("create connection thread");
             ct = neko.vm.Thread.create(callback(co.onSocketData, mt));
+        //    at = neko.vm.Thread.create(runApp);
             Thread.readMessage(true); // wait for a start message after onConsume
-
             runLoop();
 
             trace("sending close message");
@@ -123,27 +131,74 @@
         public function runLoop():Void {
             // implement this
             trace("process in main thread");
+            var m:Delivery;
+            var am:Delivery;
             while(true) {
-                trace("---------waiting for message------");
-                var msg:Dynamic = ms.pop(true);
-                trace("got message "+msg.properties);
-                var body = msg.body;
-                var t:Int = body.readByte();
-                trace("message type: "+t);
-                switch(t) {
-                    case 10:
-                        var len = body.readByte();
-                        var iq = body.readString(len);
-                        trace("!! in main got in queue : "+len+" "+iq);
-                        var is = sm.create();
-                        iss.set(iq, is);
-                        var o = new Open();
-                        var q = new Declare();
-                        q.queue = iq;
-                        is.rpc(new Command(o), dh);
-                        is.rpc(new Command(q), onDeclareOkIQ);
-                    default:
-                }
+                m = ms.pop(false);
+                processMsg(m);
+                am = ams.pop(false);
+                updateLoop(am);
+            }
+
+        }
+
+        public function processMsg(msg:Delivery):Void {
+            if(msg == null) {
+                return;
+            }              
+
+            var body = msg.body;
+            var t:Int = body.readByte();
+            //trace("got message "+t); 
+            switch(t) {
+                case 10:
+                    joinApp(body);
+                default:
+            }
+        }
+/*
+        public function runApp():Void {
+            var am:Delivery;
+            while(true) {
+                am = ams.pop(false);
+                updateLoop(am);
+            }
+        }
+        */
+
+        public function joinApp(body:BytesInput):Void {
+            var len = body.readByte();
+            var iq = body.readString(len);
+            var alen = body.readByte();
+            var appName = body.readString(alen);
+
+            trace("client "+iq+" join request for "+appName);
+            var is = sm.create();
+            iss.set(iq, is);
+            var o = new Open();
+            var q = new Declare();
+            q.queue = iq;
+            is.rpc(new Command(o), dh);
+            is.rpc(new Command(q), createOq);
+        }
+
+        public function updateLoop(msg:Delivery):Void {
+            if(msg == null) {
+                return;
+            }              
+
+            var body = msg.body;
+            var t:Int = body.readByte();
+            //trace("got app message "+t); 
+            switch(t) {
+                case 20:
+                    var m = new BytesOutput();
+                    m.bigEndian = true;
+                    m.writeByte(21);
+                    m.writeDouble(neko.Sys.time());
+                    //trace("pong @ "+msg.properties.replyto);
+                    publish(msg.properties.replyto, m.getBytes());
+                default:
             }
         }
 
@@ -162,67 +217,61 @@
             var q = new Declare();
             q.queue = giq;
             gis.rpc(new Command(o), dh);
-            gis.rpc(new Command(q), onDeclareOkGatewayI);
+            gis.rpc(new Command(q), consumeGateway);
         }
 
-        public function onDeclareOkGatewayI(e:ProtocolEvent):Void {
+        public function consumeGateway(e:ProtocolEvent):Void {
             var c:Consume = new Consume();
             c.queue = giq;
             c.noack = true;
-            gis.register(c, new Consumer(onDeliver, onConsumeOkGatewayI));
+            gis.register(c, new Consumer(onDeliver, startMain));
         }
 
-        public function onConsumeOkGatewayI(tag:Queue):Void {
+        public function startMain(tag:Queue):Void {
             gct = tag;
             mt.sendMessage("start");
         }
 
-        public function onDeclareOkIQ(e:ProtocolEvent):Void {
+        public function createOq(e:ProtocolEvent):Void {
             var dk = cast(e.command.method, DeclareOk);
+
             // create the outq for consumption
             var os = sm.create();
             var o = new Open();
             var d = new Declare();
             d.queue = appName + oqcount;
-            trace("oq "+d.queue);
+            
             oss.set(dk.queue, os);
             oqcount++;
             os.rpc(new Command(o), dh);
-            os.rpc(new Command(d), getOnDeclareOkOQ(os, dk.queue, d.queue));
+            os.rpc(new Command(d), getOqConsumer(os, dk.queue, d.queue));
         }
 
-        public function getOnDeclareOkOQ(os:SessionStateHandler, _iq:Queue, _oq:Queue) {
-            trace("getOnDeclareOkQ ");
+        public function getOqConsumer(os:SessionStateHandler, iq:Queue, oq:Queue) {
+            //trace("getOnDeclareOkQ ");
             var t = this;
             return function (e:ProtocolEvent):Void {
-            trace("setup oq consumer "+_oq);
+            //trace("setup oq consumer "+oq);
                 var dk = cast(e.command.method, DeclareOk);
                 var c:Consume = new Consume();
-                c.queue = _oq;
+                c.queue = oq;
                 c.noack = true;
-                os.register(c, new Consumer(t.onDeliverToApp, t.getOnConsumeOkOQ(_iq, _oq)));
+                os.register(c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq)));
                 };
         }
 
 
-        public function getOnConsumeOkOQ(_iq:Queue, _oq:Queue): Tag -> Void {
-            trace("get consume ok oq");
-
+        public function getOqSender(iq:Queue, oq:Queue): Tag -> Void {
             var t = this;
             return function(tag:Tag):Void { 
-            // send message to app thread to publish to iq.
-                    trace("sending oq:"+ _oq + " to "+ _iq);
-                    if(Thread.current() == t.mt) {
-                        trace("in main thread");
-                    } else {
-                        trace("in conn thread");
-                    }
+                    trace("sending oq:"+ oq + " to "+ iq);
 
                     var m = new BytesOutput();
+                    m.bigEndian = true;
                     m.writeByte(11);
-                    m.writeByte(_oq.length);
-                    m.writeString(_oq);
-                    t.publish(_iq, m.getBytes());
+                    m.writeByte(oq.length);
+                    m.writeString(oq);
+                    t.publish(iq, m.getBytes());
                 };
         }
 
@@ -238,12 +287,12 @@
         }
 
         public function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
-            // this is called by the socket thread
-            ms.add({method: method, properties: properties, body:body});
+            var d:Delivery = {method: method, properties: properties, body:body};
+            ms.add(d);
         }
 
         public function onDeliverToApp(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
-            // this is called by the socket thread
-            ams.add({method: method, properties: properties, body:body});
+            var d:Delivery = {method: method, properties: properties, body:body};
+            ams.add(d);
         }
     }

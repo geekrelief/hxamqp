@@ -6,6 +6,7 @@
     import flash.Lib;
 
 	import flash.events.EventDispatcher;
+    import flash.events.TimerEvent;
 
     import org.amqp.Command;
     import org.amqp.Connection;
@@ -49,13 +50,15 @@
         var consumerTag:String;
 
         // use for sim events
-        var ssTime:Int;     // start
-        var sTime:Int;      // current
+        var serverTime:Float;
 
         // used for pings
+        var pinger:Timer;
         var startTime:Int;
         var endTime:Int;
         var timings:Vector<Float>;
+
+        public static var appName:String = "SynchSim";
 
         static function main() {
             flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
@@ -81,6 +84,7 @@
             params.password = "guest";
             params.vhostpath = "/";
             params.serverhost = "127.0.0.1";
+            //params.serverhost = "10.0.0.17";
             return params;
         }
 
@@ -89,16 +93,19 @@
             p.exchange = xd;
             p.routingkey = giq;
             var b:BasicProperties = Properties.getBasicProperties();
+            b.replyto = iq;
             var c:Command = new Command(p, b, data);
             gis.dispatch(c);
         }
 
 
         public function publish(data:ByteArray):Void {
+            //trace("publishing to "+oq);
             var p:Publish = new Publish();
             p.exchange = xd;
             p.routingkey = oq;
             var b:BasicProperties = Properties.getBasicProperties();
+            b.replyto = iq;
             var c:Command = new Command(p, b, data);
             os.dispatch(c);
         }
@@ -113,7 +120,7 @@
         }
 
         public function dh(e:ProtocolEvent):Void {
-            trace(e);
+            //trace(e);
         }
 
         public function openICh():Void {
@@ -140,29 +147,39 @@
         }
 
         public function onIDeliver(method:Deliver, properties:BasicProperties, m:ByteArray):Void {
+            //trace("onIDeliver");
             var t = m.readUnsignedByte();
-            trace("message type: "+t);
+            //trace("message type: "+t);
+           
             switch(t) {
                 case 11: // out q in message
                     var len = m.readUnsignedByte();
-                    oq = m.readUTF();
+                    oq = m.readUTFBytes(len);
                     trace("got oq: "+oq);
                     os = sm.create();
                     var o = new Open();
                     var d = new Declare();
+                    d.queue = oq;
                     os.rpc(new Command(o), dh);
-                    os.rpc(new Command(d), function(e:ProtocolEvent):Void{ trace("app can write to out q now");});
+                    os.rpc(new Command(d), onOQOk);
+                case 21:
+                    // ping response
+                    pong(m);
+                case 31:
+                    // response to app request
+                case 100:
+                    // server command
                 default:
             }
         }
 
         public function onIConsumeOk(ct:String) {
-            trace("consumer tag "+ct);
+            //trace("consumer tag "+ct);
             connectGateway();
         }
          
         public function connectGateway():Void {
-            trace("connect to gateway, in");
+            //trace("connect to gateway, in");
             gis = sm.create();
             var o = new Open();
             var d = new Declare();
@@ -185,13 +202,15 @@
         }
 */
         public function onGatewayWriteOk(e:ProtocolEvent):Void {
-            trace("connected to gateway in q");
+            //trace("connected to gateway in q");
             
             var m = new ByteArray();
             m.writeByte(10);  // get out q
             m.writeByte(iq.length);
-            m.writeUTF(iq);
-            trace("sending iq, expecting oq");
+            m.writeUTFBytes(iq);
+            m.writeByte(appName.length);
+            m.writeUTFBytes(appName);
+            //trace("sending iq, expecting oq");
             publishGateway(m);
 
             /*
@@ -202,100 +221,39 @@
             grs.rpc(new Command(o), dh);
             grs.rpc(new Command(d), onGatewayDeclareReadOk);
             */
-
-
         }
 
 
-        /*
-        public function openChannel(_callback:Dynamic):Void {
-            var onOpen = function(event:ProtocolEvent):Void {
-                trace("gateway open");
-                te(event);
-            }
-
-            // create reply queue
-
-             // create sesson gateway
-            sessiong = sm.create();
-            var open:Open = new Open();
-            var queue:org.amqp.methods.queue.Declare = new org.amqp.methods.queue.Declare();
-            queue.queue = gq;
-            sessionHandler.rpc(new Command(open), onOpen);
-            sessionHandler.rpc(new Command(queue), onQDeclare);
-
-
-            sessionHandler2 = sm.create();
-            open = new Open();
-            queue = new org.amqp.methods.queue.Declare();
-            queue.queue = q2;
-            sessionHandler2.rpc(new Command(open), onOpen2);
-            sessionHandler2.rpc(new Command(queue), _callback);
-        }
-        */
-
-        /*
-        public function setupConsumer(event:ProtocolEvent):Void {
-            var consume:Consume = new Consume();
-            consume.queue = q2;
-            consume.noack = true;
-            sessionHandler2.register(consume, this);
-        }
-        */
 //        public function cancel(event:TimerEvent):Void {
    //         log("Initiating cancellation "+consumerTag);
             //assertNotNull(consumerTag);
     //        sessionHandler.unregister(consumerTag);
  //       }
 
-        /*
-        public function onConsumeOk(tag:String):Void {
-            consumerTag = tag;
-            trace("onConsumeOk");
-            beginTime = startTime = Lib.getTimer();
-            publish(new ByteArray());
-            
-            //trace("measure cost of publish"); // empty publish is very cheap 585 - 900 ms for 10000 publishes
-            //beginTime = startTime = Lib.getTimer();
-            //var samples = 10000;
-            //for(i in 0...samples) {
-            //    publish(new ByteArray());
-            //}
-            //endTime = Lib.getTimer();
-            //var length = endTime-beginTime;
-            //trace(" total time: "+length+" avg time (ms): "+(length / samples));
-            
+        public function onOQOk(e:ProtocolEvent):Void{ 
+            var d = cast(e.command.method, DeclareOk);
+            //trace("app can write to out q "+d.queue+" == "+oq);
+            setupPinger();
         }
 
-        public function onCancelOk(tag:String):Void {
+        public function setupPinger():Void{
+            //trace("setupPinger");
+            pinger = new Timer(3000);
+            pinger.addEventListener(TimerEvent.TIMER, ping);
+            pinger.start();
         }
 
-        public function onDeliver(method:Deliver,
-                                  properties:BasicProperties,
-                                  body:ByteArray):Void {
-           
+        public function ping(e:TimerEvent):Void {
+            var m:ByteArray = new ByteArray();
+            m.writeByte(20);
+            //trace(iq+"pinging server ");
+            startTime = Lib.getTimer();
+            publish(m);
+        }
+
+        public function pong(m:ByteArray):Void {
+            serverTime = m.readDouble(); 
             endTime = Lib.getTimer();
-            timings.push(endTime - startTime);
-            if(trun < maxRuns) {
-                if(endTime < 5000+beginTime) {
-                    startTime = Lib.getTimer();
-                    publish(new ByteArray());
-                } else {
-                    var sum:Float = 0;
-                    for(t in timings) {
-                        sum += t;
-                    }
-                    trace("run: "+trun+" samples: "+timings.length+" avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
-                    ++trun;
-                    if(trun < maxRuns) {
-                        timings = tpool[trun];
-                        beginTime = startTime = Lib.getTimer();
-                        publish(new ByteArray());
-                    }
-                }
-            }
-          
-            //trace(++dcount);
+            trace(iq+" pong time:("+serverTime+") trip time "+(endTime - startTime));
         }
-        */
     }

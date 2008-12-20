@@ -39,6 +39,7 @@ package org.amqp.impl;
     import org.amqp.methods.basic.Consume;
     import org.amqp.methods.basic.ConsumeOk;
     import org.amqp.methods.basic.Deliver;
+    import org.amqp.methods.basic.Return;
     import org.amqp.methods.channel.CloseOk;
     import org.amqp.methods.channel.OpenOk;
 
@@ -63,6 +64,7 @@ package org.amqp.impl;
             pendingConsumers = new List();
             consumers = new Hash();
             addEventListener(new Deliver(), onDeliver);
+            addEventListener(new Return(), onReturn);
         }
 
         public override function forceClose():Void{
@@ -122,11 +124,17 @@ package org.amqp.impl;
             var props:BasicProperties = cast( event.command.contentHeader, BasicProperties);
             #if flash9
             var body:ByteArray = cast( event.command.content, ByteArray);
+            body.position = 0;
             #elseif neko
             var body:BytesInput = new BytesInput(event.command.content.getBytes()); body.bigEndian = true;
             #end
             var consumer:BasicConsumer = consumers.get(deliver.consumertag);
             consumer.onDeliver(deliver, props, body);
+        }
+
+        public function onReturn(e:ProtocolEvent):Void {
+            var ret = cast(e.command.method, Return);
+            ret.dump();
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {

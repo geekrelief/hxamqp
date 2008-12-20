@@ -211,11 +211,17 @@ package org.amqp;
         #elseif neko
         // neko does not have asynch i/o, instead spawn a thread for onSocketData, and send Thread messages
         public function onSocketData(_mainThread:Thread):Void {
+            var e = [];
+            var s = cast(delegate, neko.net.Socket);
+            var r = [s];
             try{ while (true) {
-                var select = neko.net.Socket.select([cast(delegate, neko.net.Socket)], [], [], 0.01);
+            
+                var select = neko.net.Socket.select([cast(delegate, neko.net.Socket)], [], [], 0.0001);
                 if(neko.vm.Thread.readMessage(false) == "close") { close();}
                 if(select.read.length == 0) continue;
 
+                //s.waitForRead();
+           
                 var frame:Frame = parseFrame(delegate);
                 maybeSendHeartbeat();
                 if (frame != null) {
