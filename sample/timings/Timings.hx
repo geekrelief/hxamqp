@@ -49,15 +49,20 @@
         var tpool:Vector<Vector<Float>>;
         var timings:Vector<Float>;
         var trun:Int;
+        var maxRuns:Int;
+        var dcount:Int;
 
         static function main() {
+            flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
     		var a = new Timings();
 			a.run();
 		}
 
         public function new()
         {
+            dcount = 0;
             trun = 0;
+            maxRuns = 50;
             ax = "";
 			q = "q";
 			q2 = "q2";
@@ -67,7 +72,7 @@
             sessionManager = connection.sessionManager;
 
             tpool = new Vector();
-            for(i in 0...10) {
+            for(i in 0...maxRuns) {
                 tpool[i] = new Vector();
             }
 
@@ -79,7 +84,8 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.17";
+            //params.serverhost = "10.0.0.17";
+            params.serverhost = "127.0.0.1";
             return params;
         }
 
@@ -134,12 +140,22 @@
  //       }
 
         public function onConsumeOk(tag:String):Void {
-            try{
             consumerTag = tag;
             trace("onConsumeOk");
             beginTime = startTime = Lib.getTimer();
             publish(new ByteArray());
-            } catch (err:Dynamic) { trace(err); }
+
+            /*
+            trace("measure cost of publish"); // empty publish is very cheap 585 - 900 ms for 10000 publishes
+            beginTime = startTime = Lib.getTimer();
+            var samples = 10000;
+            for(i in 0...samples) {
+                publish(new ByteArray());
+            }
+            endTime = Lib.getTimer();
+            var length = endTime-beginTime;
+            trace(" total time: "+length+" avg time (ms): "+(length / samples));
+            */
         }
 
         public function onCancelOk(tag:String):Void {
@@ -148,11 +164,11 @@
         public function onDeliver(method:Deliver,
                                   properties:BasicProperties,
                                   body:ByteArray):Void {
-            try{
+           
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
-            if(trun < 10) {
-                if(endTime < 10000+beginTime) {
+            if(trun < maxRuns) {
+                if(endTime < 5000+beginTime) {
                     startTime = Lib.getTimer();
                     publish(new ByteArray());
                 } else {
@@ -162,13 +178,14 @@
                     }
                     trace("run: "+trun+" samples: "+timings.length+" avg roundtrip (ms): "+(sum / timings.length)+" sample time (secs): "+((endTime-beginTime)/1000.0));
                     ++trun;
-                    if(trun < 10) {
+                    if(trun < maxRuns) {
                         timings = tpool[trun];
                         beginTime = startTime = Lib.getTimer();
                         publish(new ByteArray());
                     }
                 }
             }
-            } catch (err:Dynamic) { trace(err); }
+          
+            //trace(++dcount);
         }
     }

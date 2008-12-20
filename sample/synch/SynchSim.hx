@@ -2,6 +2,7 @@
     import haxe.io.Bytes;
 
     import org.amqp.Connection;
+    import org.amqp.SMessage;
     import org.amqp.ConnectionParameters;
     import org.amqp.SessionManager;
     import org.amqp.headers.BasicProperties;
@@ -28,10 +29,6 @@
     typedef Tag = String
     typedef Queue = String
     typedef Delivery = { var method:Deliver; var properties:BasicProperties; var body:BytesInput; }
-
-    enum Sams {
-        JoinRequest(iq:Queue);
-    }
 
     class SynchSim implements LifecycleEventHandler {
 
@@ -102,10 +99,10 @@
             p.routingkey = q;
             var b:BasicProperties = Properties.getBasicProperties();
             var cmd:Command = new Command(p, b, data);
-          
             var is = iss.get(q);
             if(is != null) {
-                is.dispatch(cmd);
+                // is.dispatch(cmd);
+                ct.sendMessage(SDispatch(is, cmd));
                 //trace("published to "+q);
             }
         }
@@ -116,13 +113,13 @@
             co.baseSession.registerLifecycleHandler(this);
             mt =  Thread.current();
             trace("create connection thread");
-            ct = neko.vm.Thread.create(callback(co.onSocketData, mt));
+            ct = neko.vm.Thread.create(callback(co.socketLoop, mt));
         //    at = neko.vm.Thread.create(runApp);
             Thread.readMessage(true); // wait for a start message after onConsume
             runLoop();
 
             trace("sending close message");
-            ct.sendMessage("close");
+            ct.sendMessage(SClose);
             trace("block till closeOk done");
             Thread.readMessage(true);
             trace("run done");
@@ -149,7 +146,7 @@
 
             var body = msg.body;
             var t:Int = body.readByte();
-            //trace("got message "+t); 
+            trace("got message "+t); 
             switch(t) {
                 case 10:
                     joinApp(body);
@@ -178,8 +175,10 @@
             var o = new Open();
             var q = new Declare();
             q.queue = iq;
-            is.rpc(new Command(o), dh);
-            is.rpc(new Command(q), createOq);
+            ct.sendMessage(SRpc(is, new Command(o), dh));
+            ct.sendMessage(SRpc(is, new Command(q), createOq));
+            //is.rpc(new Command(o), dh);
+            //is.rpc(new Command(q), createOq);
         }
 
         public function updateLoop(msg:Delivery):Void {
@@ -216,15 +215,20 @@
             var o = new Open();
             var q = new Declare();
             q.queue = giq;
+            ct.sendMessage(SRpc(gis, new Command(o), dh));
+            ct.sendMessage(SRpc(gis, new Command(q), consumeGateway));
+            /*
             gis.rpc(new Command(o), dh);
             gis.rpc(new Command(q), consumeGateway);
+            */
         }
 
         public function consumeGateway(e:ProtocolEvent):Void {
             var c:Consume = new Consume();
             c.queue = giq;
             c.noack = true;
-            gis.register(c, new Consumer(onDeliver, startMain));
+            ct.sendMessage(SRegister(gis, c, new Consumer(onDeliver, startMain)));
+            //gis.register(c, new Consumer(onDeliver, startMain));
         }
 
         public function startMain(tag:Queue):Void {
@@ -243,8 +247,12 @@
             
             oss.set(dk.queue, os);
             oqcount++;
+            ct.sendMessage(SRpc(os, new Command(o), dh));
+            ct.sendMessage(SRpc(os, new Command(d), getOqConsumer(os, dk.queue, d.queue)));
+            /*
             os.rpc(new Command(o), dh);
             os.rpc(new Command(d), getOqConsumer(os, dk.queue, d.queue));
+            */
         }
 
         public function getOqConsumer(os:SessionStateHandler, iq:Queue, oq:Queue) {
@@ -256,7 +264,8 @@
                 var c:Consume = new Consume();
                 c.queue = oq;
                 c.noack = true;
-                os.register(c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq)));
+                t.ct.sendMessage(SRegister(os, c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq))));
+                //os.register(c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq)));
                 };
         }
 

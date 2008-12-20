@@ -1,7 +1,15 @@
 -swf timings.swf
 -main Timings
 -swf-version 10
--swf-header 800:600:30:FFFFFF
+-swf-header 600:250:30:FFFFFF
+-D network-sandbox
+-cp ../../src
+
+--next
+-swf timings2.swf
+-main Timings2
+-swf-version 10
+-swf-header 600:250:30:FFFFFF
 -D network-sandbox
 -cp ../../src
 

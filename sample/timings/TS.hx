@@ -2,6 +2,7 @@
     import haxe.io.Bytes;
 
     import org.amqp.Connection;
+    import org.amqp.SMessage;
     import org.amqp.ConnectionParameters;
     import org.amqp.SessionManager;
     import org.amqp.headers.BasicProperties;
@@ -65,7 +66,8 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.17";
+            //params.serverhost = "10.0.0.17";
+            params.serverhost = "127.0.0.1";
 
             return params;
         }
@@ -77,7 +79,9 @@
             publish.routingkey = routing_key;
             var props:BasicProperties = Properties.getBasicProperties();
             var cmd:Command = new Command(publish, props, data);
-            sessionHandler.dispatch(cmd);
+
+            ct.sendMessage(SDispatch(sessionHandler, cmd));
+            //sessionHandler.dispatch(cmd);
         }
 
 
@@ -86,13 +90,13 @@
             connection.baseSession.registerLifecycleHandler(this);
             mt =  Thread.current();
             trace("create connection thread");
-            ct = neko.vm.Thread.create(callback(connection.onSocketData, mt));
+            ct = neko.vm.Thread.create(callback(connection.socketLoop, mt));
             Thread.readMessage(true); // wait for a start message after onConsume
 
             runLoop();
 
             trace("sending close message");
-            ct.sendMessage("close");
+            ct.sendMessage(SClose);
             trace("block till closeOk done");
             Thread.readMessage(true);
             trace("run done");
@@ -110,7 +114,7 @@
                 msg = messages.pop(true);
                 trace("got ping "+count+" @"+neko.Sys.time());
                 publish(by);
-                trace("bounce back @"+neko.Sys.time());
+            //    trace("bounce back @"+neko.Sys.time());
                 count++;
             }
         }
@@ -128,15 +132,23 @@
             var open:Open = new Open();
             var queue:org.amqp.methods.queue.Declare = new org.amqp.methods.queue.Declare();
             queue.queue = q2;
+            ct.sendMessage(SRpc(sessionHandler, new Command(open), whoCares));
+            ct.sendMessage(SRpc(sessionHandler, new Command(queue), whoCares));
+            /*
             sessionHandler.rpc(new Command(open), whoCares);
             sessionHandler.rpc(new Command(queue), whoCares);
+            */
 
             sessionHandler2 = sessionManager.create();
             open = new Open();
             queue = new org.amqp.methods.queue.Declare();
             queue.queue = q;
+            ct.sendMessage(SRpc(sessionHandler2, new Command(open), whoCares));
+            ct.sendMessage(SRpc(sessionHandler2, new Command(queue), _callback));
+            /*
             sessionHandler2.rpc(new Command(open), whoCares);
             sessionHandler2.rpc(new Command(queue), _callback);
+            */
         }
 
         public function setupConsumer(event:ProtocolEvent):Void {
@@ -144,7 +156,9 @@
             var consume:Consume = new Consume();
             consume.queue = q;
             consume.noack = true;
-            sessionHandler2.register(consume, this);
+
+            ct.sendMessage(SRegister(sessionHandler2, consume, this));
+            //sessionHandler2.register(consume, this);
         }
 
 //        public function cancel(event:TimerEvent):Void {

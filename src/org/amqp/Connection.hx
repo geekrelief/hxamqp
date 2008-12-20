@@ -25,6 +25,7 @@ package org.amqp;
     #elseif neko
     import org.amqp.Error;
     import neko.vm.Thread;
+    import org.amqp.SMessage;
     #end
 
     import haxe.io.Bytes;
@@ -210,41 +211,57 @@ package org.amqp;
         }
         #elseif neko
         // neko does not have asynch i/o, instead spawn a thread for onSocketData, and send Thread messages
-        public function onSocketData(_mainThread:Thread):Void {
+        public function socketLoop(_mainThread:Thread):Void {
+            trace("socketLoop");
             var e = [];
             var s = cast(delegate, neko.net.Socket);
             var r = [s];
-            try{ while (true) {
-            
-                var select = neko.net.Socket.select([cast(delegate, neko.net.Socket)], [], [], 0.0001);
-                if(neko.vm.Thread.readMessage(false) == "close") { close();}
+            var msg:SMessage;
+            try{
+            while (true) {
+                msg = neko.vm.Thread.readMessage(false);
+                if(msg != null) {
+                    switch(msg) {
+                        case SRpc(s, cmd, fun): s.rpc(cmd, fun);
+                        case SDispatch(s, cmd): s.dispatch(cmd);
+                        case SRegister(s, c, b): s.register(c, b);
+                        case SClose: close();
+                        default:
+                    }
+                }
+                var select = neko.net.Socket.select(r, e, e, 0.0001);
                 if(select.read.length == 0) continue;
 
                 //s.waitForRead();
-           
-                var frame:Frame = parseFrame(delegate);
-                maybeSendHeartbeat();
-                if (frame != null) {
-                    // missedHeartbeats = 0;
-                        if (frame.type == AMQP.FRAME_HEARTBEAT) {
-                            // just ignore this for now
-                        } else if (frame.channel == 0) {
-                            session0.handleFrame(frame);
-                        } else {
-                            var session:Session = sessionManager.lookup(frame.channel);
-                            session.handleFrame(frame);
-                        }
-                } else {
-                    handleSocketTimeout();
-                }
-            } } catch (err:Dynamic) {
+                onSocketData(); 
+            }
+            } catch (err:Dynamic) {
                 if(Std.is(err, haxe.io.Eof)) {
                     trace("end of stream");
                 } else {
                     trace(err+" this should be logged and reported!");
                 }
             }
+
             _mainThread.sendMessage("close");
+        }
+
+        public function onSocketData():Void {
+            var frame:Frame = parseFrame(delegate);
+            //maybeSendHeartbeat();
+            if (frame != null) {
+                // missedHeartbeats = 0;
+                    if (frame.type == AMQP.FRAME_HEARTBEAT) {
+                        // just ignore this for now
+                    } else if (frame.channel == 0) {
+                        session0.handleFrame(frame);
+                    } else {
+                        var session:Session = sessionManager.lookup(frame.channel);
+                        session.handleFrame(frame);
+                    }
+            } else {
+                handleSocketTimeout();
+            }
         }
         #end
 

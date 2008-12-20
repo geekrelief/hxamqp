@@ -2,6 +2,5 @@
 -main Main2
 -swf-version 10
 -swf-header 800:600:60:FFFFFF
--debug
 -D network-sandbox
 -cp ../src

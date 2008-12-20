@@ -238,7 +238,7 @@
 
         public function setupPinger():Void{
             //trace("setupPinger");
-            pinger = new Timer(3000);
+            pinger = new Timer(200);
             pinger.addEventListener(TimerEvent.TIMER, ping);
             pinger.start();
         }
