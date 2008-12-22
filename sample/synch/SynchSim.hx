@@ -37,7 +37,7 @@
 
     enum AppState{
         AInit;
-        AConnecting(_:TAConnecting);
+        AConnecting(?_:TAConnecting);
         ABeginSynch;
         ASynchronizing;
         AUpdating;
@@ -45,7 +45,7 @@
         ADone;
     }
 
-    typedef App = { var state:AppState; var name:String; var maxConnects:Int; }
+    typedef App = { var state:AppState; var name:String; var maxConnects:Int; var update:Delivery -> Void; }
 
     class SynchSim implements LifecycleEventHandler {
 
@@ -98,7 +98,7 @@
 
             oqcount = 0;
 
-            app = { state: AInit, name: "SynchSim-", maxConnects: 2 };
+            app = { state: AInit, name: "SynchSim", maxConnects: 2, update: doNothing };
 
             beginTime = neko.Sys.time();
         }
@@ -127,7 +127,6 @@
             }
         }
 
-
         public function run():Void {
             co.start();
             co.baseSession.registerLifecycleHandler(this);
@@ -149,7 +148,7 @@
             trace("process in main thread");
             while(true) {
                 processGatewayMsg();
-                updateApp();
+                processApp();
             }
         }
 
@@ -184,58 +183,74 @@
             cRpc(is, q, createOq);
         }
 
-        public function updateApp():Void {
-            var msg:Delivery = ams.pop(false);
-            if(msg == null) return;
+        public function processApp():Void { app.update(ams.pop(false)); }
 
-            /*
-            switch(app.state) {
-                case AInit:
-                    // still initializing
-                case AConnecting:
-                    // waiting for enough users to connect
-                    if(stateVal().connects == app.maxConnects) { // is app ready to start?
-                        app.state = ABeginSynch; // transition
-                    } else {
-                        waitForUsers();
+        public function transitionApp(as:AppState) {
+        trace("transition from "+app.state+ " to "+as);
+            switch(as) {
+                //case AInit: can't go back to init
+                case AConnecting(_):
+                    if(stateVal() == null) {
+                        app.state = AConnecting({pendingConnects:0, connects:0, beginTime:neko.Sys.time()});
+                        app.update = waitForClients;
                     }
+                    // app ready?
+                    if(stateVal().connects == app.maxConnects) transitionApp(ABeginSynch);
                 case ABeginSynch:
-                    // send out messages to users to synch
-                    app.state = ASynchronizing;
-                    beginSynch();
+                    app.update = doNothing;
+                    transitionApp(ASynchronizing);
                 case ASynchronizing:
-                    // measure clients (latency, etc..)
-                    measureClients();
+                    app.update = synchClients;
                 case AUpdating:
-                    // update the simulation
-                    */
-                    update(msg);
-                    /*
+                    app.update = updateApp;
                 case AError:
+                    app.update = doNothing;
                 case ADone:
-                default:
-            }
-            */
-        }
-
-        public function waitForUsers(){
-            var elapsedTime = neko.Sys.time() - beginTime;
-        }
-
-        public function update(msg:Delivery):Void {
-            var t:Int = msg.body.readByte();
-            //trace("got app message "+t); 
-            switch(t) {
-                case 20:
-                    var m = new BytesOutput();
-                    m.bigEndian = true;
-                    m.writeByte(21);
-                    m.writeDouble(neko.Sys.time());
-                    //trace("pong @ "+msg.properties.replyto);
-                    publish(msg.properties.replyto, m.getBytes());
+                    app.update = doNothing;
                 default:
             }
         }
+
+        public function doNothing(msg:Delivery):Void { }
+
+        public function sendAppState() {
+            var stateStr = haxe.Serializer.run(app.state);
+            var b = new BytesOutput();
+            b.writeByte(100); // app state
+            b.writeInt31(stateStr.length);
+            b.writeString(stateStr);
+            var by = b.getBytes();
+
+            for(iq in iss.keys()) {
+                publish(iq, by);
+            }
+        }
+
+        public function waitForClients(msg:Delivery):Void {
+            if(neko.Sys.time() - stateVal().beginTime > 3) {
+                stateVal().beginTime = neko.Sys.time();
+                sendAppState();
+            }
+
+            if(msg != null) {
+                var t:Int = msg.body.readByte();
+                //trace("got app message "+t); 
+                switch(t) {
+                    case 20:
+                        var m = new BytesOutput();
+                        m.bigEndian = true;
+                        m.writeByte(21);
+                        m.writeDouble(neko.Sys.time());
+                        //trace("pong @ "+msg.properties.replyto);
+                        publish(msg.properties.replyto, m.getBytes());
+                    default:
+                }
+            }
+        }
+
+        public function synchClients(msg:Delivery):Void { }
+
+        public function updateApp(msg:Delivery):Void { }
 
         public function afterOpen():Void { openGateway(); }
 
@@ -258,7 +273,7 @@
 
         public function startMain(tag:Queue):Void {
             gct = tag;
-            app.state = AConnecting({pendingConnects:0, connects:0, beginTime:neko.Sys.time()});
+            transitionApp(AConnecting());
             mt.sendMessage("start");
         }
 
@@ -303,7 +318,7 @@
 
                     t.stateVal().connects = t.stateVal().pendingConnects;
                     trace("connects "+t.stateVal().connects);
-                    //userCount = pendingUserCount;
+                    t.transitionApp(t.app.state);
                 };
         }
 
