@@ -5,15 +5,12 @@
 -D network-sandbox
 -cp ../../src
 
---next
--swf timings2.swf
--main Timings2
--swf-version 10
--swf-header 600:250:30:FFFFFF
--D network-sandbox
--cp ../../src
-
 --next 
 -neko ts.n
 -main TS
+-cp ../../src
+
+--next 
+-neko ts2.n
+-main TS2
 -cp ../../src

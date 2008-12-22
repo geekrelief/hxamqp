@@ -24,7 +24,7 @@
     import org.amqp.methods.channel.Open;
     import org.amqp.methods.queue.Declare;
 
-    class TS
+    class TS2
         implements BasicConsumer, 
         implements LifecycleEventHandler {
 
@@ -43,7 +43,7 @@
         var messages:Deque<BytesInput>;
 
         public static function main() {
-            var s = new TS();
+            var s = new TS2();
             s.run();
         }
 
@@ -66,8 +66,7 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "72.14.181.42";
-            //params.serverhost = "127.0.0.1";
+            params.serverhost = "127.0.0.1";
 
             return params;
         }
@@ -79,7 +78,6 @@
             publish.routingkey = routing_key;
             var props:BasicProperties = Properties.getBasicProperties();
             var cmd:Command = new Command(publish, props, data);
-
             ct.sendMessage(SDispatch(sessionHandler, cmd));
             //sessionHandler.dispatch(cmd);
         }
@@ -107,26 +105,54 @@
             trace("process in main thread");
             var msg:BytesInput;
             var count = 0;
-            /*
+            var run = 0;
+            var maxRuns = 10;
+            var duration = 5;
             var b = new BytesOutput();
             b.bigEndian = true;
+          
+///            b.writeByte("hello, are you getting this long string?".length);
+///            b.writeString("hello, are you getting this long string?");
+         
             var by = b.getBytes();
-            */
-            while(true) {
-                msg = messages.pop(true);
-                //trace("got ping "+count);//+" @"+neko.Sys.time());
-                //msg.readByte();
+            var tpool:Array<Array<Float>> = new Array();
+            var timings:Array<Float>;
 
-                var b = new BytesOutput();
-                b.bigEndian = true;
-               
-                b.writeByte("hello, are you getting this long string?".length);
-                b.writeString("hello, are you getting this long string?");
-              
-                var by = b.getBytes();
-                publish(by);
-            //    trace("bounce back @"+neko.Sys.time());
-                count++;
+            for(i in 0...10){
+                tpool[i] = new Array();
+            }
+            timings = tpool[0];
+
+            var beginTime:Float = neko.Sys.time();
+            var startTime:Float = beginTime;
+            var endTime:Float;
+
+            publish(by);
+
+            while(run < maxRuns) {
+                msg = messages.pop(true);
+
+                endTime = neko.Sys.time();
+                timings.push(endTime - startTime);
+                if(run < maxRuns) {
+                    if(endTime < duration + beginTime) {
+                    //trace("got ping "+count+" @"+neko.Sys.time());
+                        startTime = neko.Sys.time();
+                        publish(by);
+                    } else {
+                        var sum:Float = 0;
+                        for(t in timings) {
+                            sum += t;
+                        }
+                        trace("run: "+run+" samples: "+timings.length+" avg ms: "+(1000.0 * sum/timings.length)+" time "+((endTime-beginTime)));
+                        ++run;
+                        if(run < maxRuns) {
+                            timings = tpool[run];
+                            beginTime = startTime = neko.Sys.time();
+                            publish(by);
+                        }
+                    }
+                }
             }
         }
 
@@ -145,10 +171,8 @@
             queue.queue = q2;
             ct.sendMessage(SRpc(sessionHandler, new Command(open), whoCares));
             ct.sendMessage(SRpc(sessionHandler, new Command(queue), whoCares));
-            /*
-            sessionHandler.rpc(new Command(open), whoCares);
-            sessionHandler.rpc(new Command(queue), whoCares);
-            */
+//            sessionHandler.rpc(new Command(open), whoCares);
+//            sessionHandler.rpc(new Command(queue), whoCares);
 
             sessionHandler2 = sessionManager.create();
             open = new Open();
@@ -156,10 +180,8 @@
             queue.queue = q;
             ct.sendMessage(SRpc(sessionHandler2, new Command(open), whoCares));
             ct.sendMessage(SRpc(sessionHandler2, new Command(queue), _callback));
-            /*
-            sessionHandler2.rpc(new Command(open), whoCares);
-            sessionHandler2.rpc(new Command(queue), _callback);
-            */
+//            sessionHandler2.rpc(new Command(open), whoCares);
+//            sessionHandler2.rpc(new Command(queue), _callback);
         }
 
         public function setupConsumer(event:ProtocolEvent):Void {
@@ -167,9 +189,8 @@
             var consume:Consume = new Consume();
             consume.queue = q;
             consume.noack = true;
-
             ct.sendMessage(SRegister(sessionHandler2, consume, this));
-            //sessionHandler2.register(consume, this);
+//            sessionHandler2.register(consume, this);
         }
 
 //        public function cancel(event:TimerEvent):Void {

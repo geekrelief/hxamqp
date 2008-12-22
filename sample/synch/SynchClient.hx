@@ -83,8 +83,11 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
+            //params.serverhost = "72.14.181.42";
             params.serverhost = "127.0.0.1";
-            //params.serverhost = "10.0.0.17";
+
+            trace("connecting to "+params.serverhost);
+
             return params;
         }
 
@@ -165,10 +168,6 @@
                 case 21:
                     // ping response
                     pong(m);
-                case 31:
-                    // response to app request
-                case 100:
-                    // server command
                 default:
             }
         }
@@ -232,7 +231,7 @@
 
         public function onOQOk(e:ProtocolEvent):Void{ 
             var d = cast(e.command.method, DeclareOk);
-            //trace("app can write to out q "+d.queue+" == "+oq);
+            trace("app can write to out q "+d.queue+" == "+oq);
             setupPinger();
         }
 

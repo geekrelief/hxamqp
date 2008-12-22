@@ -30,7 +30,7 @@
 
     import flash.Vector;
 
-	class Timings implements BasicConsumer, implements LifecycleEventHandler {
+	class Timings2 implements BasicConsumer, implements LifecycleEventHandler {
 
         public var ax:String ;
         public var q:String ;
@@ -54,7 +54,7 @@
 
         static function main() {
             flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
-    		var a = new Timings();
+    		var a = new Timings2();
 			a.run();
 		}
 
@@ -64,8 +64,8 @@
             trun = 0;
             maxRuns = 50;
             ax = "";
-			q = "q";
-			q2 = "q2";
+			q = "ts";
+			q2 = "ts2";
             routing_key = q;
 
             connection = new Connection(buildConnectionParams());
@@ -81,11 +81,10 @@
 
         public function buildConnectionParams():ConnectionParameters {
             var params:ConnectionParameters = new ConnectionParameters();
-            params.username = "guest";
-            params.password = "guest";
+            params.username = "guest2";
+            params.password = "guest2";
             params.vhostpath = "/";
-            params.serverhost = "72.14.181.42";
-            //params.serverhost = "127.0.0.1";
+            params.serverhost = "10.0.0.17";
             return params;
         }
 
@@ -142,11 +141,8 @@
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
             trace("onConsumeOk");
-            var m:ByteArray = new ByteArray();
-            m.writeByte(20);
             beginTime = startTime = Lib.getTimer();
-            publish(m);
-//            publish(new ByteArray());
+            publish(new ByteArray());
 
             /*
             trace("measure cost of publish"); // empty publish is very cheap 585 - 900 ms for 10000 publishes
@@ -167,19 +163,13 @@
         public function onDeliver(method:Deliver,
                                   properties:BasicProperties,
                                   body:ByteArray):Void {
-
-            var s = body.readUTFBytes(body.readByte());          
-
+           
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
             if(trun < maxRuns) {
-                if(endTime < 5000+beginTime) {
-
-                    var m:ByteArray = new ByteArray();
-                    m.writeByte(20);
+                if(endTime < 10000+beginTime) {
                     startTime = Lib.getTimer();
-                    publish(m);
-                    //publish(new ByteArray());
+                    publish(new ByteArray());
                 } else {
                     var sum:Float = 0;
                     for(t in timings) {
@@ -189,11 +179,8 @@
                     ++trun;
                     if(trun < maxRuns) {
                         timings = tpool[trun];
-                        var m:ByteArray = new ByteArray();
-                        m.writeByte(20);
                         beginTime = startTime = Lib.getTimer();
-                        publish(m);
-                        //publish(new ByteArray());
+                        publish(new ByteArray());
                     }
                 }
             }

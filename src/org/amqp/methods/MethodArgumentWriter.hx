@@ -79,10 +79,8 @@ package org.amqp.methods;
             bitflush();
             //byte [] bytes = str.getBytes("utf-8");
             #if flash9
-            var buf:ByteArray = new ByteArray();
-            buf.writeUTFBytes(str);
-            output.writeByte(buf.length);
-            output.writeBytes(buf);
+            output.writeByte(str.length);
+            output.writeUTFBytes(str);
             #elseif neko
             output.writeByte(str.length);
             output.writeString(str);

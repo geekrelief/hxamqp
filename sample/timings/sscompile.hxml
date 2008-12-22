@@ -1,0 +1,15 @@
+-swf ss1.swf
+-main SS1
+-swf-version 10
+-swf-header 500:250:60:FFFFFF
+-D network-sandbox
+-cp ../../src
+
+--next
+
+-swf ss2.swf
+-main SS2
+-swf-version 10
+-swf-header 500:250:60:FFFFFF
+-D network-sandbox
+-cp ../../src

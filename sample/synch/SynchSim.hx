@@ -3,6 +3,7 @@
 
     import org.amqp.Connection;
     import org.amqp.SMessage;
+    import org.amqp.Method;
     import org.amqp.ConnectionParameters;
     import org.amqp.SessionManager;
     import org.amqp.headers.BasicProperties;
@@ -29,6 +30,22 @@
     typedef Tag = String
     typedef Queue = String
     typedef Delivery = { var method:Deliver; var properties:BasicProperties; var body:BytesInput; }
+    typedef Latency = Int;
+    typedef SSH = SessionStateHandler;
+
+    typedef TAConnecting = { var pendingConnects:Int; var connects:Int; var beginTime:Float; }
+
+    enum AppState{
+        AInit;
+        AConnecting(_:TAConnecting);
+        ABeginSynch;
+        ASynchronizing;
+        AUpdating;
+        AError;
+        ADone;
+    }
+
+    typedef App = { var state:AppState; var name:String; var maxConnects:Int; }
 
     class SynchSim implements LifecycleEventHandler {
 
@@ -38,23 +55,26 @@
         var xdirect:String;
         var xtopic:String;
         var giq:Queue;
-        var gis:SessionStateHandler;
+        var gis:SSH;
 
-        public var iss:Hash<SessionStateHandler>;
-        public var oss:Hash<SessionStateHandler>;
+        public var iss:Hash<SSH>;
+        public var oss:Hash<SSH>;
 
         var gct:Tag; 
         public var ct:Thread;
         public var mt:Thread;
-        public var at:Thread;
 
         var ms:Deque<Delivery>;
         var ams:Deque<Delivery>;
 
-        var appName:String;
         var oqcount:Int;
 
-        var con:Consumer;
+        var app:App;
+
+        var beginTime:Float;
+        var pingDuration:Float;
+        var step:Float; // based on max avg. latency reported
+        var lats:Array<Hash<Latency>>;
 
         public static function main() {
             var s = new SynchSim();
@@ -76,11 +96,11 @@
             ms = new Deque();
             ams = new Deque();
 
-
-            appName = "SynchSim-";
             oqcount = 0;
 
-            con = new Consumer();
+            app = { state: AInit, name: "SynchSim-", maxConnects: 2 };
+
+            beginTime = neko.Sys.time();
         }
 
         public function buildConnectionParams():ConnectionParameters {
@@ -93,17 +113,17 @@
             return p;
         }
 
+        public function cDispatch(s:SSH, p:Publish, b:BasicProperties, d:Bytes) { ct.sendMessage(SDispatch(s, new Command(p, b, d))); } 
+        public function cRpc(s:SSH, m:Method, cb:Dynamic) { ct.sendMessage(SRpc(s, new Command(m), cb)); }
+        public function cRegister(s:SSH, c:Consume, ?fdeliver:Dynamic, ?fconsume: Dynamic, ?fcancel:Dynamic) { ct.sendMessage(SRegister(s, c, new Consumer(fdeliver, fconsume, fcancel))); }
+
         public function publish(q:Queue, data:Bytes):Void {
             var p:Publish = new Publish();
             p.exchange = xdirect;
             p.routingkey = q;
-            var b:BasicProperties = Properties.getBasicProperties();
-            var cmd:Command = new Command(p, b, data);
             var is = iss.get(q);
             if(is != null) {
-                // is.dispatch(cmd);
-                ct.sendMessage(SDispatch(is, cmd));
-                //trace("published to "+q);
+                cDispatch(is, p, Properties.getBasicProperties(), data);
             }
         }
 
@@ -114,7 +134,6 @@
             mt =  Thread.current();
             trace("create connection thread");
             ct = neko.vm.Thread.create(callback(co.socketLoop, mt));
-        //    at = neko.vm.Thread.create(runApp);
             Thread.readMessage(true); // wait for a start message after onConsume
             runLoop();
 
@@ -123,71 +142,88 @@
             trace("block till closeOk done");
             Thread.readMessage(true);
             trace("run done");
-       }
+        }
 
         public function runLoop():Void {
             // implement this
             trace("process in main thread");
-            var m:Delivery;
-            var am:Delivery;
             while(true) {
-                m = ms.pop(false);
-                processMsg(m);
-                am = ams.pop(false);
-                updateLoop(am);
-            }
-
-        }
-
-        public function processMsg(msg:Delivery):Void {
-            if(msg == null) {
-                return;
-            }              
-
-            var body = msg.body;
-            var t:Int = body.readByte();
-            trace("got message "+t); 
-            switch(t) {
-                case 10:
-                    joinApp(body);
-                default:
+                processGatewayMsg();
+                updateApp();
             }
         }
-/*
-        public function runApp():Void {
-            var am:Delivery;
-            while(true) {
-                am = ams.pop(false);
-                updateLoop(am);
+
+        public function processGatewayMsg():Void {
+            var msg:Delivery = ms.pop(false);
+            if(msg == null) return;
+
+            switch(msg.body.readByte()) {
+                case 10: joinApp(msg.body);
             }
         }
-        */
+
+        public function stateVal():Dynamic {
+            return Type.enumParameters(app.state)[0];
+        }
 
         public function joinApp(body:BytesInput):Void {
-            var len = body.readByte();
-            var iq = body.readString(len);
-            var alen = body.readByte();
-            var appName = body.readString(alen);
+            if (stateVal().pendingConnects >= app.maxConnects) return;
+            else stateVal().pendingConnects++;
+
+            var iq = body.readString(body.readByte());
+            var appName = body.readString(body.readByte());
 
             trace("client "+iq+" join request for "+appName);
+
             var is = sm.create();
             iss.set(iq, is);
             var o = new Open();
             var q = new Declare();
             q.queue = iq;
-            ct.sendMessage(SRpc(is, new Command(o), dh));
-            ct.sendMessage(SRpc(is, new Command(q), createOq));
-            //is.rpc(new Command(o), dh);
-            //is.rpc(new Command(q), createOq);
+            cRpc(is, o, dh);
+            cRpc(is, q, createOq);
         }
 
-        public function updateLoop(msg:Delivery):Void {
-            if(msg == null) {
-                return;
-            }              
+        public function updateApp():Void {
+            var msg:Delivery = ams.pop(false);
+            if(msg == null) return;
 
-            var body = msg.body;
-            var t:Int = body.readByte();
+            /*
+            switch(app.state) {
+                case AInit:
+                    // still initializing
+                case AConnecting:
+                    // waiting for enough users to connect
+                    if(stateVal().connects == app.maxConnects) { // is app ready to start?
+                        app.state = ABeginSynch; // transition
+                    } else {
+                        waitForUsers();
+                    }
+                case ABeginSynch:
+                    // send out messages to users to synch
+                    app.state = ASynchronizing;
+                    beginSynch();
+                case ASynchronizing:
+                    // measure clients (latency, etc..)
+                    measureClients();
+                case AUpdating:
+                    // update the simulation
+                    */
+                    update(msg);
+                    /*
+                case AError:
+                case ADone:
+                default:
+            }
+            */
+        }
+
+        public function waitForUsers(){
+            var elapsedTime = neko.Sys.time() - beginTime;
+        }
+
+        public function update(msg:Delivery):Void {
+            var t:Int = msg.body.readByte();
             //trace("got app message "+t); 
             switch(t) {
                 case 20:
@@ -201,38 +237,28 @@
             }
         }
 
-        public function afterOpen():Void {
-            openChannel();
-        }
+        public function afterOpen():Void { openGateway(); }
 
-        function dh(e:ProtocolEvent):Void {
-            //trace(e);
-        }
+        function dh(e:ProtocolEvent):Void { /*trace(e);*/ }
 
-        function openChannel():Void {
-
+        function openGateway():Void {
             gis = sm.create();
-            var o = new Open();
-            var q = new Declare();
-            q.queue = giq;
-            ct.sendMessage(SRpc(gis, new Command(o), dh));
-            ct.sendMessage(SRpc(gis, new Command(q), consumeGateway));
-            /*
-            gis.rpc(new Command(o), dh);
-            gis.rpc(new Command(q), consumeGateway);
-            */
+            var d = new Declare();
+            d.queue = giq;
+            cRpc(gis, new Open(), dh);
+            cRpc(gis, d, consumeGateway);
         }
 
         public function consumeGateway(e:ProtocolEvent):Void {
             var c:Consume = new Consume();
             c.queue = giq;
             c.noack = true;
-            ct.sendMessage(SRegister(gis, c, new Consumer(onDeliver, startMain)));
-            //gis.register(c, new Consumer(onDeliver, startMain));
+            cRegister(gis, c, onDeliver, startMain);
         }
 
         public function startMain(tag:Queue):Void {
             gct = tag;
+            app.state = AConnecting({pendingConnects:0, connects:0, beginTime:neko.Sys.time()});
             mt.sendMessage("start");
         }
 
@@ -241,31 +267,24 @@
 
             // create the outq for consumption
             var os = sm.create();
-            var o = new Open();
             var d = new Declare();
-            d.queue = appName + oqcount;
-            
-            oss.set(dk.queue, os);
+            d.queue = app.name + oqcount; // client out
             oqcount++;
-            ct.sendMessage(SRpc(os, new Command(o), dh));
-            ct.sendMessage(SRpc(os, new Command(d), getOqConsumer(os, dk.queue, d.queue)));
-            /*
-            os.rpc(new Command(o), dh);
-            os.rpc(new Command(d), getOqConsumer(os, dk.queue, d.queue));
-            */
+            
+            oss.set(dk.queue, os); // hash on iq to get oq
+            cRpc(os, new Open(), dh);
+            cRpc(os, d, getOqConsumer(os, dk.queue, d.queue));
         }
 
-        public function getOqConsumer(os:SessionStateHandler, iq:Queue, oq:Queue) {
+        public function getOqConsumer(os:SSH, iq:Queue, oq:Queue) {
             //trace("getOnDeclareOkQ ");
             var t = this;
             return function (e:ProtocolEvent):Void {
-            //trace("setup oq consumer "+oq);
-                var dk = cast(e.command.method, DeclareOk);
+                // oq declared, now consume it
                 var c:Consume = new Consume();
                 c.queue = oq;
                 c.noack = true;
-                t.ct.sendMessage(SRegister(os, c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq))));
-                //os.register(c, new Consumer(t.onDeliverToApp, t.getOqSender(iq, oq)));
+                t.cRegister(os, c, t.onDeliverToApp, t.getOqSender(iq, oq));
                 };
         }
 
@@ -281,6 +300,10 @@
                     m.writeByte(oq.length);
                     m.writeString(oq);
                     t.publish(iq, m.getBytes());
+
+                    t.stateVal().connects = t.stateVal().pendingConnects;
+                    trace("connects "+t.stateVal().connects);
+                    //userCount = pendingUserCount;
                 };
         }
 

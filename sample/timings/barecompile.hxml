@@ -1,0 +1,6 @@
+-swf bare.swf
+-main Bare
+-swf-version 10
+-swf-header 500:250:60:FFFFFF
+-D network-sandbox
+-cp ../../src
