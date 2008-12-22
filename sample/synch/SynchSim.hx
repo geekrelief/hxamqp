@@ -288,38 +288,29 @@
             
             oss.set(dk.queue, os); // hash on iq to get oq
             cRpc(os, new Open(), dh);
-            cRpc(os, d, getOqConsumer(os, dk.queue, d.queue));
+            cRpc(os, d, callback(oqConsumer, os, dk.queue, d.queue));
         }
 
-        public function getOqConsumer(os:SSH, iq:Queue, oq:Queue) {
-            //trace("getOnDeclareOkQ ");
-            var t = this;
-            return function (e:ProtocolEvent):Void {
-                // oq declared, now consume it
-                var c:Consume = new Consume();
-                c.queue = oq;
-                c.noack = true;
-                t.cRegister(os, c, t.onDeliverToApp, t.getOqSender(iq, oq));
-                };
+        public function oqConsumer(os:SSH, iq:Queue, oq:Queue, e:ProtocolEvent):Void {
+            var c:Consume = new Consume();
+            c.queue = oq;
+            c.noack = true;
+            cRegister(os, c, onDeliverToApp, callback(oqSender, iq, oq));
         }
 
+        public function oqSender(iq:Queue, oq:Queue, tag:Tag):Void {
+            trace("sending oq:"+ oq + " to "+ iq);
 
-        public function getOqSender(iq:Queue, oq:Queue): Tag -> Void {
-            var t = this;
-            return function(tag:Tag):Void { 
-                    trace("sending oq:"+ oq + " to "+ iq);
+            var m = new BytesOutput();
+            m.bigEndian = true;
+            m.writeByte(11);
+            m.writeByte(oq.length);
+            m.writeString(oq);
+            publish(iq, m.getBytes());
 
-                    var m = new BytesOutput();
-                    m.bigEndian = true;
-                    m.writeByte(11);
-                    m.writeByte(oq.length);
-                    m.writeString(oq);
-                    t.publish(iq, m.getBytes());
-
-                    t.stateVal().connects = t.stateVal().pendingConnects;
-                    trace("connects "+t.stateVal().connects);
-                    t.transitionApp(t.app.state);
-                };
+            stateVal().connects = stateVal().pendingConnects;
+            trace("connects "+stateVal().connects);
+            transitionApp(app.state);
         }
 
 //        public function cancel(event:TimerEvent):Void {
@@ -334,12 +325,11 @@
         }
 
         public function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
-            var d:Delivery = {method: method, properties: properties, body:body};
-            ms.add(d);
+            ms.add({method: method, properties: properties, body:body});
         }
 
         public function onDeliverToApp(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
-            var d:Delivery = {method: method, properties: properties, body:body};
-            ams.add(d);
+            //var d:Delivery = {method: method, properties: properties, body:body};
+            ams.add({method: method, properties: properties, body:body});
         }
     }
