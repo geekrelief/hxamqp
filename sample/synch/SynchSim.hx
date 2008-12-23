@@ -157,7 +157,7 @@
         public function processGatewayMsg():Void {
             var msg:Delivery = ms.pop(false);
             if(msg == null) return;
-            var t = toEnum(msg.body.readByte());
+            var t:MessageCode = Type.enumFromIndex(MessageCode, msg.body.readByte());
             trace("processing "+t);
             switch(t) {
                 case ClientJoin: joinApp(msg.body);
@@ -223,8 +223,6 @@
             return Type.enumIndex(m);
         }
 
-        public function toEnum(dx:Int):MessageCode { return Reflect.field(MessageCode, Type.getEnumConstructs(MessageCode)[dx]); }
-
         public function sendAppState() {
             var stateStr = haxe.Serializer.run(app.state);
             trace("send app state "+stateStr.length + " "+stateStr);
@@ -248,7 +246,7 @@
             }
 
             if(msg != null) {
-                var t = toEnum(msg.body.readByte());
+                var t:MessageCode = Type.enumFromIndex(MessageCode, msg.body.readByte());
                 trace("got app message "+t); 
                 switch(t) {
                     case ClientReceivedOq:

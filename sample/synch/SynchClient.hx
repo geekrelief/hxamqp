@@ -155,11 +155,9 @@
             return Type.enumIndex(m);
         }
 
-        public function toEnum(dx:Int):MessageCode { return Reflect.field(MessageCode, Type.getEnumConstructs(MessageCode)[dx]); }
-
         public function onIDeliver(method:Deliver, properties:BasicProperties, m:ByteArray):Void {
             //trace("onIDeliver");
-            var t = toEnum(m.readUnsignedByte());
+            var t:MessageCode = Type.enumFromIndex(MessageCode, m.readUnsignedByte());
             trace("message type: "+t);
            
             switch(t) {
