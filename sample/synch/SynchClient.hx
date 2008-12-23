@@ -33,6 +33,7 @@
     import flash.Vector;
 
     import AppState;
+    import MessageCode;
 
 	class SynchClient implements LifecycleEventHandler {
 
@@ -103,7 +104,6 @@
             gis.dispatch(c);
         }
 
-
         public function publish(data:ByteArray):Void {
             //trace("publishing to "+oq);
             var p:Publish = new Publish();
@@ -151,33 +151,37 @@
             is.register(consume, new Consumer(onIDeliver, onIConsumeOk));
         }
 
+        inline public function mdx(m:MessageCode) {
+            return Type.enumIndex(m);
+        }
+
+        public function toEnum(dx:Int):MessageCode { return Reflect.field(MessageCode, Type.getEnumConstructs(MessageCode)[dx]); }
+
         public function onIDeliver(method:Deliver, properties:BasicProperties, m:ByteArray):Void {
             //trace("onIDeliver");
-            var t = m.readUnsignedByte();
-            //trace("message type: "+t);
+            var t = toEnum(m.readUnsignedByte());
+            trace("message type: "+t);
            
             switch(t) {
-                case 11: // out q in message
-                    var len = m.readUnsignedByte();
-                    oq = m.readUTFBytes(len);
+                case ServerSendOq: // out q in message
+                    oq = m.readUTFBytes(m.readUnsignedByte());
                     trace("got oq: "+oq);
                     os = sm.create();
-                    var o = new Open();
                     var d = new Declare();
                     d.queue = oq;
-                    os.rpc(new Command(o), dh);
+                    os.rpc(new Command(new Open()), dh);
                     os.rpc(new Command(d), onOQOk);
-                case 21:
-                    // ping response
+
+                case ServerPong:
                     pong(m);
-                case 101:
-                    // app state
+
+                case ServerAppState:
                     var state:AppState = haxe.Unserializer.run(m.readUTFBytes(m.readInt()));
                     trace("got app state "+state);
                     switch (state) {
                         case AConnecting(s):
                             trace( s.connects+ " users connected ");
-                        case ASynchronizing:
+                        case ASynchronize:
                             trace("synchronizing");
                         default:
                     }
@@ -193,10 +197,9 @@
         public function connectGateway():Void {
             //trace("connect to gateway, in");
             gis = sm.create();
-            var o = new Open();
             var d = new Declare();
             d.queue = giq;
-            gis.rpc(new Command(o), dh);
+            gis.rpc(new Command(new Open()), dh);
             gis.rpc(new Command(d), onGatewayWriteOk);
         }
 
@@ -217,12 +220,12 @@
             //trace("connected to gateway in q");
             
             var m = new ByteArray();
-            m.writeByte(10);  // get out q
+            trace("sending iq, expecting oq "+mdx(ClientJoin));
+            m.writeByte(mdx(ClientJoin));  // get out q
             m.writeByte(iq.length);
             m.writeUTFBytes(iq);
             m.writeByte(appName.length);
             m.writeUTFBytes(appName);
-            //trace("sending iq, expecting oq");
             publishGateway(m);
 
             /*
@@ -245,6 +248,9 @@
         public function onOQOk(e:ProtocolEvent):Void{ 
             var d = cast(e.command.method, DeclareOk);
             trace("app can write to out q "+d.queue+" == "+oq);
+            var m = new ByteArray();
+            m.writeByte(mdx(ClientReceivedOq));
+            publish(m);
             //setupPinger();
         }
 
@@ -257,7 +263,7 @@
 
         public function ping(e:TimerEvent):Void {
             var m:ByteArray = new ByteArray();
-            m.writeByte(20);
+            m.writeByte(mdx(ClientPing));
             //trace(iq+"pinging server ");
             startTime = Lib.getTimer();
             publish(m);

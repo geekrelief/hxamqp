@@ -27,6 +27,8 @@
     import org.amqp.methods.queue.DeclareOk;
 
     import AppState;
+    import MessageCode;
+    import Type;
 
     typedef Client = String
     typedef Tag = String
@@ -80,13 +82,9 @@
         var step:Float; // based on max avg. latency reported
         var lats:Array<Hash<Latency>>;
 
-        public static function main() {
-            var s = new SynchSim();
-            s.run();
-        }
+        public static function main() { (new SynchSim()).run(); }
 
-        public function new()
-        {
+        public function new() {
             xdirect = "";
             xtopic = "topic";
 			giq = "gateway";
@@ -159,9 +157,11 @@
         public function processGatewayMsg():Void {
             var msg:Delivery = ms.pop(false);
             if(msg == null) return;
-
-            switch(msg.body.readByte()) {
-                case 10: joinApp(msg.body);
+            var t = toEnum(msg.body.readByte());
+            trace("processing "+t);
+            switch(t) {
+                case ClientJoin: joinApp(msg.body);
+                default:
             }
         }
 
@@ -189,6 +189,10 @@
 
         public function processApp():Void { app.update(ams.pop(false)); }
 
+        public function setAppUpdate(fun):Void {
+            
+        }
+
         public function transitionApp(as:AppState) {
 //        trace("transition from "+app.state+ " to "+as);
             switch(as) {
@@ -200,11 +204,8 @@
                     }
                     sendAppState();
                     // app ready?
-                    if(stateVal().connects == app.maxConnects) transitionApp(ABeginSynch);
-                case ABeginSynch:
-                    app.update = doNothing;
-                    transitionApp(ASynchronizing);
-                case ASynchronizing:
+                    if(stateVal().connects == app.maxConnects) transitionApp(ASynchronize);
+                case ASynchronize:
                     app.update = synchClients;
                 case AUpdating:
                     app.update = updateApp;
@@ -218,12 +219,18 @@
 
         public function doNothing(msg:Delivery):Void { }
 
+        public function mdx(m:MessageCode):Int {
+            return Type.enumIndex(m);
+        }
+
+        public function toEnum(dx:Int):MessageCode { return Reflect.field(MessageCode, Type.getEnumConstructs(MessageCode)[dx]); }
+
         public function sendAppState() {
             var stateStr = haxe.Serializer.run(app.state);
             trace("send app state "+stateStr.length + " "+stateStr);
             var b = new BytesOutput();
             b.bigEndian = true;
-            b.writeByte(101); // app state
+            b.writeByte(mdx(ServerAppState)); // app state
             b.writeInt31(stateStr.length);
             b.writeString(stateStr);
             var by = b.getBytes();
@@ -241,13 +248,16 @@
             }
 
             if(msg != null) {
-                var t:Int = msg.body.readByte();
-                //trace("got app message "+t); 
+                var t = toEnum(msg.body.readByte());
+                trace("got app message "+t); 
                 switch(t) {
-                    case 20:
+                    case ClientReceivedOq:
+                        stateVal().connects++;
+                        transitionApp(app.state);
+                    case ClientPing:
                         var m = new BytesOutput();
                         m.bigEndian = true;
-                        m.writeByte(21);
+                        m.writeByte(mdx(ServerPong));
                         m.writeDouble(neko.Sys.time());
                         //trace("pong @ "+msg.properties.replyto);
                         publish(msg.properties.replyto, m.getBytes());
@@ -311,14 +321,10 @@
 
             var m = new BytesOutput();
             m.bigEndian = true;
-            m.writeByte(11);
+            m.writeByte(mdx(ServerSendOq));
             m.writeByte(oq.length);
             m.writeString(oq);
             publish(iq, m.getBytes());
-
-            stateVal().connects = stateVal().pendingConnects;
-            trace("connects "+stateVal().connects);
-            transitionApp(app.state);
         }
 
 //        public function cancel(event:TimerEvent):Void {

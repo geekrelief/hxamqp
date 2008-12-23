@@ -3,8 +3,7 @@ typedef TAConnecting = { var pendingConnects:Int; var connects:Int; var beginTim
 enum AppState{
     AInit;
     AConnecting(?_:TAConnecting);
-    ABeginSynch;
-    ASynchronizing;
+    ASynchronize;
     AUpdating;
     AError;
     ADone;
