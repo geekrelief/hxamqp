@@ -3,6 +3,7 @@
 -swf-version 10
 -swf-header 600:250:30:FFFFFF
 -D network-sandbox
+-debug
 -cp ../../src
 
 --next 

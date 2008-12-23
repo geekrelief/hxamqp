@@ -32,6 +32,8 @@
 
     import flash.Vector;
 
+    import AppState;
+
 	class SynchClient implements LifecycleEventHandler {
 
         public var xd:String;  // direct exchange
@@ -168,6 +170,17 @@
                 case 21:
                     // ping response
                     pong(m);
+                case 101:
+                    // app state
+                    var state:AppState = haxe.Unserializer.run(m.readUTFBytes(m.readInt()));
+                    trace("got app state "+state);
+                    switch (state) {
+                        case AConnecting(s):
+                            trace( s.connects+ " users connected ");
+                        case ASynchronizing:
+                            trace("synchronizing");
+                        default:
+                    }
                 default:
             }
         }
@@ -232,7 +245,7 @@
         public function onOQOk(e:ProtocolEvent):Void{ 
             var d = cast(e.command.method, DeclareOk);
             trace("app can write to out q "+d.queue+" == "+oq);
-            setupPinger();
+            //setupPinger();
         }
 
         public function setupPinger():Void{

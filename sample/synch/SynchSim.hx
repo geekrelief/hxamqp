@@ -26,6 +26,8 @@
     import org.amqp.methods.queue.Declare;
     import org.amqp.methods.queue.DeclareOk;
 
+    import AppState;
+
     typedef Client = String
     typedef Tag = String
     typedef Queue = String
@@ -33,6 +35,7 @@
     typedef Latency = Int;
     typedef SSH = SessionStateHandler;
 
+/*
     typedef TAConnecting = { var pendingConnects:Int; var connects:Int; var beginTime:Float; }
 
     enum AppState{
@@ -44,6 +47,7 @@
         AError;
         ADone;
     }
+    */
 
     typedef App = { var state:AppState; var name:String; var maxConnects:Int; var update:Delivery -> Void; }
 
@@ -186,7 +190,7 @@
         public function processApp():Void { app.update(ams.pop(false)); }
 
         public function transitionApp(as:AppState) {
-        trace("transition from "+app.state+ " to "+as);
+//        trace("transition from "+app.state+ " to "+as);
             switch(as) {
                 //case AInit: can't go back to init
                 case AConnecting(_):
@@ -194,6 +198,7 @@
                         app.state = AConnecting({pendingConnects:0, connects:0, beginTime:neko.Sys.time()});
                         app.update = waitForClients;
                     }
+                    sendAppState();
                     // app ready?
                     if(stateVal().connects == app.maxConnects) transitionApp(ABeginSynch);
                 case ABeginSynch:
@@ -215,8 +220,10 @@
 
         public function sendAppState() {
             var stateStr = haxe.Serializer.run(app.state);
+            trace("send app state "+stateStr.length + " "+stateStr);
             var b = new BytesOutput();
-            b.writeByte(100); // app state
+            b.bigEndian = true;
+            b.writeByte(101); // app state
             b.writeInt31(stateStr.length);
             b.writeString(stateStr);
             var by = b.getBytes();
@@ -227,7 +234,8 @@
         }
 
         public function waitForClients(msg:Delivery):Void {
-            if(neko.Sys.time() - stateVal().beginTime > 3) {
+            if(neko.Sys.time() - stateVal().beginTime > 10) {
+                trace(" send wait for clients ");
                 stateVal().beginTime = neko.Sys.time();
                 sendAppState();
             }
