@@ -22,6 +22,7 @@ package org.amqp;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
+    import flash.Vector;
     #elseif neko
     import org.amqp.Error;
     import neko.vm.Thread;
@@ -57,6 +58,10 @@ package org.amqp;
         public var sessionManager:SessionManager;
         public var frameMax:Int ;
 
+        #if flash9
+        public var recs:Vector<Frame>;
+        #end
+
         public function new(state:ConnectionParameters) {
             
             //trace("new");
@@ -86,6 +91,8 @@ package org.amqp;
             delegate.addEventListener(Event.CLOSE, onSocketClose);
             delegate.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
             delegate.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
+
+            recs = new Vector();
             #end 
         }
 
@@ -187,6 +194,7 @@ package org.amqp;
         public function onSocketData(event:Event):Void {
             try{ while (delegate.isConnected() && delegate.bytesAvailable > 0) {
                 var frame:Frame = parseFrame(delegate);
+                recs.push(frame);
                 //maybeSendHeartbeat();
                 if (frame != null) {
                     // missedHeartbeats = 0;
@@ -205,14 +213,18 @@ package org.amqp;
                 if(Std.is(err, haxe.io.Eof)) {
                     trace("end of stream");
                 } else {
-                    trace(err+" this should be logged and reported!");
+                    var str  = "\n";
+                    var i = recs.length - 20;
+                    for(r in recs) {
+                        str += i+": "+recs[i].type+" "+recs[i].channel+" "+recs[i].payloadSize+"\n";
+                    }
+                    trace(str+" "+err+" this should be logged and reported!");
                 }
             }
         }
         #elseif neko
         // neko does not have asynch i/o, instead spawn a thread for onSocketData, and send Thread messages
         public function socketLoop(_mainThread:Thread):Void {
-            trace("socketLoop");
             var e = [];
             var s = cast(delegate, neko.net.Socket);
             var r = [s];
@@ -231,7 +243,6 @@ package org.amqp;
                 }
                 var select = neko.net.Socket.select(r, e, e, 0.0001);
                 if(select.read.length == 0) continue;
-
                 //s.waitForRead();
                 onSocketData(); 
             }

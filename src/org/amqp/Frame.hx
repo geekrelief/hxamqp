@@ -39,6 +39,8 @@ package org.amqp;
 
         public var type:Int;
         public var channel:Int;
+        public var payloadSize:Int;
+
         #if flash9
         var payload:ByteArray;
         var accumulator:ByteArray;
@@ -87,9 +89,9 @@ package org.amqp;
             //trace("channel "+channel);
 
             #if flash9
-            var payloadSize = input.readInt();
+            payloadSize = input.readInt();
             #elseif neko
-            var payloadSize = input.readInt31();
+            payloadSize = input.readInt31();
             #end
             //trace("payloadSize "+payloadSize);
 

@@ -52,6 +52,8 @@
         var maxRuns:Int;
         var dcount:Int;
 
+        var data:ByteArray;
+
         static function main() {
             flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
     		var a = new Timings();
@@ -60,6 +62,11 @@
 
         public function new()
         {
+            data = new ByteArray();
+            for(i in 1...10000) {
+                data.writeInt(i);
+            }
+
             dcount = 0;
             trun = 0;
             maxRuns = 50;
@@ -84,8 +91,8 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "72.14.181.42";
-            //params.serverhost = "127.0.0.1";
+            //params.serverhost = "72.14.181.42";
+            params.serverhost = "127.0.0.1";
             return params;
         }
 
@@ -142,10 +149,10 @@
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
             trace("onConsumeOk");
-            var m:ByteArray = new ByteArray();
-            m.writeByte(20);
+            //var m:ByteArray = new ByteArray();
+            //m.writeByte(20);
             beginTime = startTime = Lib.getTimer();
-            publish(m);
+            publish(data);
 //            publish(new ByteArray());
 
             /*
@@ -168,18 +175,18 @@
                                   properties:BasicProperties,
                                   body:ByteArray):Void {
 
-            var s = body.readUTFBytes(body.readByte());          
-
+            //var s = body.readUTFBytes(body.readByte());          
+            
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
             if(trun < maxRuns) {
                 if(endTime < 5000+beginTime) {
 
-                    var m:ByteArray = new ByteArray();
-                    m.writeByte(20);
+                    //var m:ByteArray = new ByteArray();
+                    //m.writeByte(20);
                     startTime = Lib.getTimer();
-                    publish(m);
-                    //publish(new ByteArray());
+                    //publish(m);
+                    publish(data);
                 } else {
                     var sum:Float = 0;
                     for(t in timings) {
@@ -189,11 +196,11 @@
                     ++trun;
                     if(trun < maxRuns) {
                         timings = tpool[trun];
-                        var m:ByteArray = new ByteArray();
-                        m.writeByte(20);
+                        //var m:ByteArray = new ByteArray();
+                        //m.writeByte(20);
                         beginTime = startTime = Lib.getTimer();
-                        publish(m);
-                        //publish(new ByteArray());
+                        //publish(m);
+                        publish(data);
                     }
                 }
             }

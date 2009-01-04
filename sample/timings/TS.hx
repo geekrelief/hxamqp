@@ -28,6 +28,8 @@
         implements BasicConsumer, 
         implements LifecycleEventHandler {
 
+        var data:Bytes;
+
         var ax:String ;
         var q:String ;
         var q2:String ;
@@ -49,9 +51,16 @@
 
         public function new()
         {
+            var bo = new BytesOutput();
+            bo.bigEndian = true;
+            for( i in 1...10000) {
+                bo.writeInt31(i);
+            }
+            data = bo.getBytes();
+
             ax = "";
-			q = "q2";
-			q2 = "q";
+			q = "q";
+			q2 = "q2";
             routing_key = q2; // for publish
 
             connection = new Connection(buildConnectionParams());
@@ -66,8 +75,8 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "72.14.181.42";
-            //params.serverhost = "127.0.0.1";
+            //params.serverhost = "72.14.181.42";
+            params.serverhost = "127.0.0.1";
 
             return params;
         }
@@ -107,16 +116,17 @@
             trace("process in main thread");
             var msg:BytesInput;
             var count = 0;
-            /*
+           
             var b = new BytesOutput();
             b.bigEndian = true;
             var by = b.getBytes();
-            */
+            //publish(by);  
             while(true) {
                 msg = messages.pop(true);
                 //trace("got ping "+count);//+" @"+neko.Sys.time());
                 //msg.readByte();
 
+                /*
                 var b = new BytesOutput();
                 b.bigEndian = true;
                
@@ -124,8 +134,10 @@
                 b.writeString("hello, are you getting this long string?");
               
                 var by = b.getBytes();
-                publish(by);
-            //    trace("bounce back @"+neko.Sys.time());
+                */
+                //publish(by);
+                publish(data);
+                trace("bounce back @"+neko.Sys.time());
                 count++;
             }
         }
@@ -180,7 +192,7 @@
 
         public function onConsumeOk(tag:String):Void {
             consumerTag = tag;
-            //trace("onConsumeOk: " + tag);
+            trace("onConsumeOk: " + tag);
             mt.sendMessage("start");
         }
 
