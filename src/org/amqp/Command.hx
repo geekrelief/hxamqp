@@ -141,6 +141,7 @@ package org.amqp;
                 var frameMax:Int = connection.frameMax;
                 var bodyPayloadMax:Int =
                     (frameMax == 0) ? content.length : frameMax - EMPTY_CONTENT_BODY_FRAME_SIZE;
+                //trace("bodyPayloadMax "+bodyPayloadMax);
 
                 var offset:Int = 0;
                 #if flash9
@@ -148,9 +149,10 @@ package org.amqp;
                 #elseif neko
                 var cb = content.getBytes();
                 #end
+                var i = 0;
                 while (offset < cb.length) {
                     var remaining:Int = cb.length - offset;
-
+                    //trace("sending : "+ ((remaining < bodyPayloadMax) ? remaining : bodyPayloadMax));
                     f = new Frame();
                     f.type = AMQP.FRAME_BODY;
                     f.channel = channelNumber;
@@ -159,7 +161,9 @@ package org.amqp;
                                   (remaining < bodyPayloadMax) ? remaining : bodyPayloadMax);
                     connection.sendFrame(f);
                     offset += bodyPayloadMax;
+                    ++i;
                 }
+                //trace("sent "+i+" frames");
             }
         }
 

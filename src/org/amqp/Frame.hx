@@ -60,26 +60,38 @@ package org.amqp;
         }
 
         #if flash9
-        public function readFrom(input:IDataInput):Bool {
+        inline public function bufferCheck(buffer:ByteArray, len:Int) {
+            return (buffer.bytesAvailable >= len);
+        }
+        //public function readFrom(input:IDataInput):Bool {
+        public function readFrom(input:ByteArray):Bool {
         #elseif neko
         public function readFrom(input:Input):Bool {
         #end
 
             //trace("readFrom");
             #if flash9
+            // check if there's enough in the buffer to continue
+            var pos = input.position;
+            if(!bufferCheck(input, 7)) {  // 7 = type:1, channel:2, payloadSize:4
+                input.position = pos;
+                return false;
+            }
             type = input.readUnsignedByte();
             #elseif neko
             type = input.readByte();
             #end
             //trace("type "+type);
 
+            /*
             if (type == 'A'.charCodeAt(0)) {
-                /* Probably an AMQP.... header indicating a version mismatch. */
-                /* Otherwise meaningless, so try to read the version, and
-                 * throw an exception, whether we read the version okay or
-                 * not. */
+                // Probably an AMQP.... header indicating a version mismatch. 
+                // Otherwise meaningless, so try to read the version, and
+                // throw an exception, whether we read the version okay or
+                // not. 
                 protocolVersionMismatch(input);
             }
+            */
 
             #if flash9
             channel = input.readUnsignedShort();
@@ -93,12 +105,19 @@ package org.amqp;
             #elseif neko
             payloadSize = input.readInt31();
             #end
-            //trace("payloadSize "+payloadSize);
+            //trace("type: "+type+" channel: "+channel+" payloadSize: "+payloadSize);
 
             if (payloadSize > 0) {
                 #if flash9
+                //trace("payloadSize: "+payloadSize +" bytesAvailable:"+input.bytesAvailable);
+                if(!bufferCheck(input, payloadSize + 1)) { // + 1 for frameEndMarker
+                    //trace("not enough bytes to complete frame");
+                    input.position = pos;
+                    return false;
+                }
                 payload = new ByteArray();
                 input.readBytes(payload, 0, payloadSize);
+                //trace("read payload: "+payloadSize);
                 #elseif neko
                 payload = new BytesOutput(); payload.bigEndian = true;
                 payload.write(input.read(payloadSize));
