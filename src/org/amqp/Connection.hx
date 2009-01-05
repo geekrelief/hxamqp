@@ -201,20 +201,12 @@ package org.amqp;
         #if flash9
         public function onSocketData(event:ProgressEvent):Void {
             try{ 
-                //trace("onSocketData event.bytesloaded:"+event.bytesLoaded);
                 delegate.readBytes(frameBuffer, frameBuffer.position + frameBuffer.bytesAvailable, delegate.bytesAvailable); 
-                if(receiving) {
-                    throw "still receiving from last onSocketData";
-                } else {
-                    receiving = true;
-                }
-                //while(frameBuffer.bytesAvailable > 0) {
+                
                 var frame:Frame = null;
                 do {
-                    //trace("frameBuffer.bytesAvailable: "+frameBuffer.bytesAvailable);
                     frame = parseFrame(frameBuffer);
                     if(frame != null) {
-                        //trace("frame != null");
                         if (frame.type == AMQP.FRAME_HEARTBEAT) {
                             // just ignore this for now
                         } else if (frame.channel == 0) {
@@ -223,69 +215,21 @@ package org.amqp;
                             var session:Session = sessionManager.lookup(frame.channel);
                             session.handleFrame(frame);
                         }
-
-                        if(frameBuffer.bytesAvailable >= 0) {
-                            //trace("truncate the frameBuffer "+frameBuffer.length);
-                            var b = frameBuffer;
-                            frameBuffer = new ByteArray();
-                            b.readBytes(frameBuffer, 0, b.bytesAvailable);
-                            //trace("after truncate "+frameBuffer.length);
-                        }
                     }
                 } while(frameBuffer.bytesAvailable > 0 && frame != null);
-
-                /*
-                while (delegate.isConnected() && delegate.bytesAvailable > 0) {
-                    trace("bytesAvailable: "+delegate.bytesAvailable);
-                var frame:Frame = parseFrame(delegate);
-                recs.push(frame);
-                //maybeSendHeartbeat();
-                if (frame != null) {
-                    // missedHeartbeats = 0;
-                        if (frame.type == AMQP.frame_heartbeat) {
-                            // just ignore this for now
-                        } else if (frame.channel == 0) {
-                            session0.handleFrame(frame);
-                        } else {
-                            var session:session = sessionManager.lookup(frame.channel);
-                            session.handleFrame(frame);
-                        }
-                } else {
-                    trace("couldn't complete frame");
-                }*/
-                /*else {
-                    trace("handleSocketTimeout");
-                    handleSocketTimeout();
-                }*/
-                /*
-                trace("bytesAvailable after: "+delegate.bytesAvailable);
-            } 
-            */
-                receiving = false;
+                
+                if(frameBuffer.bytesAvailable < frameBuffer.length) {
+                    //trace("truncate the frameBuffer available: "+frameBuffer.bytesAvailable+" length: "+frameBuffer.length);
+                    var b = frameBuffer;
+                    frameBuffer = new ByteArray();
+                    b.readBytes(frameBuffer, 0, b.bytesAvailable);
+                }
             } catch (err:Dynamic) {
-                /*
                 if(Std.is(err, haxe.io.Eof)) {
                     trace("end of stream");
                 } else {
-                    */
-                    /*
-                    var str  = "\n";
-                    var i = 0;
-                    if(recs.length >= 10) {
-                        i = recs.length - 10;
-                    }
-                    for(r in recs) {
-                        str += i+": "+recs[i].type+" "+recs[i].channel+" "+recs[i].payloadSize+", ";
-                        ++i;
-                    }
-                    trace(str+" "+err+" this should be logged and reported!");
-                    throw (str+" "+err+" this should be logged and reported!");
-                    */
-                    throw err;
-                    /*
+                    throw (err+" this should be logged and reported!");
                 }
-                throw (err+" this should be logged and reported!");
-                */
             }
         }
         #elseif neko
@@ -326,9 +270,8 @@ package org.amqp;
 
         public function onSocketData():Void {
             var frame:Frame = parseFrame(delegate);
-            //maybeSendHeartbeat();
+        
             if (frame != null) {
-                // missedHeartbeats = 0;
                     if (frame.type == AMQP.FRAME_HEARTBEAT) {
                         // just ignore this for now
                     } else if (frame.channel == 0) {
@@ -354,19 +297,6 @@ package org.amqp;
             return frame.readFrom(delegate.getInput()) ? frame : null;
         }
         #end
-
-/*
-        function parseFrame(delegate:IODelegate):Frame {
-            //trace("parseFrame");
-            var frame:Frame = new Frame();
-            #if flash9
-            return frame.readFrom(delegate) ? frame : null;
-            #elseif neko
-            return frame.readFrom(delegate.getInput()) ? frame : null;
-            #end
-        }
-        */
-
 
         public function sendFrame(frame:Frame):Void {
             if (delegate.isConnected()) {
