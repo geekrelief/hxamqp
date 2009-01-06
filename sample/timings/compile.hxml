@@ -1,8 +1,9 @@
 -swf timings.swf
 -main Timings
 -swf-version 10
--swf-header 600:250:30:FFFFFF
+-swf-header 1000:1000:60:FFFFFF
 -D network-sandbox
+-debug
 -cp ../../src
 
 --next 
@@ -10,7 +11,3 @@
 -main TS
 -cp ../../src
 
---next 
--neko ts2.n
--main TS2
--cp ../../src

@@ -63,7 +63,7 @@
         public function new()
         {
             data = new ByteArray();
-            for(i in 1...10000) {
+            for(i in 1...20000) {
                 data.writeInt(i);
             }
 
@@ -91,7 +91,6 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            //params.serverhost = "72.14.181.42";
             params.serverhost = "127.0.0.1";
             return params;
         }
@@ -176,7 +175,8 @@
                                   body:ByteArray):Void {
 
             //var s = body.readUTFBytes(body.readByte());          
-            
+            //trace("delivered "+body.length); 
+
             endTime = Lib.getTimer();
             timings.push(endTime - startTime);
             if(trun < maxRuns) {

@@ -53,7 +53,7 @@
         {
             var bo = new BytesOutput();
             bo.bigEndian = true;
-            for( i in 1...10000) {
+            for( i in 1...20000) {
                 bo.writeInt31(i);
             }
             data = bo.getBytes();
@@ -75,7 +75,6 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            //params.serverhost = "72.14.181.42";
             params.serverhost = "127.0.0.1";
 
             return params;
