@@ -233,29 +233,23 @@ package org.amqp;
             }
         }
         #elseif neko
-        // neko does not have asynch i/o, instead spawn a thread for onSocketData, and send Thread messages
-        public function socketLoop(_mainThread:Thread):Void {
-            var e = [];
-            var s = cast(delegate, neko.net.Socket);
-            var r = [s];
+        // neko does not have asynch i/o, instead spawn a thread for reading and writing to the socket
+        // reading and writing to the socket is controlled by the socketLoop
+        public function socketLoop(mt:Thread):Void {
+            var idt = Thread.create(callback(incomingData, Thread.current())); // incoming data detector
             var msg:SMessage;
             try{
                 while (true) {
-                    msg = neko.vm.Thread.readMessage(false);
-                    if(msg != null) {
-                        switch(msg) {
-                            case SRpc(s, cmd, fun): s.rpc(cmd, fun);
-                            case SDispatch(s, cmd): s.dispatch(cmd);
-                            case SRegister(s, c, b): s.register(c, b);
-                            case SSetReturn(s, r): s.setReturn(r);
-                            case SClose: /*trace("got close command");*/ close();
-                            default:
-                        }
+                    msg = neko.vm.Thread.readMessage(true);
+                    switch(msg) {
+                        case SRpc(s, cmd, fun): s.rpc(cmd, fun);
+                        case SDispatch(s, cmd): s.dispatch(cmd);
+                        case SRegister(s, c, b): s.register(c, b);
+                        case SSetReturn(s, r): s.setReturn(r);
+                        case SClose: close();
+                        case SData: onSocketData(); idt.sendMessage(true);
+                        default:
                     }
-                    var select = neko.net.Socket.select(r, e, e, 0.005);
-                    if(select.read.length == 0) continue;
-
-                    onSocketData(); 
                 }
             } catch (err:Dynamic) {
                 if(Std.is(err, haxe.io.Eof)) {
@@ -266,7 +260,17 @@ package org.amqp;
                 }
             }
 
-            _mainThread.sendMessage("close");
+            mt.sendMessage("close");
+        }
+
+        // notifies the socket loop of incoming data
+        public function incomingData(ct:Thread):Void {
+            var s = cast(delegate, neko.net.Socket);
+            while(true) {
+                s.waitForRead();
+                ct.sendMessage(SData);
+                Thread.readMessage(true);
+            }
         }
 
         public function onSocketData():Void {

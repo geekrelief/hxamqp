@@ -12,6 +12,7 @@ typedef Ssh = SessionStateHandler;
 // Socket and Session messages
 enum SMessage {
     SClose;
+    SData;
     SSetReturn(s:Ssh, r:Command->Return->Void);
     SRegister(s:Ssh, c:Consume, b:BasicConsumer);
     SRpc(s:Ssh, c:Command, fun:Dynamic);
