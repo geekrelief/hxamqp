@@ -4,12 +4,16 @@ package org.amqp;
 import org.amqp.impl.SessionStateHandler;
 import org.amqp.Command;
 import org.amqp.methods.basic.Consume;
+import org.amqp.methods.basic.Return;
 import org.amqp.BasicConsumer;
+
+typedef Ssh = SessionStateHandler;
 
 // Socket and Session messages
 enum SMessage {
     SClose;
-    SRegister(s:SessionStateHandler, c:Consume, b:BasicConsumer);
-    SRpc(s:SessionStateHandler, c:Command, fun:Dynamic);
-    SDispatch(s:SessionStateHandler, c:Command);
+    SSetReturn(s:Ssh, r:Command->Return->Void);
+    SRegister(s:Ssh, c:Consume, b:BasicConsumer);
+    SRpc(s:Ssh, c:Command, fun:Dynamic);
+    SDispatch(s:Ssh, c:Command);
 }

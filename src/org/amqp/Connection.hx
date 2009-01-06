@@ -240,25 +240,26 @@ package org.amqp;
             var r = [s];
             var msg:SMessage;
             try{
-            while (true) {
-                msg = neko.vm.Thread.readMessage(false);
-                if(msg != null) {
-                    switch(msg) {
-                        case SRpc(s, cmd, fun): s.rpc(cmd, fun);
-                        case SDispatch(s, cmd): s.dispatch(cmd);
-                        case SRegister(s, c, b): s.register(c, b);
-                        case SClose: close();
-                        default:
+                while (true) {
+                    msg = neko.vm.Thread.readMessage(false);
+                    if(msg != null) {
+                        switch(msg) {
+                            case SRpc(s, cmd, fun): s.rpc(cmd, fun);
+                            case SDispatch(s, cmd): s.dispatch(cmd);
+                            case SRegister(s, c, b): s.register(c, b);
+                            case SSetReturn(s, r): s.setReturn(r);
+                            case SClose: /*trace("got close command");*/ close();
+                            default:
+                        }
                     }
+                    var select = neko.net.Socket.select(r, e, e, 0.005);
+                    if(select.read.length == 0) continue;
+
+                    onSocketData(); 
                 }
-                var select = neko.net.Socket.select(r, e, e, 0.0001);
-                if(select.read.length == 0) continue;
-                //s.waitForRead();
-                onSocketData(); 
-            }
             } catch (err:Dynamic) {
                 if(Std.is(err, haxe.io.Eof)) {
-                    trace("end of stream");
+                    trace("end of stream"); // probably from SClose
                 } else {
                     trace(err+" this should be logged and reported!");
                     throw (err+" this should be logged and reported!");

@@ -54,6 +54,7 @@ package org.amqp.impl;
 
         var pendingConsumers:List<BasicConsumer> ;
         var consumers:Hash<BasicConsumer>;
+        var returnCallback:Command->Return->Void;
 
         public function new(){
             // TODO Look into whether this is really necessary
@@ -63,6 +64,7 @@ package org.amqp.impl;
             QUEUE_SIZE = 100;
             pendingConsumers = new List();
             consumers = new Hash();
+            unsetReturn();
             addEventListener(new Deliver(), onDeliver);
             addEventListener(new Return(), onReturn);
         }
@@ -132,9 +134,22 @@ package org.amqp.impl;
             consumer.onDeliver(deliver, props, body);
         }
 
+        public function setReturn(r:Command->Return->Void):Void {
+            returnCallback = r;
+        }
+
+        public function unsetReturn():Void {
+            returnCallback = dummyReturn;
+        }
+
+        public function dummyReturn(c:Command, r:Return):Void {
+        }
+
         public function onReturn(e:ProtocolEvent):Void {
-            var ret = cast(e.command.method, Return);
-            ret.dump();
+            //trace("contentHeader "+Type.typeof(e.command.contentHeader));
+            //trace("content length:"+e.command.content.length);
+            // call the onReturn callback
+            returnCallback(e.command, cast(e.command.method, Return));
         }
 
         public function onOpenOk(event:ProtocolEvent):Void {
