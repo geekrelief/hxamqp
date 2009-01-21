@@ -80,10 +80,10 @@ package samp;
         public function buildConnectionParams():ConnectionParameters {
 			log("AbstractTest2: buildConnectionParams");
             var params:ConnectionParameters = new ConnectionParameters();
-            params.username = "guest2";
-            params.password = "guest2";
+            params.username = "guest";
+            params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.19";
+            params.serverhost = "127.0.0.1";
             return params;
         }
 

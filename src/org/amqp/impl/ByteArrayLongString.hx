@@ -34,7 +34,7 @@ package org.amqp.impl;
         #if flash9
         var buf:ByteArray;
         #elseif neko
-        var buf:BytesOutput;
+        var buf:Bytes;
         #end
 
         #if flash9
@@ -50,7 +50,7 @@ package org.amqp.impl;
             if(b.bigEndian == false)
                 throw "BytesOutput argument to ByteArrayLongString must be bigEndian";
 
-            buf = b;
+            buf = b.getBytes();
         }
         #end
 
@@ -70,12 +70,12 @@ package org.amqp.impl;
         #elseif neko
         public function getBytes():Bytes
         {
-            return buf.getBytes();
+            return buf;
         }
 
         public function getStream():Input
         {
-            var b = new BytesInput(buf.getBytes()); b.bigEndian = true;
+            var b = new BytesInput(buf); b.bigEndian = true;
             return b;
         }
         #end

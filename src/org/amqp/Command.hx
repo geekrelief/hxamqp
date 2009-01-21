@@ -135,20 +135,22 @@ package org.amqp;
                 #elseif neko
                 bodyOut.writeUInt16(contentHeader.getClassId());
                 #end
-                contentHeader.writeTo(bodyOut, content.length);
-                connection.sendFrame(f);
 
-                var frameMax:Int = connection.frameMax;
-                var bodyPayloadMax:Int =
-                    (frameMax == 0) ? content.length : frameMax - EMPTY_CONTENT_BODY_FRAME_SIZE;
-                //trace("bodyPayloadMax "+bodyPayloadMax);
-
-                var offset:Int = 0;
                 #if flash9
                 var cb = content;
                 #elseif neko
                 var cb = content.getBytes();
                 #end
+
+                contentHeader.writeTo(bodyOut, cb.length);
+                connection.sendFrame(f);
+
+                var frameMax:Int = connection.frameMax;
+                var bodyPayloadMax:Int =
+                    (frameMax == 0) ? cb.length : frameMax - EMPTY_CONTENT_BODY_FRAME_SIZE;
+                //trace("bodyPayloadMax "+bodyPayloadMax);
+
+                var offset:Int = 0;
                 var i = 0;
                 while (offset < cb.length) {
                     var remaining:Int = cb.length - offset;
