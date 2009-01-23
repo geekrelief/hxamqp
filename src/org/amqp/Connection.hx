@@ -236,7 +236,8 @@ package org.amqp;
         // neko does not have asynch i/o, instead spawn a thread for reading and writing to the socket
         // reading and writing to the socket is controlled by the socketLoop
         public function socketLoop(mt:Thread):Void {
-            var idt = Thread.create(callback(incomingData, Thread.current())); // incoming data detector
+            // incoming data thread
+            var idt = Thread.create(callback(incomingData, Thread.current()));
             var msg:SMessage;
             try{
                 while (true) {
@@ -244,7 +245,7 @@ package org.amqp;
                     switch(msg) {
                         case SRpc(s, cmd, fun): s.rpc(cmd, fun);
                         case SDispatch(s, cmd): s.dispatch(cmd);
-                        case SRegister(s, c, b): s.register(c, b);
+                        case SRegister(s, c, b): s.register(c, b); // consumers register
                         case SSetReturn(s, r): s.setReturn(r);
                         case SClose: close();
                         case SData: onSocketData(); idt.sendMessage(true);
@@ -254,13 +255,12 @@ package org.amqp;
             } catch (err:Dynamic) {
                 if(Std.is(err, haxe.io.Eof)) {
                     //trace("end of stream"); // probably from SClose
+                    mt.sendMessage("close");
                 } else {
                     trace(err+" this should be logged and reported!");
                     throw (err+" this should be logged and reported!");
                 }
             }
-
-            mt.sendMessage("close");
         }
 
         // notifies the socket loop of incoming data
@@ -283,7 +283,7 @@ package org.amqp;
                         session0.handleFrame(frame);
                     } else {
                         var session:Session = sessionManager.lookup(frame.channel);
-                        if(session != null)
+                        if(session != null) 
                             session.handleFrame(frame);
                     }
             } else {

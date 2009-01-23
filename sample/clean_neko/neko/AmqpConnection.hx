@@ -44,13 +44,9 @@ package neko;
         var sentDisconnect:Bool;
 
         public function new(cp:ConnectionParameters) {
-            //co = new Connection(buildConnectionParams());
             co = new Connection(cp);
             sm = co.sessionManager;
             channels = new List();
-
-            //ms = new Deque();
-            //ams = new Deque();
 
             sentDisconnect = false;
 
@@ -70,7 +66,6 @@ package neko;
             //trace("create connection thread");
             ct = neko.vm.Thread.create(callback(co.socketLoop, mt));
             Thread.readMessage(true); // wait for a start message from afterOpen
-            //trace("after open");
         }
 
         public function afterOpen():Void { mt.sendMessage(true); }

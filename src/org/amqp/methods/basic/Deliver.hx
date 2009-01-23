@@ -31,8 +31,8 @@ package org.amqp.methods.basic;
     class Deliver extends Method, implements ArgumentReader, implements ArgumentWriter {
          public var consumertag(getConsumertag, setConsumertag) : String;
          public var deliverytag(getDeliverytag, setDeliverytag) : Float;
-         public var exchange(getExchange, setExchange) : String;
          public var redelivered(getRedelivered, setRedelivered) : Bool;
+         public var exchange(getExchange, setExchange) : String;
          public var routingkey(getRoutingkey, setRoutingkey) : String;
          public function new() {
          _consumertag = "";

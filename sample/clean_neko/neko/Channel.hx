@@ -66,29 +66,36 @@ package neko;
 
         // helper functions for talking to the connection thread
         public function cDispatch(s:Ssh, p:Publish, b:BasicProperties, d:Bytes) { 
+            // dispatch sends aynch commands to server
             ct.sendMessage(SDispatch(s, new Command(p, b, d))); 
         } 
-        public function cRpc(s:Ssh, m:Method, cb:Dynamic) { 
+        public function cRpc(s:Ssh, m:Method, cb:Dynamic):ProtocolEvent { 
+            // sends synchronous commands, blocks till reply received
             ct.sendMessage(SRpc(s, new Command(m), cb)); 
-            var e:ProtocolEvent = Thread.readMessage(true);
+            // returns ProtocolEvent
+            return Thread.readMessage(true);
         }
-        public function cRegister(s:Ssh, c:Consume, ?fdeliver:Dynamic, ?fconsume: Dynamic, ?fcancel:Dynamic):String { 
+        public function cConsume(s:Ssh, c:Consume, ?fdeliver:Dynamic, ?fconsume: Dynamic, ?fcancel:Dynamic):String { 
             ct.sendMessage(SRegister(s, c, new Consumer(fdeliver, fconsume, fcancel))); 
+            // used for the consume call, returns the consumer tag
             return Thread.readMessage(true);
         }
         
         public function cSetReturn(s:Ssh, rc:Dynamic) { 
+            // set a message return callback
             ct.sendMessage(SSetReturn(s, rc)); 
         }
       
         function dh(e:ProtocolEvent):Void { 
-            //trace(e);
+            //trace(e+" "+Type.typeof(e.command.contentHeader)+" "+e.command.contentHeader);
             mt.sendMessage(e);
         }
 
-        public function declare_queue(dq:DeclareQueue) {
-            cRpc(ssh, dq, dh); // declare a queue on this channel
+        public function declare_queue(dq:DeclareQueue):DeclareQueueOk {
+            var e = cRpc(ssh, dq, dh); // declare a queue on this channel
+                                       // get the return value from dh
             //trace("queue declared");
+            return cast(e.command.method, DeclareQueueOk);
         }
 
         public function declare_exchange(de:DeclareExchange) {
@@ -116,7 +123,7 @@ package neko;
         // returns the consumer tag
         public function consume(c:Consume, dh:Delivery->Void):String {
             deliver_callback = dh;
-            return cRegister(ssh, c, onDeliver, onConsumeOk);
+            return cConsume(ssh, c, onDeliver, onConsumeOk);
         }
 
         public function onConsumeOk(tag:String):Void {
