@@ -34,7 +34,7 @@ package org.amqp.impl;
         //var QUEUE_SIZE:Int ;
 
         var connection:Connection;
-        var channel:Int;
+        public var channel(default, null):Int;
         var commandReceiver:CommandReceiver;
         var currentCommand:Command;
 

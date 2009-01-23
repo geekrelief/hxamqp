@@ -20,8 +20,8 @@ package org.amqp;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
 
-    class Method
-    implements Dynamic<Dynamic> {
+    class Method {
+//    implements Dynamic<Dynamic> {
         public function writeArgumentsTo(writer:MethodArgumentWriter):Void {}
 
         public function readArgumentsFrom(reader:MethodArgumentReader):Void {}

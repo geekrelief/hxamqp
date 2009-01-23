@@ -253,7 +253,7 @@ package org.amqp;
                 }
             } catch (err:Dynamic) {
                 if(Std.is(err, haxe.io.Eof)) {
-                    trace("end of stream"); // probably from SClose
+                    //trace("end of stream"); // probably from SClose
                 } else {
                     trace(err+" this should be logged and reported!");
                     throw (err+" this should be logged and reported!");
@@ -283,7 +283,8 @@ package org.amqp;
                         session0.handleFrame(frame);
                     } else {
                         var session:Session = sessionManager.lookup(frame.channel);
-                        session.handleFrame(frame);
+                        if(session != null)
+                            session.handleFrame(frame);
                     }
             } else {
                 handleSocketTimeout();

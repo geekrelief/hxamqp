@@ -37,6 +37,14 @@ package org.amqp;
             return sessions.get(channel);
         }
 
+        public function remove(ssh:SessionStateHandler) {
+            var session:Session = sessions.get(ssh.channel);
+            if(session != null) {
+                session.closeGracefully();
+                sessions.remove(ssh.channel);
+            }
+        }
+
         public function create(?stateHandler:SessionStateHandler = null):SessionStateHandler {
             var channel:Int = allocateChannelNumber();
 

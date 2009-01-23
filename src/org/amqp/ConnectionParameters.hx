@@ -31,8 +31,16 @@ package org.amqp;
         public var tlsPort:Int ;
         public var options:Dynamic ;
 
-		public function new () {
-			serverport = AMQP.PORT;
+		public function new (?_host:String="", ?_port:Int=-1, ?_user:String="", ?_pass:String="", ?_vhost:String="", ?_options) {
+            serverhost = _host;
+            if(_port == -1)
+			    serverport = AMQP.PORT;
+            else
+                serverport = _port;
+            username = _user;
+            password = _pass;
+            vhostpath = _vhost;
+            options = _options;
 		}
 
         public function getPort():Int {

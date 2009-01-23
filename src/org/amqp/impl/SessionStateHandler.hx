@@ -56,6 +56,8 @@ package org.amqp.impl;
         var consumers:Hash<BasicConsumer>;
         var returnCallback:Command->Return->Void;
 
+        public var channel(getSessionChannel, null):Int;
+
         public function new(){
             // TODO Look into whether this is really necessary
             super();
@@ -67,6 +69,10 @@ package org.amqp.impl;
             unsetReturn();
             addEventListener(new Deliver(), onDeliver);
             addEventListener(new Return(), onReturn);
+        }
+
+        inline public function getSessionChannel():Int {
+            return session.channel;
         }
 
         public override function forceClose():Void{

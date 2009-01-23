@@ -1,0 +1,12 @@
+-neko nekoclient.n
+-main NekoClient
+-cp ../../src
+
+--next
+-swf flashclient.swf
+-main FlashClient
+-swf-version 10
+-swf-header 400:300:30:ffffff
+-debug
+-D network-sandbox
+-cp ../../src

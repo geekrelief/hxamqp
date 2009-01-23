@@ -19,6 +19,7 @@ package org.amqp;
 
     interface Session
     {
+        var channel(default, null):Int;
         function closeGracefully():Void;
         function forceClose():Void;
         /**
