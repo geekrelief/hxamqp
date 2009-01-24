@@ -257,8 +257,8 @@ package org.amqp;
                     //trace("end of stream"); // probably from SClose
                     mt.sendMessage("close");
                 } else {
-                    trace(err+" this should be logged and reported!");
-                    throw (err+" this should be logged and reported!");
+                    //trace(err+" this should be logged and reported!");
+                    throw (haxe.Stack.exceptionStack()+"\n "+err+" this should be logged and reported!");
                 }
             }
         }

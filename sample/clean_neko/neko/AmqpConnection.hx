@@ -89,5 +89,7 @@ package neko;
         public function close() {
             ct.sendMessage(SClose);
             Thread.readMessage(true);
+            neko.Sys.sleep(0.1); // need this or we get a bus error
+            // I assume it has to do with some interaction with the ct or idt thread
         }
     }

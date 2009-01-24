@@ -112,14 +112,25 @@ package neko;
             //trace("bind ok");
         }
 
-        public function publish(data:Bytes) {
-            cDispatch(ssh, publishSettings, Properties.getBasicProperties(), data);
+        public function publish(data:Bytes, ?pub:Publish, ?prop:BasicProperties) {
+            cDispatch(ssh
+                     , (pub == null) ? publishSettings : pub
+                     , (prop == null) ? Properties.getBasicProperties() : prop
+                     , data);
         }
 
-        public function publish_with(data:Bytes, pub:Publish, prop:BasicProperties ):Void {
-            cDispatch(ssh, pub, prop, data);
+        public function publish_string(s:String, exchange:String, routingkey:String){
+            var p = new Publish();
+            p.exchange = exchange;
+            p.routingkey = routingkey;
+            var b = new BytesOutput();
+            b.bigEndian = true;
+            b.writeByte(s.length);
+            b.writeString(s);
+            cDispatch(ssh, p, Properties.getBasicProperties(), b.getBytes());
         }
- 
+
+
         // returns the consumer tag
         public function consume(c:Consume, dh:Delivery->Void):String {
             deliver_callback = dh;
