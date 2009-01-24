@@ -15,6 +15,7 @@ enum SMessage {
     SData;
     SSetReturn(s:Ssh, r:Command->Return->Void);
     SRegister(s:Ssh, c:Consume, b:BasicConsumer);
+    SUnregister(s:Ssh, t:String);
     SRpc(s:Ssh, c:Command, fun:Dynamic);
     SDispatch(s:Ssh, c:Command);
 }

@@ -52,7 +52,6 @@ package org.amqp.impl;
         var state:Int ;
         var QUEUE_SIZE:Int ;
 
-        var pendingConsumers:List<BasicConsumer> ;
         var consumers:Hash<BasicConsumer>;
         var returnCallback:Command->Return->Void;
 
@@ -64,7 +63,6 @@ package org.amqp.impl;
             
             state = STATE_CONNECTION;
             QUEUE_SIZE = 100;
-            pendingConsumers = new List();
             consumers = new Hash();
             unsetReturn();
             addEventListener(new Deliver(), onDeliver);
@@ -98,8 +96,7 @@ package org.amqp.impl;
         }
 
         public function register(consume:Consume, consumer:BasicConsumer):Void{
-            pendingConsumers.add(consumer);
-            rpc(new Command(consume), onConsumeOk);
+            rpc(new Command(consume), callback(onConsumeOk, consumer));
         }
 
         public function unregister(tag:String):Void{
@@ -108,12 +105,12 @@ package org.amqp.impl;
             rpc(new Command(cancel), onCancelOk);
         }
 
-        public function onConsumeOk(event:ProtocolEvent):Void {
+        public function onConsumeOk(consumer:BasicConsumer, event:ProtocolEvent):Void {
             var consumeOk:ConsumeOk = cast( event.command.method, ConsumeOk);
-            var consumer:BasicConsumer = pendingConsumers.pop();
 
             var tag:String = consumeOk.consumertag;
             consumers.set(tag, consumer);
+            //trace("onConsumeOk "+consumer+" "+tag);
             consumer.onConsumeOk(tag);
         }
 

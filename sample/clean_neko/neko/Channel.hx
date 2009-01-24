@@ -30,6 +30,7 @@ package neko;
     import org.amqp.methods.queue.Bind;
 
     import org.amqp.events.EventDispatcher;
+    typedef DeliveryMessage = {var dcb:Delivery->Void; var method:Deliver; var properties:BasicProperties; var body:BytesInput;}
 
     class Channel extends EventDispatcher {
 
@@ -40,9 +41,14 @@ package neko;
     
         var mt:Thread;
         var ct:Thread;
-        var ms:Deque<Delivery>;
+        //var ms:Deque<Delivery>;
 
-        var deliver_callback:Delivery->Void;
+        var ms:Deque<DeliveryMessage>;
+
+        var queueCount:Int;
+        var exchangeCount:Int;
+        var bindCount:Int;
+        var consumeCount:Int;
 
         var sentDisconnect:Bool;
 
@@ -57,64 +63,66 @@ package neko;
             mt = Thread.current();
 
             ssh = sm.create();
-            cRpc(ssh, new Open(), dh); // open a channel
+            cRpc(new Open()); // open a channel
             //trace("channel open");
 
             ms = new Deque();
             sentDisconnect = false;
+
+            queueCount = 0;
+            exchangeCount = 0;
+            bindCount = 0;
+            consumeCount = 0;
         }
 
         // helper functions for talking to the connection thread
-        public function cDispatch(s:Ssh, p:Publish, b:BasicProperties, d:Bytes) { 
+        public function cDispatch(p:Publish, b:BasicProperties, d:Bytes) { 
             // dispatch sends aynch commands to server
-            ct.sendMessage(SDispatch(s, new Command(p, b, d))); 
+            ct.sendMessage(SDispatch(ssh, new Command(p, b, d))); 
         } 
-        public function cRpc(s:Ssh, m:Method, cb:Dynamic):ProtocolEvent { 
+        public function cRpc(m:Method, ?ecount:Int = 1):ProtocolEvent { 
             // sends synchronous commands, blocks till reply received
-            ct.sendMessage(SRpc(s, new Command(m), cb)); 
+            ct.sendMessage(SRpc(ssh, new Command(m), dh)); 
             // returns ProtocolEvent
-            return Thread.readMessage(true);
+            var e:ProtocolEvent = null;
+            for(i in 0...ecount)
+                e = Thread.readMessage(true);
+            return e;
         }
-        public function cConsume(s:Ssh, c:Consume, ?fdeliver:Dynamic, ?fconsume: Dynamic, ?fcancel:Dynamic):String { 
-            ct.sendMessage(SRegister(s, c, new Consumer(fdeliver, fconsume, fcancel))); 
-            // used for the consume call, returns the consumer tag
-            return Thread.readMessage(true);
-        }
-        
-        public function cSetReturn(s:Ssh, rc:Dynamic) { 
-            // set a message return callback
-            ct.sendMessage(SSetReturn(s, rc)); 
-        }
-      
+
         function dh(e:ProtocolEvent):Void { 
             //trace(e+" "+Type.typeof(e.command.contentHeader)+" "+e.command.contentHeader);
             mt.sendMessage(e);
         }
 
         public function declare_queue(dq:DeclareQueue):DeclareQueueOk {
-            var e = cRpc(ssh, dq, dh); // declare a queue on this channel
-                                       // get the return value from dh
+            queueCount++;
+            var e = cRpc(dq, queueCount);
             //trace("queue declared");
+            //trace("declare queue "+e);
             return cast(e.command.method, DeclareQueueOk);
         }
 
         public function declare_exchange(de:DeclareExchange) {
-            cRpc(ssh, de, dh); 
-            //trace("exchange declared");
+            exchangeCount++;
+            var e = cRpc(de, exchangeCount); 
+            //trace("exchange declared "+e);
         }
 
         public function bind(qname:String, xname:String, routingkey:String) {
+            //trace("bind "+routingkey);
             var b:Bind = new Bind();
             b.queue = qname;
             b.exchange = xname;
             b.routingkey = routingkey;
-            cRpc(ssh, b, dh); 
+            bindCount++; // each bind returns a bindCount BindOk's
+            var e = cRpc(b, bindCount);
+            //trace("bind " +e);
             //trace("bind ok");
         }
 
         public function publish(data:Bytes, ?pub:Publish, ?prop:BasicProperties) {
-            cDispatch(ssh
-                     , (pub == null) ? publishSettings : pub
+            cDispatch( (pub == null) ? publishSettings : pub
                      , (prop == null) ? Properties.getBasicProperties() : prop
                      , data);
         }
@@ -127,45 +135,59 @@ package neko;
             b.bigEndian = true;
             b.writeByte(s.length);
             b.writeString(s);
-            cDispatch(ssh, p, Properties.getBasicProperties(), b.getBytes());
+            cDispatch(p, Properties.getBasicProperties(), b.getBytes());
         }
 
-
-        // returns the consumer tag
-        public function consume(c:Consume, dh:Delivery->Void):String {
-            deliver_callback = dh;
-            return cConsume(ssh, c, onDeliver, onConsumeOk);
+        public function consume(c:Consume, dcb:Delivery->Void):String {
+            consumeCount++;
+            ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
+            var consumerTag:String = "";
+            for(i in 0...consumeCount) {
+                consumerTag = Thread.readMessage(true);
+            }
+            //trace("consume tag "+consumerTag);
+            return consumerTag;
         }
 
-        public function onConsumeOk(tag:String):Void {
+        public function onConsumeOk(c:Consume, tag:String):Void {
+            // in connection thread
+            //trace("onConsume q: "+c.queue+" tag: "+tag);
+            mt.sendMessage(tag);
+        }
+
+        public function onDeliver(c:Consume, dcb:Delivery->Void, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
+            // in connection thread
+            ms.add({dcb: dcb, method: method, properties: properties, body:body});
+        }
+
+        public function deliver(?_block:Bool=true):Bool {
+            var msg:DeliveryMessage = ms.pop(_block);
+            if(msg != null) {
+                if(msg.dcb != null)
+                    msg.dcb({method: msg.method, properties: msg.properties, body: msg.body});
+                    /*
+                if(deliver_callback != null) {
+                    deliver_callback(msg);
+                }
+                */
+            }
+
+            return (msg != null);
+        }
+
+        public function cancel(consumerTag:String):Void {
+            consumeCount--;
+            ct.sendMessage(SUnregister(ssh, consumerTag));
+            //trace("cancel "+Thread.readMessage(true));
+        }
+
+        public function onCancelOk(c:Consume, tag:String) {
             // in connection thread
             mt.sendMessage(tag);
         }
 
-        public function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
-            // in connection thread
-            ms.add({method: method, properties: properties, body:body});
-        }
-
-        public function cancel(tag:String):Void {
-            var c = new Cancel();
-            c.consumertag = tag;
-            cRpc(ssh, c, dh);
-        }
-
         public function setReturn(rh:Command->Return->Void) {
-            cSetReturn(ssh, rh);
-        }
-
-        public function deliver(?_block:Bool=true):Bool {
-            var msg:Delivery = ms.pop(_block);
-            if(msg != null) {
-                if(deliver_callback != null) {
-                    deliver_callback(msg);
-                }
-            }
-
-            return (msg != null);
+            ct.sendMessage(SSetReturn(ssh, rh)); 
         }
 
         public function close() {

@@ -246,6 +246,7 @@ package org.amqp;
                         case SRpc(s, cmd, fun): s.rpc(cmd, fun);
                         case SDispatch(s, cmd): s.dispatch(cmd);
                         case SRegister(s, c, b): s.register(c, b); // consumers register
+                        case SUnregister(s, t): s.unregister(t); // cancel consume with t
                         case SSetReturn(s, r): s.setReturn(r);
                         case SClose: close();
                         case SData: onSocketData(); idt.sendMessage(true);
