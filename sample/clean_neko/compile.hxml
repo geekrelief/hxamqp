@@ -1,5 +1,5 @@
--neko nekoclient.n
--main NekoClient
+-neko gateway.n
+-main Gateway
 -cp ../../src
 
 --next

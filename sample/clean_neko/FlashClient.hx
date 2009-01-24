@@ -52,13 +52,21 @@
             exchange = "lobby";
             x_type = "topic";
 			q = "inq";
-            routingkey = "#.don.#";
+            routingkey = "gateway";
 
             connection = new Connection(buildConnectionParams());
             sessionManager = connection.sessionManager;
             
             connection.start();
             connection.baseSession.registerLifecycleHandler(this);
+        }
+
+        public function run(e:ProtocolEvent){
+            trace("publish");
+            var b = new ByteArray();
+            b.writeByte("hello".length);
+            b.writeUTFBytes("hello");
+            publish(b);
         }
 
         public function buildConnectionParams():ConnectionParameters {
@@ -95,8 +103,8 @@
             trace("exchange declared "+e);
             // declares the queue
             var dq = new org.amqp.methods.queue.Declare();
-            dq.queue = q;
-            sessionHandler.rpc(new Command(dq), setupBind);
+            dq.queue = "gateway";
+            sessionHandler.rpc(new Command(dq), run);//setupBind);
         }
 
         public function setupBind(e:ProtocolEvent):Void {
@@ -137,5 +145,14 @@
         public function onDeliver(method:Deliver, properties:BasicProperties, body:ByteArray):Void {
             var s = body.readUTFBytes(body.readByte());          
             trace("delivered "+s); 
+        }
+
+        public function publish(data:ByteArray):Void {
+            var publish:Publish = new Publish();
+            publish.exchange = "lobby";
+            publish.routingkey = "gateway";
+            var props:BasicProperties = Properties.getBasicProperties();
+            var cmd:Command = new Command(publish, props, data);
+            sessionHandler.dispatch(cmd);
         }
     }
