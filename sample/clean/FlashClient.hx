@@ -77,7 +77,7 @@
             //ouch.publish(dw.getBytes(), p);
             */
 
-            ouch.publish_string("world", x, routingkey);
+            ouch.publishString("world", x, routingkey);
         }
 
 

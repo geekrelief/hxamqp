@@ -78,7 +78,13 @@ package org.amqp.fast.neko;
             mt.sendMessage(e);
         }
 
-        public function declare_queue(dq:DeclareQueue):DeclareQueueOk {
+        public function declareQueue(q:String):Void {
+            var d = new DeclareQueue();
+            d.queue = q;
+            declareQueueWith(d);
+        }
+
+        public function declareQueueWith(dq:DeclareQueue):DeclareQueueOk {
             queueCount++;
             var e = cRpc(dq, queueCount);
             //trace("queue declared");
@@ -86,7 +92,14 @@ package org.amqp.fast.neko;
             return cast(e.command.method, DeclareQueueOk);
         }
 
-        public function declare_exchange(de:DeclareExchange) {
+        public function declareExchange(x:String, t:String):Void {
+            var d = new DeclareExchange();
+            d.exchange = x;
+            d.type = t;
+            declareExchangeWith(d);
+        }
+
+        public function declareExchangeWith(de:DeclareExchange):Void {
             exchangeCount++;
             var e = cRpc(de, exchangeCount); 
             //trace("exchange declared "+e);
@@ -98,10 +111,12 @@ package org.amqp.fast.neko;
             b.queue = qname;
             b.exchange = xname;
             b.routingkey = routingkey;
+            bindWith(b);
+        }
+
+        public function bindWith(b:Bind):Void {
             bindCount++; // each bind returns a bindCount BindOk's
             var e = cRpc(b, bindCount);
-            //trace("bind " +e);
-            //trace("bind ok");
         }
 
         public function publish(data:Bytes, ?pub:Publish, ?prop:BasicProperties) {
@@ -116,7 +131,7 @@ package org.amqp.fast.neko;
                      , data);
         }
 
-        public function publish_string(s:String, exchange:String, routingkey:String){
+        public function publishString(s:String, exchange:String, routingkey:String){
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
@@ -125,7 +140,14 @@ package org.amqp.fast.neko;
             cDispatch(p, Properties.getBasicProperties(), dw.getBytes());
         }
 
-        public function consume(c:Consume, dcb:DeliveryCallback):String {
+        public function consume(q:String, dcb:DeliveryCallback):String {
+            var c = new Consume();
+            c.queue =  q;
+            c.noack = true;
+            return consumeWith(c, dcb);
+        }
+
+        public function consumeWith(c:Consume, dcb:DeliveryCallback):String {
             consumeCount++;
             ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
             var consumerTag:String = "";

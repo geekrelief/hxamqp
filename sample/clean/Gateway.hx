@@ -32,11 +32,11 @@ class Gateway {
         var xd = new DeclareExchange();
         xd.exchange = x;
         xd.type = "topic";
-        inch.declare_exchange(xd);
+        inch.declareExchangeWith(xd);
 
         var d = new DeclareQueue();
         d.queue = "gateway";
-        var declareOk = inch.declare_queue(d);
+        var declareOk = inch.declareQueueWith(d);
         trace("inch Inspect "+declareOk.queue+" messageCount: "+declareOk.messagecount+", consumerCount: "+declareOk.consumercount);      
 
         inch.bind("gateway", x, "gateway");
@@ -60,13 +60,13 @@ class Gateway {
             ouch.publish(dw.getBytes(), p);
             trace("published");
             */
-            ouch.publish_string("hello", x, "flash");
+            ouch.publishString("hello", x, "flash");
         }
         
         var c = new Consume();
         c.queue = "gateway";
         c.noack = true;
-        var tag = inch.consume(c, callback(dh, c.queue));
+        var tag = inch.consumeWith(c, callback(dh, c.queue));
 
         // deliver the messages to their handlers
         while(true)

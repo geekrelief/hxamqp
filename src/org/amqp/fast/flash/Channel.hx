@@ -73,7 +73,7 @@ package org.amqp.fast.flash;
                      , data);
         }
 
-        public function publish_string(s:String, exchange:String, routingkey:String){
+        public function publishString(s:String, exchange:String, routingkey:String){
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
