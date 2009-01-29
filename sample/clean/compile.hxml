@@ -1,8 +1,3 @@
--neko gateway.n
--main Gateway
--cp ../../src
-
---next
 -swf flashclient.swf
 -main FlashClient
 -swf-version 10
@@ -10,3 +5,10 @@
 -debug
 -D network-sandbox
 -cp ../../src
+
+--next
+-neko gateway.n
+-main Gateway
+-cp ../../src
+-debug
+-cmd neko gateway.n

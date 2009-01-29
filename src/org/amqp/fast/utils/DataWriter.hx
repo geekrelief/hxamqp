@@ -16,9 +16,7 @@ class DataWriter {
     }
 
     public function bytes(by:ByteArray):Void {
-        var len = by.length - by.position;
-        long(len);
-        b.writeBytes(by, by.position, len);
+        b.writeBytes(by, by.position, by.length - by.position);
     }
 
     inline public function string(s:String):Void {
@@ -70,7 +68,6 @@ class DataWriter {
     }
 
     public function bytes(by:Bytes) {
-        long(by.length);
         b.write(by);
     }
 

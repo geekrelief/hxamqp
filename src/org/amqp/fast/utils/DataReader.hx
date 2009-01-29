@@ -96,7 +96,7 @@ class DataReader {
         return b.readInt16();
     }
 
-    inline public function long():Int {
+    public function long():Int {
         return b.readInt31();
     }
 

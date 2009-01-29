@@ -3,11 +3,12 @@
 
 	class FlashClient {
 
-        public var exchange:String ;
+        public var x:String ;
         public var x_type:String;
-        public var q:String ;
+        public var iq:String ;
         public var routingkey:String;
         public var amqp:AmqpConnection;
+        public var inch:Channel;
         public var ouch:Channel;
  
         var consumerTag:String;
@@ -19,18 +20,53 @@
 
         public function new()
         {
-            exchange = "lobby";
+            x = "x";
             x_type = "topic";
-			q = "inq";
+			iq = "flash";
             routingkey = "gateway";
 
             amqp = new AmqpConnection(new ConnectionParameters("127.0.0.1", 5672, "guest", "guest", "/"), onConnectionOpenOk);
         }
 
-        public function run(e:ProtocolEvent){
-            trace("publish");
-            amqp.channel();
+        public function onConnectionOpenOk():Void {
+            ouch = amqp.channel();
+            inch = amqp.channel();
 
+            var de = new DeclareExchange();
+            de.exchange = x;
+            de.type = x_type;
+            inch.declare_exchange(de, dh);
+ 
+            var dq = new DeclareQueue();
+            dq.queue = iq;
+            inch.declare_queue(dq, dh);
+
+            inch.bind("flash", x, "flash", dh);
+
+            var c = new Consume();
+            c.queue = iq;
+            c.noack = true;
+            inch.consume(c, onDeliver, onConsume/*, onCancel*/);
+
+        /*
+            var de = new DeclareExchange();
+            de.exchange = exchange;
+            de.type = x_type;
+            ouch.declare_exchange(de, run);
+            */
+        }
+
+        public function onDeliver(d:Delivery):Void {
+            trace("onDeliver");
+            var dr = new DataReader(d.body);
+            trace(dr.string());
+        }
+
+        public function onConsume(tag:String){
+            trace("onConsume");
+            trace("publish");
+
+            /*
             var dw = new DataWriter();
             dw.string("hello");
 
@@ -38,17 +74,14 @@
             p.exchange = exchange;
             p.routingkey = routingkey;
 
-            ouch.publish(dw.getBytes(), p);
+            //ouch.publish(dw.getBytes(), p);
+            */
 
-            ouch.publish_string("world", exchange, routingkey);
+            ouch.publish_string("world", x, routingkey);
         }
 
-        public function onConnectionOpenOk():Void {
-            ouch = amqp.channel();
-        
-            var de = new DeclareExchange();
-            de.exchange = exchange;
-            de.type = x_type;
-            ouch.declare_exchange(de, run);
+
+        public function dh(e:ProtocolEvent){
+            // ignore
         }
     }

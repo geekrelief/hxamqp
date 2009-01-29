@@ -105,6 +105,12 @@ package org.amqp.fast.neko;
         }
 
         public function publish(data:Bytes, ?pub:Publish, ?prop:BasicProperties) {
+            #if debug
+            if(publishSettings == null && pub == null) {
+                trace("Channel#publish needs .publishSettings set or a Publish instance argument");
+                throw "Channel#publish needs .publishSettings set or a Publish instance argument";
+            }
+            #end
             cDispatch( (pub == null) ? publishSettings : pub
                      , (prop == null) ? Properties.getBasicProperties() : prop
                      , data);
@@ -114,11 +120,9 @@ package org.amqp.fast.neko;
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
-            var b = new BytesOutput();
-            b.bigEndian = true;
-            b.writeByte(s.length);
-            b.writeString(s);
-            cDispatch(p, Properties.getBasicProperties(), b.getBytes());
+            var dw = new DataWriter();
+            dw.string(s);
+            cDispatch(p, Properties.getBasicProperties(), dw.getBytes());
         }
 
         public function consume(c:Consume, dcb:DeliveryCallback):String {

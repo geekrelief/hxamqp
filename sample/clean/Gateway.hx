@@ -25,24 +25,42 @@ class Gateway {
         var amqp = new AmqpConnection(new ConnectionParameters("127.0.0.1", 5672, "guest", "guest", "/"));
 
         // setup first inbox
-        var inch =  amqp.channel();
-        
+        var inch = amqp.channel();
+       
+        var x = "x";
+
+        var xd = new DeclareExchange();
+        xd.exchange = x;
+        xd.type = "topic";
+        inch.declare_exchange(xd);
+
         var d = new DeclareQueue();
         d.queue = "gateway";
         var declareOk = inch.declare_queue(d);
         trace("inch Inspect "+declareOk.queue+" messageCount: "+declareOk.messagecount+", consumerCount: "+declareOk.consumercount);      
 
-        var xd = new DeclareExchange();
-        xd.exchange = "lobby";
-        xd.type = "topic";
-        inch.declare_exchange(xd);
+        inch.bind("gateway", x, "gateway");
 
-        inch.bind("gateway", "lobby", "#");
+        var ouch = amqp.channel();
 
         var dh:String->Delivery->Void = 
         function(q:String, d:Delivery):Void {
             var dr = new DataReader(d.body);
-            trace("delivery to "+q+" "+dr.string());
+            trace(dr.string());
+            //trace("delivery to "+q+" "+dr.string());
+
+/*
+            var by = neko.io.File.getBytes("compile.hxml");
+            var dw = new DataWriter();
+            dw.bytes(by);
+            trace("sending compile.hxml ");
+            var p = new Publish();
+            p.exchange = "lobby";
+            p.routingkey = "flash";
+            ouch.publish(dw.getBytes(), p);
+            trace("published");
+            */
+            ouch.publish_string("hello", x, "flash");
         }
         
         var c = new Consume();
