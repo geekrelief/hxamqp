@@ -59,11 +59,11 @@ package org.amqp.fast.neko;
         }
 
         // helper functions for talking to the connection thread
-        public function cDispatch(p:Publish, b:BasicProperties, d:Bytes) { 
+        function cDispatch(p:Publish, b:BasicProperties, d:Bytes) { 
             // dispatch sends aynch commands to server
             ct.sendMessage(SDispatch(ssh, new Command(p, b, d))); 
         } 
-        public function cRpc(m:Method, ?ecount:Int = 1):ProtocolEvent { 
+        function cRpc(m:Method, ?ecount:Int = 1):ProtocolEvent { 
             // sends synchronous commands, blocks till reply received
             ct.sendMessage(SRpc(ssh, new Command(m), dh)); 
             // returns ProtocolEvent
@@ -131,13 +131,17 @@ package org.amqp.fast.neko;
                      , data);
         }
 
+        inline public function publishData(dw:DataWriter, ?pub:Publish, ?prop:BasicProperties) {
+            publish(dw.getBytes(), pub, prop);
+        }
+
         public function publishString(s:String, exchange:String, routingkey:String){
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
             var dw = new DataWriter();
             dw.string(s);
-            cDispatch(p, Properties.getBasicProperties(), dw.getBytes());
+            publishData(dw, p, Properties.getBasicProperties());
         }
 
         public function consume(q:String, dcb:DeliveryCallback):String {
@@ -158,13 +162,13 @@ package org.amqp.fast.neko;
             return consumerTag;
         }
 
-        public function onConsumeOk(c:Consume, tag:String):Void {
+        function onConsumeOk(c:Consume, tag:String):Void {
             // in connection thread
             //trace("onConsume q: "+c.queue+" tag: "+tag);
             mt.sendMessage(tag);
         }
 
-        public function onDeliver(c:Consume, dcb:DeliveryCallback, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
+        function onDeliver(c:Consume, dcb:DeliveryCallback, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
             // in connection thread
             ms.add({dcb: dcb, method: method, properties: properties, body:body});
         }
@@ -185,7 +189,7 @@ package org.amqp.fast.neko;
             //trace("cancel "+Thread.readMessage(true));
         }
 
-        public function onCancelOk(c:Consume, tag:String) {
+        function onCancelOk(c:Consume, tag:String) {
             // in connection thread
             mt.sendMessage(tag);
         }

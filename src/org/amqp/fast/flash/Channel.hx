@@ -56,7 +56,7 @@ package org.amqp.fast.flash;
 
         function onOpenOk(e:ProtocolEvent):Void { /* ignore */ }
 
-        public function cDispatch(p:Publish, b:BasicProperties, d:ByteArray) { 
+        function cDispatch(p:Publish, b:BasicProperties, d:ByteArray) { 
             ssh.dispatch(new Command(p, b, d));
         } 
 
@@ -73,18 +73,22 @@ package org.amqp.fast.flash;
                      , data);
         }
 
+        inline public function publishData(dw:DataWriter, ?pub:Publish, ?prop:BasicProperties) {
+            publish(dw.getBytes(), pub, prop);
+        }
+
         public function publishString(s:String, exchange:String, routingkey:String){
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
             var dw = new DataWriter();
             dw.string(s); 
-            cDispatch(p, Properties.getBasicProperties(), dw.getBytes());
+            publishData(dw, p, Properties.getBasicProperties());
         }
 
-        public function dh(e:ProtocolEvent):Void {}
+        function dh(e:ProtocolEvent):Void {}
 
-        public function nullH(h:Dynamic):Dynamic { return ((h == null) ? dh : h); }
+        function nullH(h:Dynamic):Dynamic { return ((h == null) ? dh : h); }
 
         public function declareQueue(q:String, ?h:ProtocolEvent->Void):Void {
             var d = new DeclareQueue();
