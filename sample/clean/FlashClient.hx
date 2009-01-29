@@ -35,18 +35,18 @@
             var de = new DeclareExchange();
             de.exchange = x;
             de.type = x_type;
-            inch.declare_exchange(de, dh);
+            inch.declareExchangeWith(de);
  
             var dq = new DeclareQueue();
             dq.queue = iq;
-            inch.declare_queue(dq, dh);
+            inch.declareQueueWith(dq);
 
             inch.bind("flash", x, "flash", dh);
 
             var c = new Consume();
             c.queue = iq;
             c.noack = true;
-            inch.consume(c, onDeliver, onConsume/*, onCancel*/);
+            inch.consumeWith(c, onDeliver, onConsume/*, onCancel*/);
 
         /*
             var de = new DeclareExchange();

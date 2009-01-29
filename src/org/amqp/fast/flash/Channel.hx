@@ -82,10 +82,20 @@ package org.amqp.fast.flash;
             cDispatch(p, Properties.getBasicProperties(), dw.getBytes());
         }
 
-       public function declare_queue(dq:DeclareQueue, h:ProtocolEvent->Void):Void {
+        public function dh(e:ProtocolEvent):Void {}
+
+        public function nullH(h:Dynamic):Dynamic { return ((h == null) ? dh : h); }
+
+        public function declareQueue(q:String, ?h:ProtocolEvent->Void):Void {
+            var d = new DeclareQueue();
+            d.queue = q;
+            declareQueueWith(d, nullH(h));
+        }
+
+        public function declareQueueWith(dq:DeclareQueue, ?h:ProtocolEvent->Void):Void {
             queueCount++;
             queueEventCount = 0;
-            ssh.rpc(new Command(dq), callback(declareQueueOk, h));
+            ssh.rpc(new Command(dq), callback(declareQueueOk, nullH(h)));
         }
 
         function declareQueueOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
@@ -94,11 +104,17 @@ package org.amqp.fast.flash;
                 h(e);
         }
 
+        public function declareExchange(x:String, t:String, ?h:ProtocolEvent->Void) {
+            var e = new DeclareExchange();
+            e.exchange = x;
+            e.type = t;
+            declareExchangeWith(e, nullH(h));
+        }
 
-        public function declare_exchange(de:DeclareExchange, h:ProtocolEvent->Void) {
+        public function declareExchangeWith(de:DeclareExchange, ?h:ProtocolEvent->Void) {
             exchangeCount++;
             exchangeEventCount = 0;
-            ssh.rpc(new Command(de), callback(declareExchangeOk, h));
+            ssh.rpc(new Command(de), callback(declareExchangeOk, nullH(h)));
         }
 
         function declareExchangeOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
@@ -107,18 +123,22 @@ package org.amqp.fast.flash;
                 h(e);
         }
 
-        public function bind(qname:String, xname:String, routingkey:String, h:ProtocolEvent->Void) {
-            //trace("bind "+routingkey);
+        public function bind(q:String, x:String, r:String, ?h:ProtocolEvent->Void) {
             var b:Bind = new Bind();
-            b.queue = qname;
-            b.exchange = xname;
-            b.routingkey = routingkey;
+            b.queue = q;
+            b.exchange = x;
+            b.routingkey = r;
             bindCount++; // each bind returns a bindCount BindOk's
             bindEventCount = 0;
-            ssh.rpc(new Command(b), callback(onBindOk, h));
-            //trace("bind " +e);
-            //trace("bind ok");
+            ssh.rpc(new Command(b), callback(onBindOk, nullH(h)));
         }
+
+        public function bindWith(b:Bind, ?h:ProtocolEvent->Void) {
+            bindCount++; // each bind returns a bindCount BindOk's
+            bindEventCount = 0;
+            ssh.rpc(new Command(b), callback(onBindOk, nullH(h)));
+        }
+
 
         function onBindOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
             ++bindEventCount;
@@ -126,7 +146,14 @@ package org.amqp.fast.flash;
                 h(e);
         }
 
-        public function consume(c:Consume, dcb:DeliveryCallback, ?conh:String->Void, ?canh:String->Void):Void {
+        public function consume(q:String, dcb:DeliveryCallback, ?conh:String->Void, ?canh:String->Void):Void {
+            var c = new Consume();
+            c.queue = q;
+            c.noack = true;
+            consumeWith(c, dcb, conh, conh);
+        }
+
+        public function consumeWith(c:Consume, dcb:DeliveryCallback, ?conh:String->Void, ?canh:String->Void):Void {
             consumeCount++;
             consumeEventCount = 0;
             ssh.register(c, new Consumer(callback(onDeliver, dcb), callback(onConsumeOk, conh), callback(onCancelOk, canh))); 
