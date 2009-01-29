@@ -7,7 +7,7 @@ import org.amqp.methods.basic.Consume;
 import org.amqp.methods.basic.Return;
 import org.amqp.BasicConsumer;
 
-typedef Ssh = SessionStateHandler;
+typedef Ssh = SessionStateHandler
 
 // Socket and Session messages
 enum SMessage {

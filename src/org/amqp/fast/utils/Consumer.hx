@@ -1,7 +1,6 @@
 // for dependency (constructor) injection with Consume method
-// should probably be with hxamqp library/patterns
 
-package neko;
+package org.amqp.fast.utils;
 
 import org.amqp.BasicConsumer;
 #if flash9

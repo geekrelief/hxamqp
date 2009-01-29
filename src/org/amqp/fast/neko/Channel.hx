@@ -1,36 +1,22 @@
-package neko;
+package org.amqp.fast.neko;
 // Amqp Channel instance
     import haxe.io.Bytes;
 
+    import org.amqp.fast.Import;
     import org.amqp.Connection;
     import org.amqp.SMessage;
     import org.amqp.Method;
-    import org.amqp.ConnectionParameters;
     import org.amqp.SessionManager;
-    import org.amqp.headers.BasicProperties;
-    import org.amqp.impl.SessionStateHandler;
-    import org.amqp.methods.basic.Publish;
-    import org.amqp.util.Properties;
 
     import neko.vm.Thread;
     import neko.vm.Deque;
-    import haxe.io.BytesInput;
-    import haxe.io.BytesOutput;
 
-    import org.amqp.BasicConsumer;
-    import org.amqp.Command;
-    import org.amqp.LifecycleEventHandler;
-    import org.amqp.ProtocolEvent;
-    import org.amqp.methods.basic.Consume;
-    import org.amqp.methods.basic.Deliver;
-    import org.amqp.methods.basic.Return;
-    import org.amqp.methods.basic.Cancel;
     import org.amqp.methods.channel.Open;
 
-    import org.amqp.methods.queue.Bind;
-
     import org.amqp.events.EventDispatcher;
-    typedef DeliveryMessage = {var dcb:Delivery->Void; var method:Deliver; var properties:BasicProperties; var body:BytesInput;}
+
+    typedef DeliveryCallback = Delivery -> Void
+    typedef DeliveryMessage = {> Delivery, dcb:DeliveryCallback }
 
     class Channel extends EventDispatcher {
 
@@ -41,16 +27,12 @@ package neko;
     
         var mt:Thread;
         var ct:Thread;
-        //var ms:Deque<Delivery>;
-
         var ms:Deque<DeliveryMessage>;
 
         var queueCount:Int;
         var exchangeCount:Int;
         var bindCount:Int;
         var consumeCount:Int;
-
-        var sentDisconnect:Bool;
 
         public var publishSettings(default, default):Publish;
 
@@ -67,8 +49,9 @@ package neko;
             //trace("channel open");
 
             ms = new Deque();
-            sentDisconnect = false;
 
+            // these counts manage multiple Oks returned
+            // when executing repeat methods on the channel
             queueCount = 0;
             exchangeCount = 0;
             bindCount = 0;
@@ -138,7 +121,7 @@ package neko;
             cDispatch(p, Properties.getBasicProperties(), b.getBytes());
         }
 
-        public function consume(c:Consume, dcb:Delivery->Void):String {
+        public function consume(c:Consume, dcb:DeliveryCallback):String {
             consumeCount++;
             ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
             var consumerTag:String = "";
@@ -155,7 +138,7 @@ package neko;
             mt.sendMessage(tag);
         }
 
-        public function onDeliver(c:Consume, dcb:Delivery->Void, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
+        public function onDeliver(c:Consume, dcb:DeliveryCallback, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
             // in connection thread
             ms.add({dcb: dcb, method: method, properties: properties, body:body});
         }
@@ -165,11 +148,6 @@ package neko;
             if(msg != null) {
                 if(msg.dcb != null)
                     msg.dcb({method: msg.method, properties: msg.properties, body: msg.body});
-                    /*
-                if(deliver_callback != null) {
-                    deliver_callback(msg);
-                }
-                */
             }
 
             return (msg != null);

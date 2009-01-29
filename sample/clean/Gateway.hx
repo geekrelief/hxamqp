@@ -1,3 +1,6 @@
+import org.amqp.fast.Import;
+//import org.amqp.fast.neko.AmqpConnection;
+/*
 import neko.AmqpConnection;
 import neko.DeclareQueue;
 import neko.DeclareQueueOk;
@@ -12,6 +15,7 @@ import org.amqp.methods.basic.Consume;
 
 import haxe.io.BytesOutput;
 import haxe.io.BytesInput;
+*/
 
 import neko.vm.Thread;
 
@@ -37,8 +41,8 @@ class Gateway {
 
         var dh:String->Delivery->Void = 
         function(q:String, d:Delivery):Void {
-            var b:BytesInput = d.body;
-            trace("delivery to "+q+" "+b.readString(b.readByte()));
+            var dr = new DataReader(d.body);
+            trace("delivery to "+q+" "+dr.string());
         }
         
         var c = new Consume();
