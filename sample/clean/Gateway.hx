@@ -1,74 +1,33 @@
 import org.amqp.fast.Import;
-//import org.amqp.fast.neko.AmqpConnection;
-/*
-import neko.AmqpConnection;
-import neko.DeclareQueue;
-import neko.DeclareQueueOk;
-import neko.DeclareExchange;
-import neko.Delivery;
-
-import org.amqp.ConnectionParameters;
-import org.amqp.Command;
-import org.amqp.methods.basic.Publish;
-import org.amqp.methods.basic.Return;
-import org.amqp.methods.basic.Consume;
-
-import haxe.io.BytesOutput;
-import haxe.io.BytesInput;
-*/
-
-import neko.vm.Thread;
 
 class Gateway {
 
     public static function main() {
+        var x = "x";
+        var q = "gateway";
+
         var amqp = new AmqpConnection(new ConnectionParameters("127.0.0.1", 5672, "guest", "guest", "/"));
 
-        // setup first inbox
         var inch = amqp.channel();
-       
-        var x = "x";
+        inch.declareExchange(x, "topic");
 
-        var xd = new DeclareExchange();
-        xd.exchange = x;
-        xd.type = "topic";
-        inch.declareExchangeWith(xd);
-
-        var d = new DeclareQueue();
-        d.queue = "gateway";
-        var declareOk = inch.declareQueueWith(d);
+        var declareOk = inch.declareQueue(q);
         trace("inch Inspect "+declareOk.queue+" messageCount: "+declareOk.messagecount+", consumerCount: "+declareOk.consumercount);      
 
-        inch.bind("gateway", x, "gateway");
+        inch.bind(q, x, q);
 
         var ouch = amqp.channel();
 
         var dh:String->Delivery->Void = 
         function(q:String, d:Delivery):Void {
             var dr = new DataReader(d.body);
-            trace(dr.string());
-            //trace("delivery to "+q+" "+dr.string());
+            trace("delivery to "+q+" "+dr.string());
 
-/*
-            var by = neko.io.File.getBytes("compile.hxml");
-            var dw = new DataWriter();
-            dw.bytes(by);
-            trace("sending compile.hxml ");
-            var p = new Publish();
-            p.exchange = "lobby";
-            p.routingkey = "flash";
-            ouch.publish(dw.getBytes(), p);
-            trace("published");
-            */
             ouch.publishString("hello", x, "flash");
         }
         
-        var c = new Consume();
-        c.queue = "gateway";
-        c.noack = true;
-        var tag = inch.consumeWith(c, callback(dh, c.queue));
+        var tag = inch.consume(q, callback(dh, q));
 
-        // deliver the messages to their handlers
         while(true)
             inch.deliver();
     }

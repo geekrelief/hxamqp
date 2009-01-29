@@ -78,10 +78,10 @@ package org.amqp.fast.neko;
             mt.sendMessage(e);
         }
 
-        public function declareQueue(q:String):Void {
+        public function declareQueue(q:String):DeclareQueueOk {
             var d = new DeclareQueue();
             d.queue = q;
-            declareQueueWith(d);
+            return declareQueueWith(d);
         }
 
         public function declareQueueWith(dq:DeclareQueue):DeclareQueueOk {
