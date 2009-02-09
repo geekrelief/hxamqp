@@ -27,6 +27,11 @@ typedef DataWriter = org.amqp.fast.utils.DataWriter;
 
 typedef Consumer = org.amqp.fast.utils.Consumer
 
+enum ExchangeType {
+    DIRECT;
+    TOPIC;
+}
+
 #if flash9
 typedef ByteArray = flash.utils.ByteArray;
 typedef Delivery = { method:Deliver, properties:BasicProperties, body:ByteArray }

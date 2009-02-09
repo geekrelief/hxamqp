@@ -63,7 +63,7 @@ package org.amqp;
         inline public function bufferCheck(buffer:ByteArray, len:Int) {
             return (buffer.bytesAvailable >= len);
         }
-        //public function readFrom(input:IDataInput):Bool {
+
         public function readFrom(input:ByteArray):Bool {
         #elseif neko
         public function readFrom(input:Input):Bool {

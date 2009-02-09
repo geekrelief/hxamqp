@@ -8,20 +8,24 @@ import flash.utils.ByteArray;
 class DataReader {
     var b:ByteArray;
 
-    public function new(?_b:ByteArray){
+    public function new(?_b:ByteArray, ?pos:Int = 0){
         b = _b;
+        if(b != null)
+            b.position = pos;
     }
 
-    public function select(_b:ByteArray) {
+    public function select(_b:ByteArray, ?pos:Int = 0) {
         b = _b;
+        b.position = pos;
     }
 
     public function bytes(?len:Int = -1):ByteArray {
-        if(len == -1) {
-            len = b.length - b.position;
+        if(len == -1 || len > b.bytesAvailable) {
+            len = b.bytesAvailable;
         }
+
         var r = new ByteArray();
-        r.readBytes(b, b.position, len);
+        b.readBytes(r, 0, len);
         return r;
     }
 

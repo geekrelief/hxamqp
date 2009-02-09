@@ -33,8 +33,7 @@ package org.amqp.fast.neko;
         var exchangeCount:Int;
         var bindCount:Int;
         var consumeCount:Int;
-
-        public var publishSettings(default, default):Publish;
+        var tag:String;
 
         public function new(_amqp:AmqpConnection, _co:Connection, _sm:SessionManager, _ct:Thread) {
             super();
@@ -92,10 +91,15 @@ package org.amqp.fast.neko;
             return cast(e.command.method, DeclareQueueOk);
         }
 
-        public function declareExchange(x:String, t:String):Void {
+        public function declareExchange(x:String, t:ExchangeType):Void {
             var d = new DeclareExchange();
             d.exchange = x;
-            d.type = t;
+            d.type = switch(t){
+                case DIRECT:
+                    "direct";
+                case TOPIC:
+                    "topic";
+            };
             declareExchangeWith(d);
         }
 
@@ -119,53 +123,60 @@ package org.amqp.fast.neko;
             var e = cRpc(b, bindCount);
         }
 
-        public function publish(data:Bytes, ?pub:Publish, ?prop:BasicProperties) {
-            #if debug
-            if(publishSettings == null && pub == null) {
-                trace("Channel#publish needs .publishSettings set or a Publish instance argument");
-                throw "Channel#publish needs .publishSettings set or a Publish instance argument";
-            }
-            #end
-            cDispatch( (pub == null) ? publishSettings : pub
-                     , (prop == null) ? Properties.getBasicProperties() : prop
-                     , data);
-        }
-
-        inline public function publishData(dw:DataWriter, ?pub:Publish, ?prop:BasicProperties) {
-            publish(dw.getBytes(), pub, prop);
-        }
-
-        public function publishString(s:String, exchange:String, routingkey:String){
+        public function publish(data:Bytes, exchange:String, routingkey:String, ?replyto:String) {
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
+            var prop = Properties.getBasicProperties();
+            prop.replyto = replyto;
+            publishWith(data, p, prop);
+        }
+
+        inline public function publishWith(data:Bytes, p:Publish, prop:BasicProperties) {
+            cDispatch(p, prop, data);
+        }
+
+        public function publishData(dw:DataWriter, exchange:String, routingkey:String, ?replyto:String) {
+            var p = new Publish();
+            p.exchange = exchange;
+            p.routingkey = routingkey;
+            var prop = Properties.getBasicProperties();
+            prop.replyto = replyto;
+            publishDataWith(dw, p, prop);
+        }
+
+        inline public function publishDataWith(dw:DataWriter, p:Publish, prop:BasicProperties) {
+            publishWith(dw.getBytes(), p, prop);
+        }
+
+        public function publishString(s:String, exchange:String, routingkey:String, ?replyto:String){
             var dw = new DataWriter();
             dw.string(s);
-            publishData(dw, p, Properties.getBasicProperties());
+            publishData(dw, exchange, routingkey, replyto);
         }
 
         public function consume(q:String, dcb:DeliveryCallback):String {
             var c = new Consume();
             c.queue =  q;
             c.noack = true;
-            return consumeWith(c, dcb);
+            tag = consumeWith(c, dcb);
+            return tag;
         }
 
         public function consumeWith(c:Consume, dcb:DeliveryCallback):String {
             consumeCount++;
             ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
-            var consumerTag:String = "";
             for(i in 0...consumeCount) {
-                consumerTag = Thread.readMessage(true);
+                tag = Thread.readMessage(true);
             }
             //trace("consume tag "+consumerTag);
-            return consumerTag;
+            return tag;
         }
 
-        function onConsumeOk(c:Consume, tag:String):Void {
+        function onConsumeOk(c:Consume, _tag:String):Void {
             // in connection thread
             //trace("onConsume q: "+c.queue+" tag: "+tag);
-            mt.sendMessage(tag);
+            mt.sendMessage(_tag);
         }
 
         function onDeliver(c:Consume, dcb:DeliveryCallback, method:Deliver, properties:BasicProperties, body:BytesInput):Void {
@@ -183,10 +194,11 @@ package org.amqp.fast.neko;
             return (msg != null);
         }
 
-        public function cancel(consumerTag:String):Void {
+        public function cancel(?_tag:String):Void {
             consumeCount--;
-            ct.sendMessage(SUnregister(ssh, consumerTag));
-            //trace("cancel "+Thread.readMessage(true));
+            ct.sendMessage(SUnregister(ssh, (_tag == null) ? tag : _tag));
+            Thread.readMessage(true);
+            tag = null;
         }
 
         function onCancelOk(c:Consume, tag:String) {

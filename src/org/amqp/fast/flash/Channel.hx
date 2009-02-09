@@ -28,8 +28,7 @@ package org.amqp.fast.flash;
         var bindEventCount:Int;
         var consumeCount:Int;
         var consumeEventCount:Int;
-
-        public var publishSettings(default, default):Publish;
+        var tag:String; // for convenience save the last consumed tag
 
         public function new(_amqp:AmqpConnection, _co:Connection, _sm:SessionManager, ?_onOpenOk:ProtocolEvent->Void) {
             super();
@@ -60,30 +59,36 @@ package org.amqp.fast.flash;
             ssh.dispatch(new Command(p, b, d));
         } 
 
-        public function publish(data:ByteArray, ?pub:Publish, ?prop:BasicProperties) {
-            #if debug
-            if(publishSettings == null && pub == null) {
-                trace("Channel#publish needs .publishSettings set or a Publish instance argument");
-                throw "Channel#publish needs .publishSettings set or a Publish instance argument";
-            }
-            #end 
-
-            cDispatch( (pub == null) ? publishSettings : pub
-                     , (prop == null) ? Properties.getBasicProperties() : prop
-                     , data);
-        }
-
-        inline public function publishData(dw:DataWriter, ?pub:Publish, ?prop:BasicProperties) {
-            publish(dw.getBytes(), pub, prop);
-        }
-
-        public function publishString(s:String, exchange:String, routingkey:String){
+        inline public function publish(data:ByteArray, exchange:String, routingkey:String, ?replyto:String) {
             var p = new Publish();
             p.exchange = exchange;
             p.routingkey = routingkey;
+            var prop = Properties.getBasicProperties();
+            prop.replyto = replyto;
+            publishWith(data, p, prop);
+        }
+
+        public function publishWith(data:ByteArray, pub:Publish, prop:BasicProperties) {
+            cDispatch(pub, prop, data);
+        }
+
+        public function publishData(dw:DataWriter, exchange:String, routingkey:String, ?replyto:String) {
+            var p = new Publish();
+            p.exchange = exchange;
+            p.routingkey = routingkey;
+            var prop = Properties.getBasicProperties();
+            prop.replyto = replyto;
+            publishDataWith(dw, p, prop);
+        }
+
+        inline public function publishDataWith(dw:DataWriter, pub:Publish, prop:BasicProperties) {
+            publishWith(dw.getBytes(), pub, prop);
+        }
+
+        public function publishString(s:String, exchange:String, routingkey:String, ?replyto:String){
             var dw = new DataWriter();
             dw.string(s); 
-            publishData(dw, p, Properties.getBasicProperties());
+            publishData(dw, exchange, routingkey, replyto);
         }
 
         function dh(e:ProtocolEvent):Void {}
@@ -108,10 +113,15 @@ package org.amqp.fast.flash;
                 h(e);
         }
 
-        public function declareExchange(x:String, t:String, ?h:ProtocolEvent->Void) {
+        public function declareExchange(x:String, t:ExchangeType, ?h:ProtocolEvent->Void) {
             var e = new DeclareExchange();
             e.exchange = x;
-            e.type = t;
+            e.type = switch(t) {
+                case DIRECT:
+                    "direct";
+                case TOPIC:
+                    "topic";
+            };
             declareExchangeWith(e, nullH(h));
         }
 
@@ -163,11 +173,13 @@ package org.amqp.fast.flash;
             ssh.register(c, new Consumer(callback(onDeliver, dcb), callback(onConsumeOk, conh), callback(onCancelOk, canh))); 
         }
 
-        function onConsumeOk(h:String->Void, tag:String):Void {
+        function onConsumeOk(h:String->Void, _tag:String):Void {
             ++consumeEventCount;
-            if(consumeEventCount == consumeCount)
+            if(consumeEventCount == consumeCount) {
+                tag = _tag;
                 if(h != null)
                     h(tag);
+            }
         }
 
         function onDeliver(dcb:DeliveryCallback, method:Deliver, properties:BasicProperties, body:ByteArray):Void {
@@ -179,9 +191,10 @@ package org.amqp.fast.flash;
                 h(tag);
         }
 
-        public function cancel(consumerTag:String):Void {
+        public function cancel(?_tag:String):Void {
             consumeCount--;
-            ssh.unregister(consumerTag);
+            ssh.unregister((_tag == null) ? tag : _tag);
+            tag = null;
         }
 
         public function setReturn(rh:Command->Return->Void) {
