@@ -9,7 +9,7 @@ class Gateway {
         var amqp = new AmqpConnection(new ConnectionParameters("127.0.0.1", 5672, "guest", "guest", "/"));
 
         var inch = amqp.channel();
-        inch.declareExchange(x, "topic");
+        inch.declareExchange(x, TOPIC);
 
         var declareOk = inch.declareQueue(q);
         trace("inch Inspect "+declareOk.queue+" messageCount: "+declareOk.messagecount+", consumerCount: "+declareOk.consumercount);      

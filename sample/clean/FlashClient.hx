@@ -29,7 +29,7 @@
             ouch = amqp.channel();
             inch = amqp.channel();
 
-            inch.declareExchange(x, "topic");
+            inch.declareExchange(x, TOPIC);
             inch.declareQueue(q);
             inch.bind(q, x, q);
             inch.consume(q, onDeliver, onConsume/*, onCancel*/);
