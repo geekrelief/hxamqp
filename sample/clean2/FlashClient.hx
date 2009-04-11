@@ -18,8 +18,8 @@
 		}
 
         public function new() {
-            x = "x";
-			q = "flash";
+            x = "exchange-test";
+			q = "";
             routingkey = "gateway";
 
             amqp = new AmqpConnection(new ConnectionParameters("127.0.0.1", 5672, "guest", "guest", "/"), onConnectionOpenOk);
@@ -30,21 +30,25 @@
             inch = amqp.channel();
 
             inch.declareExchange(x, DIRECT);
-            inch.declareQueue(q);
+            inch.declareQueue("", onDeclareQueueOk); // request a reply queue
+        }
+
+        public function onDeclareQueueOk(e:ProtocolEvent):Void {
+            var ok = cast(e.command.method, DeclareQueueOk);
+            q = ok.queue;
+            trace("queue: "+q+" messagecount: "+ok.messagecount+" consumercount: "+ok.consumercount);
             inch.bind(q, x, q);
             inch.consume(q, onDeliver, onConsume/*, onCancel*/);
         }
 
         public function onDeliver(d:Delivery):Void {
-            trace("onDeliver");
             var dr = new DataReader(d.body);
             trace(dr.string());
         }
 
         public function onConsume(tag:String){
             trace("onConsume");
-            trace("publish");
-
-            ouch.publishString("world", x, "gateway");
+            trace("publish hello");
+            ouch.publishString("hello", x, routingkey, q);
         }
     }

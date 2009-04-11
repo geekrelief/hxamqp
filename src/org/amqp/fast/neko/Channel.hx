@@ -67,8 +67,11 @@ package org.amqp.fast.neko;
             ct.sendMessage(SRpc(ssh, new Command(m), dh)); 
             // returns ProtocolEvent
             var e:ProtocolEvent = null;
-            for(i in 0...ecount)
+            //trace("cRpc--------- "+m + " "+ecount);
+            for(i in 0...ecount) {
                 e = Thread.readMessage(true);
+                //trace("cRpc response "+e);
+            }
             return e;
         }
 
@@ -77,21 +80,7 @@ package org.amqp.fast.neko;
             mt.sendMessage(e);
         }
 
-        public function declareQueue(q:String):DeclareQueueOk {
-            var d = new DeclareQueue();
-            d.queue = q;
-            return declareQueueWith(d);
-        }
-
-        public function declareQueueWith(dq:DeclareQueue):DeclareQueueOk {
-            queueCount++;
-            var e = cRpc(dq, queueCount);
-            //trace("queue declared");
-            //trace("declare queue "+e);
-            return cast(e.command.method, DeclareQueueOk);
-        }
-
-        public function declareExchange(x:String, t:ExchangeType):Void {
+        public function declareExchange(x:String, t:ExchangeType):DeclareExchangeOk {
             var d = new DeclareExchange();
             d.exchange = x;
             d.type = switch(t){
@@ -100,13 +89,54 @@ package org.amqp.fast.neko;
                 case TOPIC:
                     "topic";
             };
-            declareExchangeWith(d);
+            return declareExchangeWith(d);
         }
 
-        public function declareExchangeWith(de:DeclareExchange):Void {
+        public function declareExchangeWith(de:DeclareExchange):DeclareExchangeOk {
             exchangeCount++;
-            var e = cRpc(de, exchangeCount); 
-            //trace("exchange declared "+e);
+            var e = cRpc(de, exchangeCount);
+            return cast(e.command.method, DeclareExchangeOk);
+        }
+
+        // note it is an error to delete an exchange that does not exist
+        public function deleteExchange(x:String, ?ifunused:Bool = false, ?nowait:Bool = false):DeleteExchangeOk {
+            var d = new DeleteExchange();
+            d.exchange = x;
+            d.ifunused = ifunused;
+            d.nowait = nowait;
+            return deleteExchangeWith(d);
+        }
+
+        public function deleteExchangeWith(de:DeleteExchange):DeleteExchangeOk {
+            var e = cRpc(de, 1);
+            return cast(e.command.method, DeleteExchangeOk);
+        }
+
+        public function declareQueue(q:String):DeclareQueueOk {
+            var d:DeclareQueue = new DeclareQueue();
+            d.queue = q;
+            return declareQueueWith(d);
+        }
+
+        public function declareQueueWith(dq:DeclareQueue):DeclareQueueOk {
+            queueCount++;
+            var e = cRpc(dq, queueCount);
+            return cast(e.command.method, DeclareQueueOk);
+        }
+
+        // note it is an error to delete a queue that does not exist
+        public function deleteQueue(qname:String, ?ifunused:Bool = false, ?ifempty:Bool = false, ?nowait:Bool = false):DeleteQueueOk {
+            var d = new DeleteQueue();
+            d.queue = qname;
+            d.ifunused = ifunused;
+            d.ifempty = ifempty;
+            d.nowait = nowait;
+            return deleteQueueWith(d);
+        }
+
+        public function deleteQueueWith(dq:DeleteQueue):DeleteQueueOk {
+            var e = cRpc(dq, 1);
+            return cast(e.command.method, DeleteQueueOk);
         }
 
         public function bind(qname:String, xname:String, routingkey:String) {

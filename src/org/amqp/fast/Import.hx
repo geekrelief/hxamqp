@@ -2,12 +2,20 @@ package org.amqp.fast;
 
 typedef DeclareExchange = org.amqp.methods.exchange.Declare
 typedef DeclareExchangeOk = org.amqp.methods.exchange.DeclareOk
+typedef DeleteExchange = org.amqp.methods.exchange.Delete
+typedef DeleteExchangeOk = org.amqp.methods.exchange.DeleteOk
+
+typedef Bind = org.amqp.methods.queue.Bind
+typedef BindOk = org.amqp.methods.queue.BindOk
 
 typedef DeclareQueue = org.amqp.methods.queue.Declare
 typedef DeclareQueueOk = org.amqp.methods.queue.DeclareOk
 
-typedef Bind = org.amqp.methods.queue.Bind
-typedef BindOk = org.amqp.methods.queue.BindOk
+typedef DeleteQueue = org.amqp.methods.queue.Delete
+typedef DeleteQueueOk = org.amqp.methods.queue.DeleteOk
+
+typedef PurgeQueue = org.amqp.methods.queue.Purge
+typedef PurgeQueueOk = org.amqp.methods.queue.PurgeOk
 
 typedef ConnectionParameters = org.amqp.ConnectionParameters
 typedef Command = org.amqp.Command

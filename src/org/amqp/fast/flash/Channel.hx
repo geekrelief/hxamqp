@@ -43,6 +43,7 @@ package org.amqp.fast.flash;
 
             // these counts manage multiple Oks returned
             // when executing repeat methods on the channel
+            // such as declaring multiple queues on the same channel
             queueCount = 0;
             queueEventCount = 0;
             exchangeCount = 0;
@@ -95,24 +96,6 @@ package org.amqp.fast.flash;
 
         function nullH(h:Dynamic):Dynamic { return ((h == null) ? dh : h); }
 
-        public function declareQueue(q:String, ?h:ProtocolEvent->Void):Void {
-            var d = new DeclareQueue();
-            d.queue = q;
-            declareQueueWith(d, nullH(h));
-        }
-
-        public function declareQueueWith(dq:DeclareQueue, ?h:ProtocolEvent->Void):Void {
-            queueCount++;
-            queueEventCount = 0;
-            ssh.rpc(new Command(dq), callback(declareQueueOk, nullH(h)));
-        }
-
-        function declareQueueOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
-            ++queueEventCount;
-            if(queueEventCount == queueCount)
-                h(e);
-        }
-
         public function declareExchange(x:String, t:ExchangeType, ?h:ProtocolEvent->Void) {
             var e = new DeclareExchange();
             e.exchange = x;
@@ -126,7 +109,7 @@ package org.amqp.fast.flash;
         }
 
         public function declareExchangeWith(de:DeclareExchange, ?h:ProtocolEvent->Void) {
-            exchangeCount++;
+            ++exchangeCount;
             exchangeEventCount = 0;
             ssh.rpc(new Command(de), callback(declareExchangeOk, nullH(h)));
         }
@@ -135,6 +118,56 @@ package org.amqp.fast.flash;
             ++exchangeEventCount;
             if(exchangeEventCount == exchangeCount)
                 h(e);
+        }
+
+        public function deleteExchange(x:String, ?h:ProtocolEvent->Void, ?ifunused:Bool = false, ?nowait:Bool = false) {
+            var de = new DeleteExchange();
+            de.exchange = x;
+            de.ifunused = ifunused;
+            de.nowait = nowait;
+            deleteExchangeWith(de, h);
+        }
+
+        public function deleteExchangeWith(de:DeleteExchange, ?h:ProtocolEvent->Void) {
+            ssh.rpc(new Command(de), callback(deleteExchangeOk, nullH(h)));
+        }
+
+        function deleteExchangeOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
+            h(e);
+        }
+
+        public function declareQueue(q:String, ?h:ProtocolEvent->Void):Void {
+            var d = new DeclareQueue();
+            d.queue = q;
+            declareQueueWith(d, nullH(h));
+        }
+
+        public function declareQueueWith(dq:DeclareQueue, ?h:ProtocolEvent->Void):Void {
+            ++queueCount;
+            queueEventCount = 0;
+            ssh.rpc(new Command(dq), callback(declareQueueOk, nullH(h)));
+        }
+
+        function declareQueueOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
+            ++queueEventCount;
+            if(queueEventCount == queueCount)
+                h(e);
+        }
+
+        public function deleteQueue(q:String, ?h:ProtocolEvent->Void, ?ifunused:Bool = false, ?ifempty:Bool = false, ?nowait:Bool = false):Void {
+            var dq = new DeleteQueue();
+            dq.ifunused = ifunused;
+            dq.ifempty = ifempty;
+            dq.nowait = nowait;
+            deleteQueueWith(dq, h);
+        }
+
+        public function deleteQueueWith(dq:DeleteQueue, ?h:ProtocolEvent->Void):Void {
+            ssh.rpc(new Command(dq), callback(deleteQueueOk, nullH(h)));
+        }
+
+        function deleteQueueOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
+            h(e);
         }
 
         public function bind(q:String, x:String, r:String, ?h:ProtocolEvent->Void) {
