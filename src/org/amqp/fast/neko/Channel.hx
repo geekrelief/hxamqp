@@ -30,7 +30,10 @@ package org.amqp.fast.neko;
         var ms:Deque<DeliveryMessage>;
 
         var queueCount:Int;
+        var deleteQueueCount:Int;
+        //var purgeCount:Int;
         var exchangeCount:Int;
+        var deleteExchangeCount:Int;
         var bindCount:Int;
         var consumeCount:Int;
         var tag:String;
@@ -52,7 +55,10 @@ package org.amqp.fast.neko;
             // these counts manage multiple Oks returned
             // when executing repeat methods on the channel
             queueCount = 0;
+            deleteQueueCount = 0;
+            //purgeCount = 0;
             exchangeCount = 0;
+            deleteExchangeCount = 0;
             bindCount = 0;
             consumeCount = 0;
         }
@@ -67,11 +73,12 @@ package org.amqp.fast.neko;
             ct.sendMessage(SRpc(ssh, new Command(m), dh)); 
             // returns ProtocolEvent
             var e:ProtocolEvent = null;
-            //trace("cRpc--------- "+m + " "+ecount);
+            // throw away repeated/previous Oks
+            trace("cRpc "+m);
             for(i in 0...ecount) {
                 e = Thread.readMessage(true);
-                //trace("cRpc response "+e);
             }
+            trace("cRpc res "+e);
             return e;
         }
 
@@ -108,18 +115,19 @@ package org.amqp.fast.neko;
         }
 
         public function deleteExchangeWith(de:DeleteExchange):DeleteExchangeOk {
-            var e = cRpc(de, 1);
+            ++deleteExchangeCount;
+            var e = cRpc(de, deleteExchangeCount);
             return cast(e.command.method, DeleteExchangeOk);
         }
 
         public function declareQueue(q:String):DeclareQueueOk {
-            var d:DeclareQueue = new DeclareQueue();
+            var d = new DeclareQueue();
             d.queue = q;
             return declareQueueWith(d);
         }
 
         public function declareQueueWith(dq:DeclareQueue):DeclareQueueOk {
-            queueCount++;
+            ++queueCount;
             var e = cRpc(dq, queueCount);
             return cast(e.command.method, DeclareQueueOk);
         }
@@ -135,9 +143,30 @@ package org.amqp.fast.neko;
         }
 
         public function deleteQueueWith(dq:DeleteQueue):DeleteQueueOk {
-            var e = cRpc(dq, 1);
+            ++deleteQueueCount;
+            var e = cRpc(dq, deleteQueueCount);
+            trace("deleteQueueWith "+e.command);
             return cast(e.command.method, DeleteQueueOk);
         }
+
+/*
+        // I don't understand the semantics of purge.
+        // How are messages acknowledged by not consumed.
+        // An alternative to purge is to consume all the messages.
+        // But maybe the users doesn't want to do that (too many? too large?)...
+        // Another option is to delete the queue
+        public function purge(q:String):PurgeOk {
+            var p = new Purge();
+            p.queue = q;
+            return purgeWith(p);
+        }
+
+        public function purgeWith(p:Purge):PurgeOk {
+            ++purgeCount;
+            var e = cRpc(p, purgeCount);
+            return cast(e.command.method, PurgeOk);
+        }
+        */
 
         public function bind(qname:String, xname:String, routingkey:String) {
             //trace("bind "+routingkey);
@@ -149,7 +178,7 @@ package org.amqp.fast.neko;
         }
 
         public function bindWith(b:Bind):Void {
-            bindCount++; // each bind returns a bindCount BindOk's
+            ++bindCount; // each bind returns a bindCount BindOk's
             var e = cRpc(b, bindCount);
         }
 
@@ -194,8 +223,9 @@ package org.amqp.fast.neko;
         }
 
         public function consumeWith(c:Consume, dcb:DeliveryCallback):String {
-            consumeCount++;
+            ++consumeCount;
             ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
+            // loop to ignore repeats/previous Oks
             for(i in 0...consumeCount) {
                 tag = Thread.readMessage(true);
             }
@@ -225,7 +255,7 @@ package org.amqp.fast.neko;
         }
 
         public function cancel(?_tag:String):Void {
-            consumeCount--;
+            --consumeCount;
             ct.sendMessage(SUnregister(ssh, (_tag == null) ? tag : _tag));
             Thread.readMessage(true);
             tag = null;

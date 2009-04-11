@@ -23,7 +23,8 @@ class Gateway {
         declareOk = inch.declareQueue("q2");
         trace("declare q1 and q2");
 
-        inch.deleteQueue("q1");
+        var deleteOk = inch.deleteQueue("q1");
+        trace("q1 "+deleteOk);
         inch.deleteQueue("q2");
         trace("delete q1 and q2");
 

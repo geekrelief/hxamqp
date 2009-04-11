@@ -22,8 +22,12 @@ package org.amqp.fast.flash;
     
         var queueCount:Int;
         var queueEventCount:Int;
+        var deleteQueueCount:Int;
+        var deleteQueueEventCount:Int;
         var exchangeCount:Int;
         var exchangeEventCount:Int;
+        var deleteExchangeCount:Int;
+        var deleteExchangeEventCount:Int;
         var bindCount:Int;
         var bindEventCount:Int;
         var consumeCount:Int;
@@ -129,11 +133,15 @@ package org.amqp.fast.flash;
         }
 
         public function deleteExchangeWith(de:DeleteExchange, ?h:ProtocolEvent->Void) {
+            ++deleteExchangeCount;
+            deleteExchangeEventCount = 0;
             ssh.rpc(new Command(de), callback(deleteExchangeOk, nullH(h)));
         }
 
         function deleteExchangeOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
-            h(e);
+            ++deleteExchangeEventCount;
+            if(deleteExchangeCount == deleteExchangeEventCount)
+                h(e);
         }
 
         public function declareQueue(q:String, ?h:ProtocolEvent->Void):Void {
@@ -163,11 +171,15 @@ package org.amqp.fast.flash;
         }
 
         public function deleteQueueWith(dq:DeleteQueue, ?h:ProtocolEvent->Void):Void {
+            ++deleteQueueCount;
+            deleteQueueEventCount = 0;
             ssh.rpc(new Command(dq), callback(deleteQueueOk, nullH(h)));
         }
 
         function deleteQueueOk(h:ProtocolEvent->Void, e:ProtocolEvent):Void {
-            h(e);
+            ++deleteQueueEventCount;
+            if(deleteQueueCount == deleteQueueEventCount)
+                h(e);
         }
 
         public function bind(q:String, x:String, r:String, ?h:ProtocolEvent->Void) {

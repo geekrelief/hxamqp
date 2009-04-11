@@ -14,8 +14,8 @@ typedef DeclareQueueOk = org.amqp.methods.queue.DeclareOk
 typedef DeleteQueue = org.amqp.methods.queue.Delete
 typedef DeleteQueueOk = org.amqp.methods.queue.DeleteOk
 
-typedef PurgeQueue = org.amqp.methods.queue.Purge
-typedef PurgeQueueOk = org.amqp.methods.queue.PurgeOk
+typedef Purge = org.amqp.methods.queue.Purge
+typedef PurgeOk = org.amqp.methods.queue.PurgeOk
 
 typedef ConnectionParameters = org.amqp.ConnectionParameters
 typedef Command = org.amqp.Command
