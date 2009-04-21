@@ -18,63 +18,30 @@
 package org.amqp.methods.connection;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Redirect extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var host(getHost, setHost) : String;
-         public var knownhosts(getKnownhosts, setKnownhosts) : String;
+         public var host : String;
+         public var knownhosts : String;
+
          public function new() {
-         _host = "";
-         _knownhosts = "";
-         }
-         
-         var _host:String ;
-         var _knownhosts:String ;
-
-         public function getHost():String{return _host;}
-         public function getKnownhosts():String{return _knownhosts;}
-
-         public function setHost(x:String):String{_host = x;	return x;}
-         public function setKnownhosts(x:String):String{_knownhosts = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 10;
-         }
-
-         public override function getMethodId():Int{
-             return 50;
+             super();
+             host = "";
+             knownhosts = "";
+             classId = 10;
+             methodId = 50;
          }
 
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_host);
-             writer.writeShortstr(_knownhosts);
+             writer.writeShortstr(host);
+             writer.writeShortstr(knownhosts);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _host = reader.readShortstr();
-             _knownhosts = reader.readShortstr();
-         }
-
-         public function dump():Void {
-             trace("-------- connection.Redirect --------");
-             trace("host: {" + _host + "}");
-             trace("knownhosts: {" + _knownhosts + "}");
+             host = reader.readShortstr();
+             knownhosts = reader.readShortstr();
          }
     }

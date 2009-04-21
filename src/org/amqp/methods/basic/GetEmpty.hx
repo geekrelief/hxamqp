@@ -18,55 +18,27 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class GetEmpty extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var clusterid(getClusterid, setClusterid) : String;
+         public var clusterid : String;
+
          public function new() {
-         _clusterid = "";
+             super();
+             clusterid = "";
+             classId = 60;
+             methodId = 72;
          }
          
-         var _clusterid:String ;
-
-         public function getClusterid():String{return _clusterid;}
-
-         public function setClusterid(x:String):String{_clusterid = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 72;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_clusterid);
+             writer.writeShortstr(clusterid);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _clusterid = reader.readShortstr();
+             clusterid = reader.readShortstr();
          }
 
-         public function dump():Void {
-             trace("-------- basic.GetEmpty --------");
-             trace("clusterid: {" + _clusterid + "}");
-         }
     }

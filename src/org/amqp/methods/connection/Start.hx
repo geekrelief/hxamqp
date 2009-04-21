@@ -25,83 +25,44 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Start extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var locales(getLocales, setLocales) : LongString;
-         public var mechanisms(getMechanisms, setMechanisms) : LongString;
-         public var serverproperties(getServerproperties, setServerproperties) : Hash<Dynamic>;
-         public var versionmajor(getVersionmajor, setVersionmajor) : Int;
-         public var versionminor(getVersionminor, setVersionminor) : Int;
+         public var locales : LongString;
+         public var mechanisms : LongString;
+         public var serverproperties : Hash<Dynamic>;
+         public var versionmajor : Int;
+         public var versionminor : Int;
+
          public function new() {
-         _versionmajor = 0;
-         _versionminor = 0;
-         _serverproperties = new Hash();
-         _mechanisms = new ByteArrayLongString();
-         _locales = new ByteArrayLongString();
+             super();
+             versionmajor = 0;
+             versionminor = 0;
+             serverproperties = new Hash();
+             mechanisms = new ByteArrayLongString();
+             locales = new ByteArrayLongString();
+
+             hasResponse = true;
+             classId = 10;
+             methodId = 10;
          }
          
-         var _versionmajor:Int ;
-         var _versionminor:Int ;
-         var _serverproperties:Hash<Dynamic> ;
-         var _mechanisms:LongString ;
-         var _locales:LongString ;
-
-         public function getVersionmajor():Int{return _versionmajor;}
-         public function getVersionminor():Int{return _versionminor;}
-         public function getServerproperties():Hash<Dynamic>{return _serverproperties;}
-         public function getMechanisms():LongString{return _mechanisms;}
-         public function getLocales():LongString{return _locales;}
-
-         public function setVersionmajor(x:Int):Int{_versionmajor = x;	return x;}
-         public function setVersionminor(x:Int):Int{_versionminor = x;	return x;}
-         public function setServerproperties(x:Hash<Dynamic>):Hash<Dynamic>{_serverproperties = x;	return x;}
-         public function setMechanisms(x:LongString):LongString{_mechanisms = x;	return x;}
-         public function setLocales(x:LongString):LongString{_locales = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new StartOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 10;
-         }
-
-         public override function getMethodId():Int{
-             return 10;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeOctet(_versionmajor);
-             writer.writeOctet(_versionminor);
-             writer.writeTable(_serverproperties);
-             writer.writeLongstr(_mechanisms);
-             writer.writeLongstr(_locales);
+             writer.writeOctet(versionmajor);
+             writer.writeOctet(versionminor);
+             writer.writeTable(serverproperties);
+             writer.writeLongstr(mechanisms);
+             writer.writeLongstr(locales);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _versionmajor = reader.readOctet();
-             _versionminor = reader.readOctet();
-             _serverproperties = reader.readTable();
-             _mechanisms = reader.readLongstr();
-             _locales = reader.readLongstr();
+             versionmajor = reader.readOctet();
+             versionminor = reader.readOctet();
+             serverproperties = reader.readTable();
+             mechanisms = reader.readLongstr();
+             locales = reader.readLongstr();
          }
 
-         public function dump():Void {
-             trace("-------- connection.Start --------");
-             trace("versionmajor: {" + _versionmajor + "}");
-             trace("versionminor: {" + _versionminor + "}");
-             trace("serverproperties: {" + _serverproperties + "}");
-             trace("mechanisms: {" + _mechanisms + "}");
-             trace("locales: {" + _locales + "}");
-         }
     }

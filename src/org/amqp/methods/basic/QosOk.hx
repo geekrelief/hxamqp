@@ -18,44 +18,15 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
-    import org.amqp.methods.MethodArgumentReader;
-    import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class QosOk extends Method, implements ArgumentReader, implements ArgumentWriter {
 
-        public function new() { }
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 11;
-         }
-
-         public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-         }
-
-         public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-         }
-
-         public function dump():Void {
-             trace("-------- basic.QosOk --------");
-         }
+        public function new() { 
+            super();
+            classId = 60;
+            methodId = 11;
+            isBottomHalf = true;
+        }
     }

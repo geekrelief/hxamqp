@@ -18,63 +18,30 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Reject extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var deliverytag(getDeliverytag, setDeliverytag) : Float;
-         public var requeue(getRequeue, setRequeue) : Bool;
+         public var deliverytag : Float;
+         public var requeue : Bool;
+
          public function new() {
-         _deliverytag = 0;
-         _requeue = false;
+             super();
+             deliverytag = 0;
+             requeue = false;
+             classId = 60;
+             methodId = 90;
          }
          
-         var _deliverytag:Float ;
-         var _requeue:Bool ;
-
-         public function getDeliverytag():Float{return _deliverytag;}
-         public function getRequeue():Bool{return _requeue;}
-
-         public function setDeliverytag(x:Float):Float{_deliverytag = x;	return x;}
-         public function setRequeue(x:Bool):Bool{_requeue = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 90;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeLonglong(_deliverytag);
-             writer.writeBit(_requeue);
+             writer.writeLonglong(deliverytag);
+             writer.writeBit(requeue);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _deliverytag = reader.readLonglong();
-             _requeue = reader.readBit();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.Reject --------");
-             trace("deliverytag: {" + _deliverytag + "}");
-             trace("requeue: {" + _requeue + "}");
+             deliverytag = reader.readLonglong();
+             requeue = reader.readBit();
          }
     }

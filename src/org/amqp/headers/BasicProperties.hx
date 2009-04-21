@@ -22,8 +22,60 @@ package org.amqp.headers;
      **/
     class BasicProperties extends ContentHeader {
 
-        public function new() { }
+        public function new() {
+            classId = 60;
+        }
 
+        public var appid : String;
+        public var clusterid : String;
+        public var contentencoding : String;
+        public var contenttype : String;
+        public var correlationid : String;
+        public var deliverymode : Int;
+        public var expiration : String;
+        public var headers : Hash<Dynamic>;
+        public var messageid : String;
+        public var priority : Int;
+        public var replyto : String;
+        public var timestamp : Date;
+        public var type : String;
+        public var userid : String;
+
+        public override function readPropertiesFrom(reader:ContentHeaderPropertyReader):Void{
+            contenttype = reader.readShortstr();
+            contentencoding = reader.readShortstr();
+            headers = reader.readTable();
+            deliverymode = reader.readOctet();
+            priority = reader.readOctet();
+            correlationid = reader.readShortstr();
+            replyto = reader.readShortstr();
+            expiration = reader.readShortstr();
+            messageid = reader.readShortstr();
+            timestamp = reader.readTimestamp();
+            type = reader.readShortstr();
+            userid = reader.readShortstr();
+            appid = reader.readShortstr();
+            clusterid = reader.readShortstr();
+        }
+
+        public override function writePropertiesTo(writer:ContentHeaderPropertyWriter):Void{
+            writer.writeShortstr(contenttype);
+            writer.writeShortstr(contentencoding);
+            writer.writeTable(headers);
+            writer.writeOctet(deliverymode);
+            writer.writeOctet(priority);
+            writer.writeShortstr(correlationid);
+            writer.writeShortstr(replyto);
+            writer.writeShortstr(expiration);
+            writer.writeShortstr(messageid);
+            writer.writeTimestamp(timestamp);
+            writer.writeShortstr(type);
+            writer.writeShortstr(userid);
+            writer.writeShortstr(appid);
+            writer.writeShortstr(clusterid);
+        }
+
+/*
         public var appid(getAppid, setAppid) : String;
         public var clusterid(getClusterid, setClusterid) : String;
         public var contentencoding(getContentencoding, setContentencoding) : String;
@@ -120,5 +172,5 @@ package org.amqp.headers;
             writer.writeShortstr(_appid);
             writer.writeShortstr(_clusterid);
         }
-
+*/
     }

@@ -70,7 +70,7 @@ package org.amqp.impl;
                 * which is implemented in the super class.
                 */
                 commandReceiver.receive(currentCommand);
-                if (currentCommand.method.isBottomHalf()) {
+                if (currentCommand.method.isBottomHalf) {
                     rpcBottomHalf();
                 }
                 currentCommand = new Command();

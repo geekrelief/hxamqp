@@ -88,7 +88,7 @@ package org.amqp;
                 #end
             }
             state = (m == null) ? STATE_EXPECTING_METHOD : STATE_COMPLETE;
-            priority = (m == null) ? -1 : (m.getClassId() * 100 + m.getMethodId() ) * -1;
+            priority = (m == null) ? -1 : (m.classId * 100 + m.methodId ) * -1;
             remainingBodyBytes = 0;
         }
 
@@ -103,7 +103,7 @@ package org.amqp;
         public function transmit(channelNumber:Int, connection:Connection):Void {
             //trace("transmit channel "+channelNumber+" method: "+method);
 
-            if (method.getClassId() < 0 || method.getMethodId() < 0) {
+            if (method.classId < 0 || method.methodId < 0) {
                 throw new Error("Method not implemented properly " + method);
             }
 
@@ -113,27 +113,27 @@ package org.amqp;
 
             var bodyOut = f.getOutputStream();
             #if flash9
-            bodyOut.writeShort(method.getClassId());
-            bodyOut.writeShort(method.getMethodId());
+            bodyOut.writeShort(method.classId);
+            bodyOut.writeShort(method.methodId);
             #elseif neko
-            bodyOut.writeUInt16(method.getClassId());
-            bodyOut.writeUInt16(method.getMethodId());
+            bodyOut.writeUInt16(method.classId);
+            bodyOut.writeUInt16(method.methodId);
             #end
             var argWriter:MethodArgumentWriter = new MethodArgumentWriter(bodyOut);
             method.writeArgumentsTo(argWriter);
             argWriter.flush();
             connection.sendFrame(f);
 
-            if (this.method.hasContent()) {
+            if (this.method.hasContent) {
 
                 f = new Frame();
                 f.type = AMQP.FRAME_HEADER;
                 f.channel = channelNumber;
                 bodyOut = f.getOutputStream();
                 #if flash9
-                bodyOut.writeShort(contentHeader.getClassId());
+                bodyOut.writeShort(contentHeader.classId);
                 #elseif neko
-                bodyOut.writeUInt16(contentHeader.getClassId());
+                bodyOut.writeUInt16(contentHeader.classId);
                 #end
 
                 #if flash9
@@ -175,7 +175,7 @@ package org.amqp;
                   switch (frame.type) {
                     case AMQP.FRAME_METHOD: {
                         this.method = MethodReader.readMethodFrom(frame.getInputStream());
-                        this.state = this.method.hasContent()
+                        this.state = this.method.hasContent
                             ? STATE_EXPECTING_CONTENT_HEADER
                             : STATE_COMPLETE;
                         return;

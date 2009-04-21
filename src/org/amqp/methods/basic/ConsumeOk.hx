@@ -18,55 +18,27 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class ConsumeOk extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var consumertag(getConsumertag, setConsumertag) : String;
+         public var consumertag : String;
+
          public function new() {
-         _consumertag = "";
-         }
-         
-         var _consumertag:String ;
-
-         public function getConsumertag():String{return _consumertag;}
-
-         public function setConsumertag(x:String):String{_consumertag = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 21;
+            super();
+            consumertag = "";
+            isBottomHalf = true;
+            classId = 60;
+            methodId = 21;
          }
 
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_consumertag);
+             writer.writeShortstr(consumertag);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _consumertag = reader.readShortstr();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.ConsumeOk --------");
-             trace("consumertag: {" + _consumertag + "}");
+             consumertag = reader.readShortstr();
          }
     }

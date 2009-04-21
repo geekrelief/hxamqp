@@ -25,48 +25,23 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class SecureOk extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var response(_getResponse, setResponse) : LongString;
+         public var response : LongString;
+         
          public function new() {
-         _response = new ByteArrayLongString();
+            super();
+            response = new ByteArrayLongString();
+            isBottomHalf = true;
+            classId = 10;
+            methodId = 21;
          }
          
-         var _response:LongString ;
-
-         public function _getResponse():LongString{return _response;}
-
-         public function setResponse(x:LongString):LongString{_response = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 10;
-         }
-
-         public override function getMethodId():Int{
-             return 21;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeLongstr(_response);
+             writer.writeLongstr(response);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _response = reader.readLongstr();
+             response = reader.readLongstr();
          }
 
-         public function dump():Void {
-             trace("-------- connection.SecureOk --------");
-             trace("response: {" + _response + "}");
-         }
     }

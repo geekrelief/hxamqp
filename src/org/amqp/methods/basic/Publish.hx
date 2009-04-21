@@ -18,90 +18,43 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Publish extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var exchange(getExchange, setExchange) : String;
-         public var immediate(getImmediate, setImmediate) : Bool;
-         public var mandatory(getMandatory, setMandatory) : Bool;
-         public var routingkey(getRoutingkey, setRoutingkey) : String;
-         public var ticket(getTicket, setTicket) : Int;
+         public var exchange : String;
+         public var immediate : Bool;
+         public var mandatory : Bool;
+         public var routingkey : String;
+         public var ticket : Int;
+
          public function new() {
-         _ticket = 0;
-         _exchange = "";
-         _routingkey = "";
-         _mandatory = false;
-         _immediate = false;
+             super();
+             ticket = 0;
+             exchange = "";
+             routingkey = "";
+             mandatory = false;
+             immediate = false;
+             hasContent = true;
+             classId = 60;
+             methodId = 40;
          }
          
-         var _ticket:Int ;
-         var _exchange:String ;
-         var _routingkey:String ;
-         var _mandatory:Bool ;
-         var _immediate:Bool ;
-
-         public function getTicket():Int{return _ticket;}
-         public function getExchange():String{return _exchange;}
-         public function getRoutingkey():String{return _routingkey;}
-         public function getMandatory():Bool{return _mandatory;}
-         public function getImmediate():Bool{return _immediate;}
-
-         public function setTicket(x:Int):Int{_ticket = x;	return x;}
-         public function setExchange(x:String):String{_exchange = x;	return x;}
-         public function setRoutingkey(x:String):String{_routingkey = x;	return x;}
-         public function setMandatory(x:Bool):Bool{_mandatory = x;	return x;}
-         public function setImmediate(x:Bool):Bool{_immediate = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-         public override function hasContent():Bool {
-             return true;
-         }
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 40;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShort(_ticket);
-             writer.writeShortstr(_exchange);
-             writer.writeShortstr(_routingkey);
-             writer.writeBit(_mandatory);
-             writer.writeBit(_immediate);
+             writer.writeShort(ticket);
+             writer.writeShortstr(exchange);
+             writer.writeShortstr(routingkey);
+             writer.writeBit(mandatory);
+             writer.writeBit(immediate);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _ticket = reader.readShort();
-             _exchange = reader.readShortstr();
-             _routingkey = reader.readShortstr();
-             _mandatory = reader.readBit();
-             _immediate = reader.readBit();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.Publish --------");
-             trace("ticket: {" + _ticket + "}");
-             trace("exchange: {" + _exchange + "}");
-             trace("routingkey: {" + _routingkey + "}");
-             trace("mandatory: {" + _mandatory + "}");
-             trace("immediate: {" + _immediate + "}");
+             ticket = reader.readShort();
+             exchange = reader.readShortstr();
+             routingkey = reader.readShortstr();
+             mandatory = reader.readBit();
+             immediate = reader.readBit();
          }
     }

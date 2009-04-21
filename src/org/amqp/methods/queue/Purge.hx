@@ -18,74 +18,39 @@
 package org.amqp.methods.queue;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Purge extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var nowait(getNowait, setNowait) : Bool;
-         public var queue(getQueue, setQueue) : String;
-         public var ticket(getTicket, setTicket) : Int;
+         public var nowait : Bool;
+         public var queue : String;
+         public var ticket : Int;
+
          public function new() {
-         _ticket = 0;
-         _queue = "";
-         _nowait = false;
+             super();
+             ticket = 0;
+             queue = "";
+             nowait = false;
+             hasResponse = true;
+             classId = 50;
+             methodId = 30;
          }
          
-         var _ticket:Int ;
-         var _queue:String ;
-         var _nowait:Bool ;
-
-         public function getTicket():Int{return _ticket;}
-         public function getQueue():String{return _queue;}
-         public function getNowait():Bool{return _nowait;}
-
-         public function setTicket(x:Int):Int{_ticket = x;	return x;}
-         public function setQueue(x:String):String{_queue = x;	return x;}
-         public function setNowait(x:Bool):Bool{_nowait = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new PurgeOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 50;
-         }
-
-         public override function getMethodId():Int{
-             return 30;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShort(_ticket);
-             writer.writeShortstr(_queue);
-             writer.writeBit(_nowait);
+             writer.writeShort(ticket);
+             writer.writeShortstr(queue);
+             writer.writeBit(nowait);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _ticket = reader.readShort();
-             _queue = reader.readShortstr();
-             _nowait = reader.readBit();
-         }
-
-         public function dump():Void {
-             trace("-------- queue.Purge --------");
-             trace("ticket: {" + _ticket + "}");
-             trace("queue: {" + _queue + "}");
-             trace("nowait: {" + _nowait + "}");
+             ticket = reader.readShort();
+             queue = reader.readShortstr();
+             nowait = reader.readBit();
          }
     }

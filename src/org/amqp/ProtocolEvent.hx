@@ -33,7 +33,7 @@ package org.amqp;
         }
 
         public static function eventType(method:Method):String {
-            return method.getClassId() + "" + method.getMethodId();
+            return method.classId + "" + method.methodId;
         }
 
     }

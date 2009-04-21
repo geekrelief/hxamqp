@@ -18,58 +18,31 @@
 package org.amqp.methods.channel;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Open extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var outofband(getOutofband, setOutofband) : String;
+         public var outofband : String;
+
          public function new() {
-         _outofband = "";
+            super();
+            outofband = "";
+            hasResponse = true;
+            classId = 20;
+            methodId = 10;
          }
          
-         var _outofband:String ;
-
-         public function getOutofband():String{return _outofband;}
-
-         public function setOutofband(x:String):String{_outofband = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new OpenOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 20;
-         }
-
-         public override function getMethodId():Int{
-             return 10;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_outofband);
+             writer.writeShortstr(outofband);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _outofband = reader.readShortstr();
-         }
-
-         public function dump():Void {
-             trace("-------- channel.Open --------");
-             trace("outofband: {" + _outofband + "}");
+             outofband = reader.readShortstr();
          }
     }

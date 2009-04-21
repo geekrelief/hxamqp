@@ -21,17 +21,5 @@ package org.amqp.headers;
      *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
      **/
     class ChannelProperties extends ContentHeader {
-
-		public function new() {}
-
-        public override function getClassId():Int {
-            return 20;
-        }
-
-        public override function readPropertiesFrom(reader:ContentHeaderPropertyReader):Void{
-        }
-
-        public override function writePropertiesTo(writer:ContentHeaderPropertyWriter):Void{
-        }
-
+		public function new() { classId = 20;}
     }

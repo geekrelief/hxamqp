@@ -18,44 +18,15 @@
 package org.amqp.methods.tx;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
-    import org.amqp.methods.MethodArgumentReader;
-    import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class RollbackOk extends Method, implements ArgumentReader, implements ArgumentWriter {
 
-        public function new() { }
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 90;
-         }
-
-         public override function getMethodId():Int{
-             return 31;
-         }
-
-         public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-         }
-
-         public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-         }
-
-         public function dump():Void {
-             trace("-------- tx.RollbackOk --------");
-         }
+        public function new() { 
+            super();
+            isBottomHalf = true;
+            classId = 90;
+            methodId = 31;
+        }
     }

@@ -18,66 +18,35 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Cancel extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var consumertag(getConsumertag, setConsumertag) : String;
-         public var nowait(getNowait, setNowait) : Bool;
+         public var consumertag : String;
+         public var nowait : Bool;
+
          public function new() {
-			_consumertag = "";
-			_nowait = false;
+            super();
+			consumertag = "";
+			nowait = false;
+            hasResponse = true;
+            classId = 60;
+            methodId = 30;
          }
          
-         var _consumertag:String ;
-         var _nowait:Bool ;
-
-         public function getConsumertag():String{return _consumertag;}
-         public function getNowait():Bool{return _nowait;}
-
-         public function setConsumertag(x:String):String{_consumertag = x;	return x;}
-         public function setNowait(x:Bool):Bool{_nowait = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new CancelOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 30;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_consumertag);
-             writer.writeBit(_nowait);
+             writer.writeShortstr(consumertag);
+             writer.writeBit(nowait);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _consumertag = reader.readShortstr();
-             _nowait = reader.readBit();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.Cancel --------");
-             trace("consumertag: {" + _consumertag + "}");
-             trace("nowait: {" + _nowait + "}");
+             consumertag = reader.readShortstr();
+             nowait = reader.readBit();
          }
     }

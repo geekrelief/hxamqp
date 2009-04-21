@@ -18,55 +18,27 @@
 package org.amqp.methods.queue;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class PurgeOk extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var messagecount(getMessagecount, setMessagecount) : Int;
+         public var messagecount : Int;
+
          public function new() {
-         _messagecount = 0;
+            super();
+            messagecount = 0;
+            isBottomHalf = true;
+            classId = 50;
+            methodId = 31;
          }
          
-         var _messagecount:Int ;
-
-         public function getMessagecount():Int{return _messagecount;}
-
-         public function setMessagecount(x:Int):Int{_messagecount = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 50;
-         }
-
-         public override function getMethodId():Int{
-             return 31;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeLong(_messagecount);
+             writer.writeLong(messagecount);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _messagecount = reader.readLong();
-         }
-
-         public function dump():Void {
-             trace("-------- queue.PurgeOk --------");
-             trace("messagecount: {" + _messagecount + "}");
+             messagecount = reader.readLong();
          }
     }

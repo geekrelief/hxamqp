@@ -76,9 +76,7 @@ package org.amqp.headers;
         }
         #end
 
-        public function getClassId():Int{
-            return -1;
-        }
+        public var classId:Int;
 
         public function readPropertiesFrom(reader:ContentHeaderPropertyReader):Void{}
 

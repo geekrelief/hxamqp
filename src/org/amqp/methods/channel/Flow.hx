@@ -18,58 +18,31 @@
 package org.amqp.methods.channel;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Flow extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var active(getActive, setActive) : Bool;
+         public var active : Bool;
+
          public function new() {
-         _active = false;
+            super();
+            active = false;
+            hasResponse = true;
+            classId = 20;
+            methodId = 20;
          }
          
-         var _active:Bool ;
-
-         public function getActive():Bool{return _active;}
-
-         public function setActive(x:Bool):Bool{_active = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new FlowOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 20;
-         }
-
-         public override function getMethodId():Int{
-             return 20;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeBit(_active);
+             writer.writeBit(active);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _active = reader.readBit();
-         }
-
-         public function dump():Void {
-             trace("-------- channel.Flow --------");
-             trace("active: {" + _active + "}");
+             active = reader.readBit();
          }
     }

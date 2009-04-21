@@ -18,82 +18,39 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Return extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var exchange(getExchange, setExchange) : String;
-         public var replycode(getReplycode, setReplycode) : Int;
-         public var replytext(getReplytext, setReplytext) : String;
-         public var routingkey(getRoutingkey, setRoutingkey) : String;
+         public var exchange : String;
+         public var replycode : Int;
+         public var replytext : String;
+         public var routingkey : String;
+
          public function new() {
-         _replycode = 0;
-         _replytext = "";
-         _exchange = "";
-         _routingkey = "";
+             super();
+             replycode = 0;
+             replytext = "";
+             exchange = "";
+             routingkey = "";
+             hasContent = true;
+             classId = 60;
+             methodId = 50;
          }
          
-         var _replycode:Int ;
-         var _replytext:String ;
-         var _exchange:String ;
-         var _routingkey:String ;
-
-         public function getReplycode():Int{return _replycode;}
-         public function getReplytext():String{return _replytext;}
-         public function getExchange():String{return _exchange;}
-         public function getRoutingkey():String{return _routingkey;}
-
-         public function setReplycode(x:Int):Int{_replycode = x;	return x;}
-         public function setReplytext(x:String):String{_replytext = x;	return x;}
-         public function setExchange(x:String):String{_exchange = x;	return x;}
-         public function setRoutingkey(x:String):String{_routingkey = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-         public override function hasContent():Bool {
-             return true;
-         }
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 50;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShort(_replycode);
-             writer.writeShortstr(_replytext);
-             writer.writeShortstr(_exchange);
-             writer.writeShortstr(_routingkey);
+             writer.writeShort(replycode);
+             writer.writeShortstr(replytext);
+             writer.writeShortstr(exchange);
+             writer.writeShortstr(routingkey);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _replycode = reader.readShort();
-             _replytext = reader.readShortstr();
-             _exchange = reader.readShortstr();
-             _routingkey = reader.readShortstr();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.Return --------");
-             trace("replycode: {" + _replycode + "}");
-             trace("replytext: {" + _replytext + "}");
-             trace("exchange: {" + _exchange + "}");
-             trace("routingkey: {" + _routingkey + "}");
+             replycode = reader.readShort();
+             replytext = reader.readShortstr();
+             exchange = reader.readShortstr();
+             routingkey = reader.readShortstr();
          }
     }

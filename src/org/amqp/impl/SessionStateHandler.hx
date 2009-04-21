@@ -45,8 +45,8 @@ package org.amqp.impl;
 
     class SessionStateHandler extends BaseCommandReceiver, implements SynchronousCommandClient, implements ConsumerRegistry {
         inline static var STATE_CLOSED:Int = 0;
-        static var STATE_CONNECTION:Int = new ConnectionProperties().getClassId();
-        static var STATE_CHANNEL:Int = new ChannelProperties().getClassId();
+        static var STATE_CONNECTION:Int = new ConnectionProperties().classId;
+        static var STATE_CHANNEL:Int = new ChannelProperties().classId;
         inline static var STATE_OPEN:Int = STATE_CHANNEL + 1;
 
         var state:Int ;

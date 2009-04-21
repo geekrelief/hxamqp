@@ -18,90 +18,43 @@
 package org.amqp.methods.basic;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Deliver extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var consumertag(getConsumertag, setConsumertag) : String;
-         public var deliverytag(getDeliverytag, setDeliverytag) : Float;
-         public var redelivered(getRedelivered, setRedelivered) : Bool;
-         public var exchange(getExchange, setExchange) : String;
-         public var routingkey(getRoutingkey, setRoutingkey) : String;
+         public var consumertag : String;
+         public var deliverytag : Float;
+         public var redelivered : Bool;
+         public var exchange : String;
+         public var routingkey : String;
+
          public function new() {
-         _consumertag = "";
-         _deliverytag = 0;
-         _redelivered = false;
-         _exchange = "";
-         _routingkey = "";
+             super();
+             consumertag = "";
+             deliverytag = 0;
+             redelivered = false;
+             exchange = "";
+             routingkey = "";
+             hasContent = true;
+             classId = 60;
+             methodId = 60;
          }
          
-         var _consumertag:String ;
-         var _deliverytag:Float ;
-         var _redelivered:Bool ;
-         var _exchange:String ;
-         var _routingkey:String ;
-
-         public function getConsumertag():String{return _consumertag;}
-         public function getDeliverytag():Float{return _deliverytag;}
-         public function getRedelivered():Bool{return _redelivered;}
-         public function getExchange():String{return _exchange;}
-         public function getRoutingkey():String{return _routingkey;}
-
-         public function setConsumertag(x:String):String{_consumertag = x;	return x;}
-         public function setDeliverytag(x:Float):Float{_deliverytag = x;	return x;}
-         public function setRedelivered(x:Bool):Bool{_redelivered = x;	return x;}
-         public function setExchange(x:String):String{_exchange = x;	return x;}
-         public function setRoutingkey(x:String):String{_routingkey = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-         public override function hasContent():Bool {
-             return true;
-         }
-
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 60;
-         }
-
-         public override function getMethodId():Int{
-             return 60;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeShortstr(_consumertag);
-             writer.writeLonglong(_deliverytag);
-             writer.writeBit(_redelivered);
-             writer.writeShortstr(_exchange);
-             writer.writeShortstr(_routingkey);
+             writer.writeShortstr(consumertag);
+             writer.writeLonglong(deliverytag);
+             writer.writeBit(redelivered);
+             writer.writeShortstr(exchange);
+             writer.writeShortstr(routingkey);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _consumertag = reader.readShortstr();
-             _deliverytag = reader.readLonglong();
-             _redelivered = reader.readBit();
-             _exchange = reader.readShortstr();
-             _routingkey = reader.readShortstr();
-         }
-
-         public function dump():Void {
-             trace("-------- basic.Deliver --------");
-             trace("consumertag: {" + _consumertag + "}");
-             trace("deliverytag: {" + _deliverytag + "}");
-             trace("redelivered: {" + _redelivered + "}");
-             trace("exchange: {" + _exchange + "}");
-             trace("routingkey: {" + _routingkey + "}");
+             consumertag = reader.readShortstr();
+             deliverytag = reader.readLonglong();
+             redelivered = reader.readBit();
+             exchange = reader.readShortstr();
+             routingkey = reader.readShortstr();
          }
     }

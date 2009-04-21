@@ -18,45 +18,15 @@
 package org.amqp.methods.channel;
 
     import org.amqp.Method;
-    import org.amqp.LongString;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
-    import org.amqp.methods.MethodArgumentReader;
-    import org.amqp.methods.MethodArgumentWriter;
-    import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class OpenOk extends Method, implements ArgumentReader, implements ArgumentWriter {
 
-        public function new() { }
-
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
-
-         public override function isBottomHalf():Bool {
-             return true;
-         }
-
-         public override function getClassId():Int{
-             return 20;
-         }
-
-         public override function getMethodId():Int{
-             return 11;
-         }
-
-         public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-         }
-
-         public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-         }
-
-         public function dump():Void {
-             trace("-------- channel.OpenOk --------");
-         }
+        public function new() { 
+            super();
+            isBottomHalf = true;
+            classId = 20;
+            methodId = 11;
+        }
     }

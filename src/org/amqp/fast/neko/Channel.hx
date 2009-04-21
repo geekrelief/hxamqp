@@ -74,11 +74,11 @@ package org.amqp.fast.neko;
             // returns ProtocolEvent
             var e:ProtocolEvent = null;
             // throw away repeated/previous Oks
-            trace("cRpc "+m);
+            //trace("cRpc "+m);
             for(i in 0...ecount) {
                 e = Thread.readMessage(true);
             }
-            trace("cRpc res "+e);
+            //trace("cRpc res "+e);
             return e;
         }
 

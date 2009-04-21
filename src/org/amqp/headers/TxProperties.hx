@@ -17,22 +17,6 @@
  **/
 package org.amqp.headers;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class TxProperties extends ContentHeader {
-
-
-        public function new() { }
-
-        public override function getClassId():Int {
-            return 90;
-        }
-
-        public override function readPropertiesFrom(reader:ContentHeaderPropertyReader):Void{
-        }
-
-        public override function writePropertiesTo(writer:ContentHeaderPropertyWriter):Void{
-        }
-
+        public function new() { classId = 90; }
     }

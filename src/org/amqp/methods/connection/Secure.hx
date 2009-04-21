@@ -25,51 +25,27 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
 
-    /**
-     *   THIS IS AUTO-GENERATED CODE. DO NOT EDIT!
-     **/
     class Secure extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var challenge(getChallenge, setChallenge) : LongString;
+         public var challenge : LongString;
          public function new() {
-    	     _challenge = new ByteArrayLongString();
+             super();
+    	     challenge = new ByteArrayLongString();
+             hasResponse = true;
+
+             classId = 10;
+             methodId = 20;
          }
          
-         var _challenge:LongString ;
-
-         public function getChallenge():LongString{return _challenge;}
-
-         public function setChallenge(x:LongString):LongString{_challenge = x;	return x;}
-
-         public override function hasResponse():Bool {
-             return null != getResponse();
-         }
-
          public override function getResponse():Method {
              return new SecureOk();
          }
 
-         public override function isBottomHalf():Bool {
-             return false;
-         }
-
-         public override function getClassId():Int{
-             return 10;
-         }
-
-         public override function getMethodId():Int{
-             return 20;
-         }
-
          public override function writeArgumentsTo(writer:MethodArgumentWriter):Void {
-             writer.writeLongstr(_challenge);
+             writer.writeLongstr(challenge);
          }
 
          public override function readArgumentsFrom(reader:MethodArgumentReader):Void {
-             _challenge = reader.readLongstr();
+             challenge = reader.readLongstr();
          }
 
-         public function dump():Void {
-             trace("-------- connection.Secure --------");
-             trace("challenge: {" + _challenge + "}");
-         }
     }

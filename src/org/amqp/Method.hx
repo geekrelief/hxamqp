@@ -21,40 +21,21 @@ package org.amqp;
     import org.amqp.methods.MethodArgumentReader;
 
     class Method {
-//    implements Dynamic<Dynamic> {
+        public var hasContent:Bool;
+        public var hasResponse:Bool;
+        public var isBottomHalf:Bool;
+        public function getResponse():Method { return null;}
+        public function getAltResponse():Method { return null; }
+        public var classId:Int;
+        public var methodId:Int;
+
+        public function new() { }
+
         public function writeArgumentsTo(writer:MethodArgumentWriter):Void {}
 
         public function readArgumentsFrom(reader:MethodArgumentReader):Void {}
 
-        public function hasContent():Bool {
-            return false;
-        }
-
-        public function hasResponse():Bool {
-             return false;
-        }
-
-        public function isBottomHalf():Bool {
-             return false;
-        }
-
-        public function getResponse():Method {
-             return null;
-        }
-
-        public function getAltResponse():Method {
-            return null;
-        }
-
-        public function getClassId():Int{
-            return -1;
-        }
-
-        public function getMethodId():Int{
-            return -1;
-        }
-
         public function toString():String{
-            return "(" + getClassId() + "-" + getMethodId() + ")";
+            return "(" + classId + "-" + methodId + ")";
         }
     }
