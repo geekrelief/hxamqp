@@ -24,8 +24,23 @@ class DataWriter {
         b.writeUTFBytes(s);
     }
 
-    inline public function object(o:Dynamic):Void {
-        string(Serializer.run(o));
+    inline public function object(o:Dynamic, compress:Bool = false):Int {
+        // for small objects or few fields the compressed version can be bigger
+        if(compress) {
+            var s = Serializer.run(o);
+            var by = new ByteArray();
+            by.writeUTFBytes(s);
+            by.compress();
+            by.position = 0;
+            long(by.length);
+            bytes(by);
+            long(s.length);
+            return by.length;
+        } else {
+            var s = Serializer.run(o);
+            string(s);
+            return s.length;
+        }
     }
 
     inline public function byte(i:Int) {
@@ -76,8 +91,22 @@ class DataWriter {
         b.writeString(s);
     }
 
-    inline public function object(o:Dynamic):Void {
-        string(Serializer.run(o));
+    inline public function object(o:Dynamic, compress:Bool = false):Int {
+        // for small objects or few fields the compressed version can be bigger
+        if(compress) {
+            var bo = new BytesOutput();
+            var s = Serializer.run(o);
+            bo.writeString(s);
+            var cb = neko.zip.Compress.run(bo.getBytes(), 9);
+            long(cb.length);
+            bytes(cb); 
+            long(s.length);
+            return cb.length;
+        } else {
+            var s = Serializer.run(o);
+            string(s);
+            return s.length;
+        }
     }
 
     inline public function byte(i:Int) {

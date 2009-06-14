@@ -22,7 +22,7 @@ package org.amqp;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
-    import flash.Vector;
+    //import flash.Vector;
     import flash.utils.ByteArray;
     #elseif neko
     import org.amqp.Error;
@@ -60,7 +60,6 @@ package org.amqp;
         public var frameMax:Int ;
 
         #if flash9
-        public var recs:Vector<Frame>;
         public var receiving:Bool;
         public var frameBuffer:ByteArray;
         #end
@@ -97,7 +96,6 @@ package org.amqp;
             delegate.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
             delegate.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
 
-            recs = new Vector();
             receiving = false;
             frameBuffer = new ByteArray();
             frameBuffer.position = 0;

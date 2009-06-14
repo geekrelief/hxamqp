@@ -34,8 +34,15 @@ class DataReader {
         return b.readUTFBytes(long());
     }
 
-    inline public function object():Dynamic {
-        return Unserializer.run(string());
+    inline public function object(decompress:Bool = false):Dynamic {
+        // decompress if object was compressed
+        if(decompress) {
+            var by:ByteArray = bytes(long());
+            by.uncompress();
+            return Unserializer.run(by.readUTFBytes(long()));
+        } else {
+            return Unserializer.run(string());
+        }
     }
 
     inline public function byte():Int {
@@ -88,8 +95,13 @@ class DataReader {
         return b.readString(long());
     }
 
-    inline public function object():Dynamic {
-        return Unserializer.run(string());
+    inline public function object(decompress:Bool = false):Dynamic {
+        // decompress if object was compressed
+        if(decompress) {
+            return Unserializer.run(new BytesInput(neko.zip.Uncompress.run(bytes(long()))).readString(long()));
+        } else {
+            return Unserializer.run(string());
+        }
     }
 
     inline public function byte():Int {
