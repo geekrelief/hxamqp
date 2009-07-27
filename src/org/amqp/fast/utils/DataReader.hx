@@ -19,8 +19,8 @@ class DataReader {
         b.position = pos;
     }
 
-    public function bytes(?len:Int = -1):ByteArray {
-        if(len == -1 || len > b.bytesAvailable) {
+    public function bytes(?len:UInt):ByteArray {
+        if(len == null || len > b.bytesAvailable) {
             len = b.bytesAvailable;
         }
 
@@ -83,8 +83,8 @@ class DataReader {
         b = _b;
     }
 
-    public function bytes(?len:Int = -1):Bytes {
-        if(len == -1) {
+    public function bytes(?len:UInt):Bytes {
+        if(len == null) {
             return b.readAll();
         } else {
             return b.read(len);

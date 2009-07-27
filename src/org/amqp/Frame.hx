@@ -39,7 +39,7 @@ package org.amqp;
 
         public var type:Int;
         public var channel:Int;
-        public var payloadSize:Int;
+        public var payloadSize:UInt;
 
         #if flash9
         var payload:ByteArray;
@@ -60,7 +60,7 @@ package org.amqp;
         }
 
         #if flash9
-        inline public function bufferCheck(buffer:ByteArray, len:Int) {
+        inline public function bufferCheck(buffer:ByteArray, len:UInt) {
             return (buffer.bytesAvailable >= len);
         }
 
@@ -73,7 +73,7 @@ package org.amqp;
             #if flash9
             // check if there's enough in the buffer to continue
             var pos = input.position;
-            if(!bufferCheck(input, 7)) {  // 7 = type:1, channel:2, payloadSize:4
+            if(input.bytesAvailable < 7) {  // 7 = type:1, channel:2, payloadSize:4
                 input.position = pos;
                 return false;
             }
@@ -101,16 +101,16 @@ package org.amqp;
             //trace("channel "+channel);
 
             #if flash9
-            payloadSize = input.readInt();
+            payloadSize = input.readUnsignedInt();
             #elseif neko
-            payloadSize = input.readInt31();
+            payloadSize = input.readUInt30();
             #end
             //trace("type: "+type+" channel: "+channel+" payloadSize: "+payloadSize);
 
             if (payloadSize > 0) {
                 #if flash9
                 //trace("payloadSize: "+payloadSize +" bytesAvailable:"+input.bytesAvailable);
-                if(!bufferCheck(input, payloadSize + 1)) { // + 1 for frameEndMarker
+                if(input.bytesAvailable < payloadSize + 1) { // + 1 for frameEndMarker
                     //trace("not enough bytes to complete frame");
                     input.position = pos;
                     return false;

@@ -63,6 +63,7 @@ package org.amqp.io;
 
         public function open(params:ConnectionParameters):Void {
             #if flash9
+            timeout = params.timeout;
             connect(params.serverhost, params.port);
             #elseif neko
             connect(new neko.net.Host(params.serverhost), params.port);

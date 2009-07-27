@@ -14,9 +14,12 @@ package org.amqp.fast.flash;
         var channels:List<Channel>;
 
         var openh:Void->Void;
+        var errorh:Void->Void;
 
-        public function new(cp:ConnectionParameters, _openh:Void->Void ) {
+        public function new(cp:ConnectionParameters, _openh:Void->Void, ?_errorh:Void->Void ) {
             co = new Connection(cp);
+            if(_errorh != null)
+                co.errorh = _errorh;
             sm = co.sessionManager;
             channels = new List();
 

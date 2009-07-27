@@ -22,6 +22,7 @@ package org.amqp;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
+    import flash.events.SecurityErrorEvent;
     //import flash.Vector;
     import flash.utils.ByteArray;
     #elseif neko
@@ -44,8 +45,8 @@ package org.amqp;
 
     import org.amqp.methods.connection.CloseOk;
 
-    class Connection
-     {
+    class Connection {
+
         public var baseSession(getBaseSession, null) : Session ;
         inline static var CLOSED:Int = 0;
         inline static var CONNECTING:Int = 1;
@@ -62,6 +63,7 @@ package org.amqp;
         #if flash9
         public var receiving:Bool;
         public var frameBuffer:ByteArray;
+        public var errorh:Void->Void;
         #end
 
         public function new(state:ConnectionParameters) {
@@ -95,6 +97,7 @@ package org.amqp;
             delegate.addEventListener(Event.CLOSE, onSocketClose);
             delegate.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
             delegate.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
+            delegate.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketSecurityError);
 
             receiving = false;
             frameBuffer = new ByteArray();
@@ -153,8 +156,19 @@ package org.amqp;
         public function onSocketError():Void {
         #end
             currentState = CLOSED;
-            delegate.dispatchEvent(new ConnectionError());
+            //delegate.dispatchEvent(new ConnectionError());
+            trace("connection error");
+            if(errorh != null) {
+                errorh();
+            }
         }
+
+        
+        #if flash9 
+        public function onSocketSecurityError(event:SecurityErrorEvent):Void {
+            errorh();
+        }
+        #end
 
         public function close(?reason:Dynamic = null):Void {
             if (!shuttingDown) {

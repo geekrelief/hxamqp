@@ -30,8 +30,9 @@ package org.amqp;
         public var useTLS:Bool ;
         public var tlsPort:Int ;
         public var options:Dynamic ;
+        public var timeout:UInt;
 
-		public function new (?_host:String="", ?_port:Int=-1, ?_user:String="", ?_pass:String="", ?_vhost:String="", ?_options) {
+		public function new (?_host:String="", ?_port:Int=-1, ?_user:String="", ?_pass:String="", ?_vhost:String="", ?_timeout:UInt=3000, ?_options) {
             serverhost = _host;
             if(_port == -1)
 			    serverport = AMQP.PORT;
@@ -40,6 +41,7 @@ package org.amqp;
             username = _user;
             password = _pass;
             vhostpath = _vhost;
+            timeout = _timeout;
             options = _options;
 		}
 
