@@ -20,7 +20,7 @@ package org.amqp;
 
     #if flash9
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.Bytes;
     import haxe.io.BytesOutput;
     #end
@@ -64,7 +64,7 @@ package org.amqp;
         public static function generateHeader():ByteArray {
             var buffer =  new ByteArray();
             buffer.writeUTFBytes("AMQP");
-        #elseif neko
+        #else
         public static function generateHeader():Bytes {
             var buffer:BytesOutput = new BytesOutput(); buffer.bigEndian = true;
             buffer.writeString("AMQP");
@@ -75,7 +75,7 @@ package org.amqp;
             buffer.writeByte(PROTOCOL_MINOR);
             #if flash9
             return buffer;
-            #elseif neko
+            #else
             return buffer.getBytes();
             #end
         }

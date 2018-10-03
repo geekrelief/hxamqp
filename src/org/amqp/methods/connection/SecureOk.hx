@@ -25,7 +25,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
 
-    class SecureOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class SecureOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var response : LongString;
          
          public function new() {

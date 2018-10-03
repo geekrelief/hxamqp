@@ -21,7 +21,7 @@ package org.amqp.methods.queue;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
 
-    class BindOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class BindOk extends Method implements ArgumentReader implements ArgumentWriter {
 
         public function new() { 
             super();

@@ -23,8 +23,8 @@ package org.amqp.methods.queue;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Declare extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var arguments : Hash<Dynamic>;
+    class Declare extends Method implements ArgumentReader implements ArgumentWriter {
+         public var arguments : haxe.ds.StringMap<Dynamic>;
          public var autodelete : Bool;
          public var durable : Bool;
          public var exclusive : Bool;
@@ -42,7 +42,7 @@ package org.amqp.methods.queue;
              exclusive = false;
              autodelete = false;
              nowait = false;
-             arguments = new Hash();
+             arguments = new haxe.ds.StringMap();
              hasResponse = true;
              classId = 50;
              methodId = 10;

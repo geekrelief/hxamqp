@@ -19,7 +19,7 @@ package org.amqp.impl;
 
     #if flash9
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.BytesOutput;
     #end
 
@@ -97,7 +97,7 @@ package org.amqp.impl;
 
             // Doesn't do anything fancy with the properties from Start yet
             var startOk:StartOk = new StartOk();
-            var props:Hash<Dynamic> = new Hash();
+            var props:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
 
             props.set("product", LongStringHelper.asLongString("AS-AMQC"));
             props.set("version", LongStringHelper.asLongString("0.1"));
@@ -106,12 +106,12 @@ package org.amqp.impl;
             startOk.clientproperties = props;
             startOk.mechanism = "AMQPLAIN";
 
-            var credentials:Hash<Dynamic> = new Hash();
+            var credentials:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
             credentials.set("LOGIN", LongStringHelper.asLongString(connectionParams.username));
             credentials.set("PASSWORD", LongStringHelper.asLongString(connectionParams.password));
             #if flash9
             var buf:ByteArray = new ByteArray();
-            #elseif neko
+            #else
             var buf:BytesOutput = new BytesOutput(); buf.bigEndian = true;
             #end
             var generator:BinaryGenerator = new BinaryGenerator(buf);

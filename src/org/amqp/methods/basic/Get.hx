@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Get extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Get extends Method implements ArgumentReader implements ArgumentWriter {
          public var noack : Bool;
          public var queue : String;
          public var ticket : Int;

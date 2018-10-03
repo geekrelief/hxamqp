@@ -23,7 +23,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Redirect extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Redirect extends Method implements ArgumentReader implements ArgumentWriter {
          public var host : String;
          public var knownhosts : String;
 

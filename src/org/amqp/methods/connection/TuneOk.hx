@@ -23,7 +23,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class TuneOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class TuneOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var channelmax : Int;
          public var framemax : Int;
          public var heartbeat : Int;

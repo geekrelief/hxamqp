@@ -48,7 +48,7 @@ typedef Delivery = { method:Deliver, properties:BasicProperties, body:ByteArray 
 typedef AmqpConnection = org.amqp.fast.flash.AmqpConnection
 typedef Channel = org.amqp.fast.flash.Channel
 
-#elseif neko
+#else
 
 typedef BytesInput = haxe.io.BytesInput;
 typedef BytesOutput = haxe.io.BytesOutput;

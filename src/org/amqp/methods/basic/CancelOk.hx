@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class CancelOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class CancelOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var consumertag : String;
 
          public function new() {

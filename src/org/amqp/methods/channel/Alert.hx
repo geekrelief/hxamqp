@@ -23,8 +23,8 @@ package org.amqp.methods.channel;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Alert extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var details : Hash<Dynamic>;
+    class Alert extends Method implements ArgumentReader implements ArgumentWriter {
+         public var details : haxe.ds.StringMap<Dynamic>;
          public var replycode : Int;
          public var replytext : String;
 
@@ -32,7 +32,7 @@ package org.amqp.methods.channel;
              super();
              replycode = 0;
              replytext = "";
-             details = new Hash();
+             details = new haxe.ds.StringMap();
              classId = 20;
              methodId = 30;
          }

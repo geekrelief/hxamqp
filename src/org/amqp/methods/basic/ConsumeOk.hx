@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class ConsumeOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class ConsumeOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var consumertag : String;
 
          public function new() {

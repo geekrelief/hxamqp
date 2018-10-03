@@ -24,7 +24,7 @@
     import org.amqp.methods.queue.Declare;
 
     class GS
-        implements BasicConsumer, 
+        implements BasicConsumer
         implements LifecycleEventHandler {
 
         var ax:String ;
@@ -65,7 +65,7 @@
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.17";
+            params.serverhost = "127.0.0.1";
 
             return params;
         }
@@ -85,7 +85,7 @@
             connection.baseSession.registerLifecycleHandler(this);
             mt =  Thread.current();
             trace("create connection thread");
-            ct = neko.vm.Thread.create(callback(connection.onSocketData, mt));
+            ct = neko.vm.Thread.create(connection.socketLoop.bind(mt));
             Thread.readMessage(true); // wait for a start message after onConsume
 
             runLoop();
@@ -111,7 +111,7 @@
             var msg:BytesInput;
 
             while(true) {
-                neko.Sys.sleep(0.01);
+                Sys.sleep(0.01);
                 trace("processing main thread "+count);
                 px = x;
                 py = y;

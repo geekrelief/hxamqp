@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Recover extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Recover extends Method implements ArgumentReader implements ArgumentWriter {
          public var requeue : Bool;
 
          public function new() {

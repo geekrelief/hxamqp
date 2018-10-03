@@ -21,7 +21,7 @@ package org.amqp.methods.tx;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
 
-    class CommitOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class CommitOk extends Method implements ArgumentReader implements ArgumentWriter {
 
         public function new() { 
             super();

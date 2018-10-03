@@ -19,7 +19,7 @@ package org.amqp.error;
 
     #if neko
     import org.amqp.Error;
-    #elseif flash9
+    #else flash9
     import flash.Error;
     #end
 

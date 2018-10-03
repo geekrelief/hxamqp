@@ -52,7 +52,7 @@ package org.amqp.methods;
     #if flash9
     import flash.Error;
     import flash.utils.IDataInput;
-    #elseif neko
+    #else
     import org.amqp.Error;
     import haxe.io.Input;
     #end
@@ -65,7 +65,7 @@ package org.amqp.methods;
         
         #if flash9
         public static function readMethodFrom(input:IDataInput):Method {
-        #elseif neko
+        #else
         public static function readMethodFrom(input:Input):Method {
         #end
         //    trace("readMethodFrom");
@@ -73,7 +73,7 @@ package org.amqp.methods;
             #if flash9
             var classId:Int = input.readShort();
             var methodId:Int = input.readShort();
-            #elseif neko
+            #else
             var classId:Int = input.readUInt16();
             var methodId:Int = input.readUInt16();
             #end

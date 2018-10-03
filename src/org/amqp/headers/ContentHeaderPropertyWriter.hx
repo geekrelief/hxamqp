@@ -22,7 +22,7 @@ package org.amqp.headers;
     import flash.Error;
     import flash.utils.IDataOutput;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import org.amqp.Error;
     import haxe.io.Bytes;
     import haxe.io.Output;
@@ -39,7 +39,7 @@ package org.amqp.headers;
         /** Output stream collecting the packet as it is generated */
         #if flash9
         public var outBytes:ByteArray; 
-        #elseif neko
+        #else
         public var outBytes:BytesOutput; 
         #end
 
@@ -52,7 +52,7 @@ package org.amqp.headers;
             this.flags = new Array();
             #if flash9
             this.outBytes = new ByteArray();
-            #elseif neko
+            #else
             this.outBytes = new BytesOutput(); outBytes.bigEndian = true;
             #end
             this.flagWord = 0;
@@ -92,7 +92,7 @@ package org.amqp.headers;
             }
             output.writeBytes(outBytes);
         } 
-        #elseif neko
+        #else
         public function dumpTo(output:Output):Void {
 
             if (bitCount > 0) {
@@ -116,7 +116,7 @@ package org.amqp.headers;
             outBytes.writeByte(x.length);
             #if flash9
             outBytes.writeUTFBytes(x);
-            #elseif neko
+            #else
             outBytes.writeString(x);
             #end
         }
@@ -132,8 +132,8 @@ package org.amqp.headers;
             #if flash9
             outBytes.writeInt(x.length);
             outBytes.writeUTFBytes(x);
-            #elseif neko
-            outBytes.writeInt31(x.length);
+            #else
+            outBytes.writeInt32(x.length);
             outBytes.writeString(x);
             #end
         }
@@ -149,8 +149,8 @@ package org.amqp.headers;
             #if flash9
             outBytes.writeInt(x.length());
             outBytes.writeBytes(x.getBytes());
-            #elseif neko
-            outBytes.writeInt31(x.length());
+            #else
+            outBytes.writeInt32(x.length());
             outBytes.write(x.getBytes());
             #end
         }
@@ -166,7 +166,7 @@ package org.amqp.headers;
         public function _writeShort(x:Int):Void {
             #if flash9
             outBytes.writeShort(x);
-            #elseif neko
+            #else
             outBytes.writeUInt16(x);
             #end
         }
@@ -181,8 +181,8 @@ package org.amqp.headers;
         public function _writeLong(x:Int):Void {
             #if flash9
             outBytes.writeInt(x);
-            #elseif neko
-            outBytes.writeInt31(x);
+            #else
+            outBytes.writeInt32(x);
             #end
         }
 
@@ -198,16 +198,16 @@ package org.amqp.headers;
         }
 
         /** Protected API - Writes a table value to the stream, if it's non-null */
-        public function writeTable(x:Hash<Dynamic>):Void {
+        public function writeTable(x:haxe.ds.StringMap<Dynamic>):Void {
             if(argPresent(x)){
                 _writeTable(x);
             }
         }
-        public function _writeTable(table:Hash<Dynamic>):Void {
+        public function _writeTable(table:haxe.ds.StringMap<Dynamic>):Void {
             #if flash9
             outBytes.writeInt( FrameHelper.tableSize(table) );
-            #elseif neko
-            outBytes.writeInt31( FrameHelper.tableSize(table) );
+            #else
+            outBytes.writeInt32( FrameHelper.tableSize(table) );
             #end
 
             for (key in table.keys()) {
@@ -242,9 +242,9 @@ package org.amqp.headers;
                     _writeOctet(84);//'T'
                     _writeTimestamp(cast( value, Date));
                 }
-                else if(Std.is( value, Hash)) {
+                else if(Std.is( value, haxe.ds.StringMap)) {
                     _writeOctet(70); // 'F"
-                    _writeTable(cast( value, Hash<Dynamic>));
+                    _writeTable(cast( value, haxe.ds.StringMap<Dynamic>));
                 }
                 else if (value == null) {
                     throw new Error("Value for key {" + key + "} was null");
@@ -279,8 +279,8 @@ package org.amqp.headers;
         public function _writeTimestamp(x:Date):Void {
             #if flash9
             outBytes.writeInt( Math.floor(x.getTime() / 1000));
-            #elseif neko
-            outBytes.writeInt31( Math.floor(x.getTime() / 1000));
+            #else
+            outBytes.writeInt32( Math.floor(x.getTime() / 1000));
             #end
         }
     }

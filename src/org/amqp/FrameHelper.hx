@@ -32,7 +32,7 @@ package org.amqp;
             //str.getBytes("utf-8").length + 4;
         }
 
-        public static function tableSize(table:Hash<Dynamic>):Int{
+        public static function tableSize(table:haxe.ds.StringMap<Dynamic>):Int{
             var acc:Int = 0;
 
             for (key in table.keys()) {
@@ -59,9 +59,9 @@ package org.amqp;
                 else if(Std.is( value, Date)) {
                     acc += 8;
                 }
-                else if(Std.is( value, Hash)) {
+                else if(Std.is( value, haxe.ds.StringMap)) {
                     acc += 4;
-                    acc += tableSize(cast( value, Hash<Dynamic>));
+                    acc += tableSize(cast( value, haxe.ds.StringMap<Dynamic>));
                 }
                 else {
                     throw new IllegalArgumentError("invalid value in table");

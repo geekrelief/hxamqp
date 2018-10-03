@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Qos extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Qos extends Method implements ArgumentReader implements ArgumentWriter {
          public var global : Bool;
          public var prefetchcount : Int;
          public var prefetchsize : Int;

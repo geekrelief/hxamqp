@@ -23,7 +23,7 @@ package org.amqp.methods.channel;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Flow extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Flow extends Method implements ArgumentReader implements ArgumentWriter {
          public var active : Bool;
 
          public function new() {

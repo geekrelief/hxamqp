@@ -30,7 +30,7 @@
 
     import flash.Vector;
 
-	class Timings implements BasicConsumer, implements LifecycleEventHandler {
+	class Timings implements BasicConsumer implements LifecycleEventHandler {
 
         public var ax:String ;
         public var q:String ;

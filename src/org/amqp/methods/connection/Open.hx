@@ -23,7 +23,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Open extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Open extends Method implements ArgumentReader implements ArgumentWriter {
          public var capabilities : String;
          public var insist : Bool;
          public var virtualhost : String;

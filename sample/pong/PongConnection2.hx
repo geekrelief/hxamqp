@@ -43,7 +43,7 @@ package pong;
     import org.amqp.methods.basic.Deliver;
     import org.amqp.methods.queue.Declare;
 
-    class PongConnection2 extends EventDispatcher, implements BasicConsumer, implements LifecycleEventHandler {
+    class PongConnection2 extends EventDispatcher implements BasicConsumer implements LifecycleEventHandler {
         public var ax:String ;
         public var q:String ;
         public var q2:String ;

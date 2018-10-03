@@ -23,8 +23,8 @@ package org.amqp.methods.queue;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Bind extends Method, implements ArgumentReader, implements ArgumentWriter {
-         public var arguments : Hash<Dynamic>;
+    class Bind extends Method implements ArgumentReader implements ArgumentWriter {
+         public var arguments : haxe.ds.StringMap<Dynamic>;
          public var exchange : String;
          public var nowait : Bool;
          public var queue : String;
@@ -38,7 +38,7 @@ package org.amqp.methods.queue;
              exchange = "";
              routingkey = "";
              nowait = false;
-             arguments = new Hash();
+             arguments = new haxe.ds.StringMap();
              hasResponse = true;
              classId = 50;
              methodId = 20;

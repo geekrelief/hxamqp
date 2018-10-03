@@ -19,7 +19,7 @@ package org.amqp.impl;
 
     #if flash9
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.BytesInput;
     #end
 
@@ -43,19 +43,19 @@ package org.amqp.impl;
     import org.amqp.methods.channel.CloseOk;
     import org.amqp.methods.channel.OpenOk;
 
-    class SessionStateHandler extends BaseCommandReceiver, implements SynchronousCommandClient, implements ConsumerRegistry {
-        inline static var STATE_CLOSED:Int = 0;
+    class SessionStateHandler extends BaseCommandReceiver implements SynchronousCommandClient implements ConsumerRegistry {
+        static var STATE_CLOSED:Int = 0;
         static var STATE_CONNECTION:Int = new ConnectionProperties().classId;
         static var STATE_CHANNEL:Int = new ChannelProperties().classId;
-        inline static var STATE_OPEN:Int = STATE_CHANNEL + 1;
+        static var STATE_OPEN:Int = STATE_CHANNEL + 1;
 
-        var state:Int ;
+        var state:Int;
         var QUEUE_SIZE:Int ;
 
-        var consumers:Hash<BasicConsumer>;
+        var consumers:haxe.ds.StringMap<BasicConsumer>;
         var returnCallback:Command->Return->Void;
 
-        public var channel(getSessionChannel, null):Int;
+        public var channel(get, null):Int;
 
         public function new(){
             // TODO Look into whether this is really necessary
@@ -63,13 +63,13 @@ package org.amqp.impl;
             
             state = STATE_CONNECTION;
             QUEUE_SIZE = 100;
-            consumers = new Hash();
+            consumers = new haxe.ds.StringMap();
             unsetReturn();
             addEventListener(new Deliver(), onDeliver);
             addEventListener(new Return(), onReturn);
         }
 
-        inline public function getSessionChannel():Int {
+        inline public function get_channel():Int {
             return session.channel;
         }
 
@@ -96,7 +96,7 @@ package org.amqp.impl;
         }
 
         public function register(consume:Consume, consumer:BasicConsumer):Void{
-            rpc(new Command(consume), callback(onConsumeOk, consumer));
+            rpc(new Command(consume), onConsumeOk.bind(consumer));
         }
 
         public function unregister(tag:String):Void{
@@ -130,7 +130,7 @@ package org.amqp.impl;
             #if flash9
             var body:ByteArray = cast( event.command.content, ByteArray);
             body.position = 0;
-            #elseif neko
+            #else
             var body:BytesInput = new BytesInput(event.command.content.getBytes()); body.bigEndian = true;
             #end
             var consumer:BasicConsumer = consumers.get(deliver.consumertag);
@@ -171,7 +171,7 @@ package org.amqp.impl;
          **/
         function transition(newState:Int):Void {
             switch (state) {
-                case STATE_CLOSED: { stateError(newState); }
+                case 0: stateError(newState);
                 default: state = newState;
             }
         }

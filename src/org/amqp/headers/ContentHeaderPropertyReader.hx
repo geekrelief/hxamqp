@@ -19,7 +19,7 @@ package org.amqp.headers;
 
     #if flash9
     import flash.utils.IDataInput;
-    #elseif neko
+    #else
     import haxe.io.Input;
     #end
 
@@ -30,7 +30,7 @@ package org.amqp.headers;
      {
         #if flash9
         var input:IDataInput;
-        #elseif neko
+        #else
         var input:Input;
         #end
         /** Collected field flags */
@@ -40,7 +40,7 @@ package org.amqp.headers;
 
         #if flash9
         public function new(input:IDataInput){
-        #elseif neko
+        #else
         public function new(input:Input){
         #end
             this.input = input;
@@ -57,7 +57,7 @@ package org.amqp.headers;
             do {
                 #if flash9
                 var flagsWord = input.readShort();
-                #elseif neko
+                #else
                 var flagsWord = input.readUInt16();
                 #end
                 acc.push(flagsWord);
@@ -103,7 +103,7 @@ package org.amqp.headers;
             if (!argPresent()) return 0;
             #if flash9
             return input.readUnsignedShort();
-            #elseif neko
+            #else
             return input.readUInt16();
             #end
         }
@@ -113,8 +113,8 @@ package org.amqp.headers;
             if (!argPresent()) return 0;
             #if flash9
             return input.readInt();
-            #elseif neko
-            return input.readInt31();
+            #else
+            return input.readInt32();
             #end
         }
 
@@ -130,7 +130,7 @@ package org.amqp.headers;
         }
 
         /** Reads and returns an AMQP table content header field, or null if absent. */
-        public function readTable():Hash<Dynamic>{
+        public function readTable():haxe.ds.StringMap<Dynamic>{
             if (!argPresent()) return null;
             return MethodArgumentReader._readTable(input);
         }
@@ -140,7 +140,7 @@ package org.amqp.headers;
             if (!argPresent()) return 0;
             #if flash9
             return input.readUnsignedByte();
-            #elseif neko
+            #else
             return input.readByte();
             #end
         }

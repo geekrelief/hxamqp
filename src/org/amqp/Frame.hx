@@ -22,7 +22,7 @@ package org.amqp;
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
-    #elseif neko
+    #else
     import org.amqp.Error;
 
     import haxe.io.Bytes;
@@ -44,7 +44,7 @@ package org.amqp;
         #if flash9
         var payload:ByteArray;
         var accumulator:ByteArray;
-        #elseif neko
+        #else
         var payload:BytesOutput;
         var accumulator:BytesOutput;
         #end
@@ -53,7 +53,7 @@ package org.amqp;
             #if flash9
             payload = new ByteArray();
             accumulator = new ByteArray();
-            #elseif neko
+            #else
             payload = new BytesOutput(); payload.bigEndian = true;
             accumulator = new BytesOutput(); accumulator.bigEndian = true;
             #end
@@ -65,7 +65,7 @@ package org.amqp;
         }
 
         public function readFrom(input:ByteArray):Bool {
-        #elseif neko
+        #else
         public function readFrom(input:Input):Bool {
         #end
 
@@ -78,7 +78,7 @@ package org.amqp;
                 return false;
             }
             type = input.readUnsignedByte();
-            #elseif neko
+            #else
             type = input.readByte();
             #end
             //trace("type "+type);
@@ -95,15 +95,15 @@ package org.amqp;
 
             #if flash9
             channel = input.readUnsignedShort();
-            #elseif neko
+            #else
             channel = input.readUInt16();
             #end
             //trace("channel "+channel);
 
             #if flash9
             payloadSize = input.readUnsignedInt();
-            #elseif neko
-            payloadSize = input.readUInt30();
+            #else
+            payloadSize = input.readInt32();
             #end
             //trace("type: "+type+" channel: "+channel+" payloadSize: "+payloadSize);
 
@@ -118,7 +118,7 @@ package org.amqp;
                 payload = new ByteArray();
                 input.readBytes(payload, 0, payloadSize);
                 //trace("read payload: "+payloadSize);
-                #elseif neko
+                #else
                 payload = new BytesOutput(); payload.bigEndian = true;
                 payload.write(input.read(payloadSize));
                 #end
@@ -128,7 +128,7 @@ package org.amqp;
 
             #if flash9
             var frameEndMarker = input.readUnsignedByte();
-            #elseif neko
+            #else
             var frameEndMarker = input.readByte();
             #end
 
@@ -141,7 +141,7 @@ package org.amqp;
 
         #if flash9
         function protocolVersionMismatch(input:IDataInput):Void {
-        #elseif neko
+        #else
         function protocolVersionMismatch(input:Input):Void {
         #end
 
@@ -174,7 +174,7 @@ package org.amqp;
                 #if flash9
                 payload.writeBytes(accumulator, 0, accumulator.bytesAvailable);
                 payload.position = 0;
-                #elseif neko
+                #else
                 payload.write(accumulator.getBytes());
                 #end
                 accumulator = null;
@@ -186,7 +186,7 @@ package org.amqp;
          */
         #if flash9
         public function writeTo(os:IDataOutput):Void {
-        #elseif neko
+        #else
         public function writeTo(os:Output):Void{
         #end
             finishWriting();
@@ -198,9 +198,9 @@ package org.amqp;
             os.writeShort(channel);
             os.writeInt(payload.length);
             os.writeBytes(payload);
-            #elseif neko
+            #else
             os.writeUInt16(channel);
-            os.writeInt31(b.length);
+            os.writeInt32(b.length);
             os.write(b);
             #end
             os.writeByte(AMQP.FRAME_END);
@@ -212,7 +212,7 @@ package org.amqp;
         #if flash9
         public function getPayload():ByteArray {
             return payload;
-        #elseif neko
+        #else
         public function getPayload():Bytes {
             return payload.getBytes();
         #end
@@ -224,7 +224,7 @@ package org.amqp;
         #if flash9
         public function getInputStream():IDataInput {
             return payload;
-        #elseif neko
+        #else
         public function getInputStream():Input {
             var bi:BytesInput = new BytesInput(payload.getBytes()); bi.bigEndian = true;
             return bi;
@@ -236,7 +236,7 @@ package org.amqp;
          */
         #if flash9
         public function getOutputStream():IDataOutput {
-        #elseif neko
+        #else
         public function getOutputStream():Output {
         #end
             return accumulator;

@@ -25,7 +25,7 @@ package org.amqp;
     import flash.events.SecurityErrorEvent;
     //import flash.Vector;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import org.amqp.Error;
     import neko.vm.Thread;
     import org.amqp.SMessage;
@@ -47,7 +47,7 @@ package org.amqp;
 
     class Connection {
 
-        public var baseSession(getBaseSession, null) : Session ;
+        public var baseSession(get, null) : Session ;
         inline static var CLOSED:Int = 0;
         inline static var CONNECTING:Int = 1;
         inline static var CONNECTED:Int = 2;
@@ -105,7 +105,7 @@ package org.amqp;
             #end 
         }
 
-        public function getBaseSession():Session {
+        public function get_baseSession():Session {
             return session0;
         }
 
@@ -126,7 +126,7 @@ package org.amqp;
 
         #if flash9
         public function onSocketConnect(event:Event):Void {
-        #elseif neko
+        #else
         public function onSocketConnect():Void {
         #end
             currentState = CONNECTED;
@@ -134,7 +134,7 @@ package org.amqp;
              #if flash9
             delegate.writeBytes(header, 0, header.length);
             delegate.flush();
-            #elseif neko
+            #else
             delegate.getOutput().write(header);
             delegate.getOutput().flush();
             #end
@@ -143,7 +143,7 @@ package org.amqp;
 
         #if flash9
         public function onSocketClose(event:Event):Void {
-        #elseif neko
+        #else
         public function onSocketClose():Void {
         #end
             currentState = CLOSED;
@@ -152,15 +152,17 @@ package org.amqp;
 
         #if flash9
         public function onSocketError(event:Event):Void {
-        #elseif neko
+        #else
         public function onSocketError():Void {
         #end
             currentState = CLOSED;
             //delegate.dispatchEvent(new ConnectionError());
             trace("connection error");
+            #if flash9
             if(errorh != null) {
                 errorh();
             }
+            #end
         }
 
         
@@ -244,12 +246,12 @@ package org.amqp;
                 }
             }
         }
-        #elseif neko
+        #else
         // neko does not have asynch i/o, instead spawn a thread for reading and writing to the socket
         // reading and writing to the socket is controlled by the socketLoop
         public function socketLoop(mt:Thread):Void {
             // incoming data thread
-            var idt = Thread.create(callback(incomingData, Thread.current()));
+            var idt = Thread.create(incomingData.bind(Thread.current()));
             var msg:SMessage;
             try{
                 while (true) {
@@ -271,14 +273,14 @@ package org.amqp;
                     mt.sendMessage("close");
                 } else {
                     //trace(err+" this should be logged and reported!");
-                    throw (haxe.Stack.exceptionStack()+"\n "+err+" this should be logged and reported!");
+                    throw (haxe.CallStack.exceptionStack()+"\n "+err+" this should be logged and reported!");
                 }
             }
         }
 
         // notifies the socket loop of incoming data
         public function incomingData(ct:Thread):Void {
-            var s = cast(delegate, neko.net.Socket);
+            var s = cast(delegate, sys.net.Socket);
             while(true) {
                 s.waitForRead();
                 ct.sendMessage(SData);
@@ -310,7 +312,7 @@ package org.amqp;
             var frame:Frame = new Frame();
             return frame.readFrom(b) ? frame : null;
         }
-        #elseif neko
+        #else
         function parseFrame(delegate:IODelegate):Frame {
             var frame:Frame = new Frame();
             return frame.readFrom(delegate.getInput()) ? frame : null;
@@ -322,7 +324,7 @@ package org.amqp;
                 #if flash9
                 frame.writeTo(delegate);
                 delegate.flush();
-                #elseif neko
+                #else
                 frame.writeTo(delegate.getOutput());
                 delegate.getOutput().flush();
                 #end

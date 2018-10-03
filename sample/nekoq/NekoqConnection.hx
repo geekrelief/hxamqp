@@ -41,7 +41,7 @@ package nekoq;
     import org.amqp.methods.basic.Deliver;
     import org.amqp.methods.queue.Declare;
 
-    class NekoqConnection extends EventDispatcher, implements BasicConsumer, implements LifecycleEventHandler {
+    class NekoqConnection extends EventDispatcher implements BasicConsumer implements LifecycleEventHandler {
         public var ax:String ;
         public var q:String ;
         public var q2:String ;
@@ -81,7 +81,7 @@ package nekoq;
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.9";//"76.204.178.65";
+            params.serverhost = "127.0.0.1";//"76.204.178.65";
             return params;
         }
 

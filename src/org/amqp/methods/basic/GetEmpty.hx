@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class GetEmpty extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class GetEmpty extends Method implements ArgumentReader implements ArgumentWriter {
          public var clusterid : String;
 
          public function new() {
