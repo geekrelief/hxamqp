@@ -67,7 +67,7 @@ class DataWriter {
         byte((b == true)? 1 : 0);
     }
 }
-#elseif neko
+#else
 import haxe.io.BytesOutput;
 import haxe.io.Bytes;
 class DataWriter {
@@ -97,7 +97,7 @@ class DataWriter {
             var bo = new BytesOutput();
             var s = Serializer.run(o);
             bo.writeString(s);
-            var cb = neko.zip.Compress.run(bo.getBytes(), 9);
+            var cb = haxe.zip.Compress.run(bo.getBytes(), 9);
             long(cb.length);
             bytes(cb); 
             long(s.length);
@@ -118,7 +118,7 @@ class DataWriter {
     }
 
     inline public function long(i:Int):Void {
-        b.writeInt31(i);
+        b.writeInt32(i);
     }
 
     inline public function float(f:Float):Void {

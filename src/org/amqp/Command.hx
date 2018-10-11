@@ -21,7 +21,7 @@ package org.amqp;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.Input;
     import haxe.io.Output;
     import haxe.io.Bytes;
@@ -51,7 +51,7 @@ package org.amqp;
         inline public static var EMPTY_CONTENT_BODY_FRAME_SIZE:Int = 8;
         #if flash9
         public static var EMPTY_BYTE_ARRAY:ByteArray = new ByteArray();
-        #elseif neko
+        #else
         public static var EMPTY_BYTE_ARRAY:Bytes = Bytes.alloc(0);
         #end
 
@@ -61,7 +61,7 @@ package org.amqp;
         var remainingBodyBytes:Int;
         #if flash9
         public var content:ByteArray;
-        #elseif neko
+        #else
         public var content:BytesOutput;
         #end
 
@@ -69,13 +69,13 @@ package org.amqp;
 
         #if flash9
         public function new(?m:Method = null, ?c:ContentHeader = null, ?b:ByteArray = null) {
-        #elseif neko
+        #else
         public function new(?m:Method = null, ?c:ContentHeader = null, ?b:Bytes = null) {
         #end
             
             #if flash9
             content = new ByteArray();
-            #elseif neko
+            #else
             content = new BytesOutput(); content.bigEndian = true;
             #end
             method = m;
@@ -83,7 +83,7 @@ package org.amqp;
 			if(b != null){
                 #if flash9
                 content.writeBytes(b);
-                #elseif neko
+                #else
 	            content.write(b);
                 #end
             }
@@ -115,7 +115,7 @@ package org.amqp;
             #if flash9
             bodyOut.writeShort(method.classId);
             bodyOut.writeShort(method.methodId);
-            #elseif neko
+            #else
             bodyOut.writeUInt16(method.classId);
             bodyOut.writeUInt16(method.methodId);
             #end
@@ -132,13 +132,13 @@ package org.amqp;
                 bodyOut = f.getOutputStream();
                 #if flash9
                 bodyOut.writeShort(contentHeader.classId);
-                #elseif neko
+                #else
                 bodyOut.writeUInt16(contentHeader.classId);
                 #end
 
                 #if flash9
                 var cb = content;
-                #elseif neko
+                #else
                 var cb = content.getBytes();
                 #end
 
@@ -209,7 +209,7 @@ package org.amqp;
                         }
                         #if flash9
                         content.writeBytes(fragment);
-                        #elseif neko
+                        #else
                         content.write(fragment);
                         #end
                         return;

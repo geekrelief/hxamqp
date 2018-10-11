@@ -23,7 +23,7 @@ package org.amqp.methods.queue;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class DeclareOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class DeclareOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var consumercount : Int;
          public var messagecount : Int;
          public var queue : String;

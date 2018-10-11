@@ -17,18 +17,19 @@
  **/
 package org.amqp;
 
-    import org.amqp.impl.SessionImpl;
+import haxe.ds.IntMap;
+import org.amqp.impl.SessionImpl;
     import org.amqp.impl.SessionStateHandler;
 
     class SessionManager
      {
         var connection:Connection;
-        var sessions:IntHash<Session> ;
+        var sessions:IntMap<Session> ;
         var nextChannel:Int ;
 
         public function new(con:Connection) {
             
-            sessions = new IntHash();
+            sessions = new haxe.ds.IntMap();
             nextChannel = 1;
             connection = con;
         }
@@ -67,7 +68,7 @@ package org.amqp;
             for (session in sessions) {
                 session.closeGracefully();
             }
-            sessions = new IntHash();
+            sessions = new haxe.ds.IntMap();
         }
 
         public function forceClose():Void {
@@ -75,6 +76,6 @@ package org.amqp;
                 session.closeGracefully();
                 session.forceClose();
             }
-            sessions = new IntHash();
+            sessions = new haxe.ds.IntMap();
         }
     }

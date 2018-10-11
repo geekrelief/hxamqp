@@ -19,7 +19,7 @@ package org.amqp;
 
     #if flash9
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.BytesInput;
     #end
 
@@ -32,7 +32,7 @@ package org.amqp;
         function onCancelOk(tag:String):Void;
         #if flash9
         function onDeliver(method:Deliver, properties:BasicProperties, body:ByteArray):Void;
-        #elseif neko
+        #else
         function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void;
         #end
     }

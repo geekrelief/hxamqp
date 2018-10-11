@@ -23,7 +23,7 @@ package org.amqp.methods.exchange;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Delete extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Delete extends Method implements ArgumentReader implements ArgumentWriter {
          public var exchange : String;
          public var ifunused : Bool;
          public var nowait : Bool;

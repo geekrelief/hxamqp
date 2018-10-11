@@ -23,7 +23,7 @@ package org.amqp.methods;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import org.amqp.Error;
     import haxe.io.BytesInput;
     import haxe.io.BytesOutput;
@@ -40,7 +40,7 @@ package org.amqp.methods;
         inline static var INT_MASK:Int = 0xffff;
         #if flash9
         var input:IDataInput;
-        #elseif neko
+        #else
         var input:Input;
         #end
 
@@ -51,7 +51,7 @@ package org.amqp.methods;
 
         #if flash9
         public function new(input:IDataInput) {
-        #elseif neko
+        #else
         public function new(input:Input) {
         #end
             this.input = input;
@@ -73,14 +73,14 @@ package org.amqp.methods;
 
         #if flash9
         public static function _readLongstr(input:IDataInput):LongString {
-        #elseif neko
+        #else
         public static function _readLongstr(input:Input):LongString {
         #end
             //final long contentLength = unsignedExtend(in.readInt());
             #if flash9
             var contentLength:Int = input.readInt();
-            #elseif neko
-            var contentLength:Int = input.readInt31();
+            #else
+            var contentLength:Int = input.readInt32();
             #end
             if(contentLength < 0xfffffff) { // Int max is platform specific Flash9 28 bits 3 used for typing. 1 missing? Neko 31 bits
                 //final byte [] buffer = new byte[(int)contentLength];
@@ -89,7 +89,7 @@ package org.amqp.methods;
                 #if flash9
                 var buf:ByteArray = new ByteArray();
                 input.readBytes(buf, 0, contentLength);
-                #elseif neko
+                #else
                 var buf:BytesOutput = new BytesOutput(); buf.bigEndian = true;
                 buf.write(input.read(contentLength));
                 #end
@@ -108,7 +108,7 @@ package org.amqp.methods;
             var length:Int = input.readUnsignedByte();
             return input.readUTFBytes(length);
         }
-        #elseif neko
+        #else
         public static function _readShortstr(input:Input):String {
             var length:Int = input.readByte();
             return input.readString(length);
@@ -130,7 +130,7 @@ package org.amqp.methods;
             clearBits();
             #if flash9
             return input.readShort();
-            #elseif neko
+            #else
             return input.readUInt16();
             #end
         }
@@ -140,8 +140,8 @@ package org.amqp.methods;
             clearBits();
             #if flash9
             return input.readInt();
-            #elseif neko
-            return input.readInt31();
+            #else
+            return input.readInt32();
             #end
         }
 
@@ -159,7 +159,7 @@ package org.amqp.methods;
             if (bit > 0x80) {
                 #if flash9
                 bits = input.readUnsignedByte();
-                #elseif
+                #else
                 bits = input.readByte();
                 #end
                 bit = 0x01;
@@ -171,7 +171,7 @@ package org.amqp.methods;
         }
 
         /** Public API - reads a table argument. */
-        public function readTable():Hash<Dynamic> {
+        public function readTable():haxe.ds.StringMap<Dynamic> {
             clearBits();
             return _readTable(this.input);
         }
@@ -181,31 +181,31 @@ package org.amqp.methods;
          * called by {@link ContentHeaderPropertyReader}.
          */
         #if flash9
-        public static function _readTable(input:IDataInput):Hash<Dynamic> {
-        #elseif neko
-        public static function _readTable(input:Input):Hash<Dynamic> {
+        public static function _readTable(input:IDataInput):haxe.ds.StringMap<Dynamic> {
+        #else
+        public static function _readTable(input:Input):haxe.ds.StringMap<Dynamic> {
         #end
-            var table:Hash<Dynamic> = new Hash();
+            var table:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
             #if flash9
             var tableLength:Int = input.readInt();
             var tableIn:ByteArray = new ByteArray();
             input.readBytes(tableIn, 0, tableLength);
-            #elseif neko
-            var tableLength:Int = input.readInt31();
+            #else
+            var tableLength:Int = input.readInt32();
             var tableIn:BytesInput = new BytesInput(input.read(tableLength)); tableIn.bigEndian = true;
             #end
             var value:Dynamic = null;
 
             #if flash9
             while(tableIn.bytesAvailable >0) {
-            #elseif neko
+            #else
             try { while(true) {
             #end
 
                 var name:String = _readShortstr(tableIn);
                 #if flash9
                 var type:Int = tableIn.readUnsignedByte();
-                #elseif neko
+                #else
                 var type:Int = tableIn.readByte();
                 #end
             
@@ -216,8 +216,8 @@ package org.amqp.methods;
                     case 73: //'I'
                         #if flash9
                         value = tableIn.readInt();
-                        #elseif neko
-                        value = tableIn.readInt31();
+                        #else
+                        value = tableIn.readInt32();
                         #end
                         break;
                     /*
@@ -243,7 +243,7 @@ package org.amqp.methods;
 
             #if flash9
             }
-            #elseif neko
+            #else
             } } catch (eof:haxe.io.Eof) { }
             #end
 
@@ -255,7 +255,7 @@ package org.amqp.methods;
             clearBits();
             #if flash9
             return input.readUnsignedByte();
-            #elseif neko
+            #else
             return input.readByte();
             #end
         }
@@ -264,9 +264,9 @@ package org.amqp.methods;
         #if flash9
         public static function _readTimestamp(input:IDataInput):Date {
             var date:Date = Date.fromTime(input.readInt() * 1000);
-        #elseif neko
+        #else
         public static function _readTimestamp(input:Input):Date {
-            var date:Date = Date.fromTime(input.readInt31() * 1000);
+            var date:Date = Date.fromTime(input.readInt32() * 1000);
         #end
             return date;
             //return new Date(in.readLong() * 1000);

@@ -63,8 +63,8 @@
         var giq:Queue;
         var gis:SSH;
 
-        public var iss:Hash<SSH>;
-        public var oss:Hash<SSH>;
+        public var iss:haxe.ds.StringMap<SSH>;
+        public var oss:haxe.ds.StringMap<SSH>;
 
         var gct:Tag; 
         public var ct:Thread;
@@ -80,7 +80,7 @@
         var beginTime:Float;
         var pingDuration:Float;
         var step:Float; // based on max avg. latency reported
-        var lats:Array<Hash<Latency>>;
+        var lats:Array<haxe.ds.StringMap<Latency>>;
 
         public static function main() { (new SynchSim()).run(); }
 
@@ -92,8 +92,8 @@
             co = new Connection(buildConnectionParams());
             sm = co.sessionManager;
 
-            iss = new Hash();
-            oss = new Hash();
+            iss = new haxe.ds.StringMap();
+            oss = new haxe.ds.StringMap();
 
             ms = new Deque();
             ams = new Deque();
@@ -229,7 +229,7 @@
             var b = new BytesOutput();
             b.bigEndian = true;
             b.writeByte(mdx(ServerAppState)); // app state
-            b.writeInt31(stateStr.length);
+            b.writeInt32(stateStr.length);
             b.writeString(stateStr);
             var by = b.getBytes();
 

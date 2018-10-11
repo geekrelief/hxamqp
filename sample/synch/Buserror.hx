@@ -8,11 +8,11 @@ class Buserror {
         b.run();
     }
 
-    var h:Hash<SessionStateHandler>;
+    var h:haxe.ds.StringMap<SessionStateHandler>;
     var t:Thread;
 
     public function new(){
-        h = new Hash();
+        h = new haxe.ds.StringMap();
     }
 
     public function run():Void{

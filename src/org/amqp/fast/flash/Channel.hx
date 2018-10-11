@@ -2,7 +2,7 @@ package org.amqp.fast.flash;
 // Amqp Channel instance
     import haxe.io.Bytes;
 
-    import org.amqp.fast.Import;
+    import org.amqp.fast.FastImport;
     import org.amqp.Connection;
     import org.amqp.Method;
     import org.amqp.SessionManager;

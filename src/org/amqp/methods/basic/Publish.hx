@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Publish extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Publish extends Method implements ArgumentReader implements ArgumentWriter {
          public var exchange : String;
          public var immediate : Bool;
          public var mandatory : Bool;

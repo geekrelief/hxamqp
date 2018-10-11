@@ -23,7 +23,7 @@ package org.amqp.io;
     import org.amqp.ConnectionParameters;
     import org.amqp.IODelegate;
 
-    class TLSDelegate extends TLSSocket, implements IODelegate {
+    class TLSDelegate extends TLSSocket implements IODelegate {
         public function new(?host:String=null, ?port:Int=0, ?config:TLSConfig=null)
         {
             super(host, port, config);

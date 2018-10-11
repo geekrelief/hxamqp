@@ -20,7 +20,7 @@ package org.amqp.impl;
     #if flash9
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.Input;
     import haxe.io.Bytes;
     import haxe.io.BytesOutput;
@@ -33,7 +33,7 @@ package org.amqp.impl;
 
         #if flash9
         var buf:ByteArray;
-        #elseif neko
+        #else
         var buf:Bytes;
         #end
 
@@ -41,7 +41,7 @@ package org.amqp.impl;
         public function new(?b:ByteArray=null) {
             buf = b==null? new ByteArray() : b;
         }
-        #elseif neko
+        #else
         public function new(?b:BytesOutput=null) {
             if(b == null) {
                 b = new BytesOutput(); b.bigEndian = true;
@@ -67,7 +67,7 @@ package org.amqp.impl;
         public function getStream():IDataInput {
             return buf;
         }
-        #elseif neko
+        #else
         public function getBytes():Bytes
         {
             return buf;

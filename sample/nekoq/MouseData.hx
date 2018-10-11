@@ -32,8 +32,8 @@ package nekoq;
     import org.amqp.methods.channel.Open;
     import org.amqp.methods.queue.Declare;
 
-    class MouseData extends AbstractTest, 
-        implements BasicConsumer, 
+    class MouseData extends AbstractTest
+        implements BasicConsumer
         implements LifecycleEventHandler {
 
         var consumerTag:String;
@@ -54,7 +54,7 @@ package nekoq;
             connection.baseSession.registerLifecycleHandler(this);
             mt =  Thread.current();
             trace("create connection thread");
-            t = neko.vm.Thread.create(callback(connection.onSocketData, mt));
+            t = neko.vm.Thread.create(connection.socketLoop.bind(mt));
             Thread.readMessage(true);
             runLoop();
             trace("sending close message");
@@ -70,7 +70,7 @@ package nekoq;
             var degrees = 0;
             var factor = 3.14159/180;
             while(count < 10) {
-                neko.Sys.sleep(0.01);
+                Sys.sleep(0.01);
                 trace("processing main thread "+count);
                 count++;
                 degrees++; 
@@ -88,7 +88,7 @@ package nekoq;
 
         override function openChannel(_callback:Dynamic):Void {
             var whoCares:Dynamic = function(event:ProtocolEvent):Void{
-                //log("whoCares called");
+                trace("whoCares called");
             };
 
             sessionHandler = sessionManager.create();

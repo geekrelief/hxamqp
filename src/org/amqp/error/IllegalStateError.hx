@@ -17,11 +17,11 @@
  **/
 package org.amqp.error;
 
-    #if neko
-    import org.amqp.Error;
-    #elseif flash9
+#if flash9
     import flash.Error;
-    #end
+    #else
+import org.amqp.Error;
+#end
 
     import org.amqp.Frame;
 

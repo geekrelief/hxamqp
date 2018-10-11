@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class GetOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class GetOk extends Method implements ArgumentReader implements ArgumentWriter {
          public var deliverytag : Float;
          public var exchange : String;
          public var messagecount : Int;

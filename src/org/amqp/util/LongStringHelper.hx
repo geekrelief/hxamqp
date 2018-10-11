@@ -19,7 +19,7 @@ package org.amqp.util;
 
     #if flash9
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.BytesOutput;
     #end
     import org.amqp.LongString;
@@ -31,7 +31,7 @@ package org.amqp.util;
             #if flash9
             var b:ByteArray = new ByteArray();
             b.writeUTFBytes(str);
-            #elseif neko
+            #else
             var b:BytesOutput = new BytesOutput(); b.bigEndian = true;
             b.writeString(str);
             #end

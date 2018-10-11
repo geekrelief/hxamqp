@@ -5,7 +5,7 @@ package org.amqp.fast.utils;
 import org.amqp.BasicConsumer;
 #if flash9
 import flash.utils.ByteArray;
-#elseif neko
+#else
 import haxe.io.BytesInput;
 #end
 
@@ -14,7 +14,7 @@ import org.amqp.methods.basic.Deliver;
 
 #if flash9
 typedef DeliverSig = Deliver -> BasicProperties -> ByteArray -> Void
-#elseif neko
+#else
 typedef DeliverSig = Deliver -> BasicProperties -> BytesInput -> Void
 #end
 
@@ -41,7 +41,7 @@ class Consumer implements BasicConsumer {
     #if flash9
     private function ddh(method:Deliver, properties:BasicProperties, body:ByteArray):Void {}
     public function onDeliver(method:Deliver, properties:BasicProperties, body:ByteArray):Void {
-    #elseif neko
+    #else
     private function ddh(method:Deliver, properties:BasicProperties, body:BytesInput):Void {}
     public function onDeliver(method:Deliver, properties:BasicProperties, body:BytesInput):Void {
     #end

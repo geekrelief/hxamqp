@@ -19,7 +19,7 @@ package org.amqp;
 
     class ConnectionParameters
      {
-        public var port(getPort, null) : Int ;
+        public var port(get, null) : Int ;
         public var username:String;
         public var password:String;
         public var serverhost:String;
@@ -45,7 +45,7 @@ package org.amqp;
             options = _options;
 		}
 
-        public function getPort():Int {
+        public function get_port():Int {
             return useTLS ? tlsPort : serverport;
         }
     }

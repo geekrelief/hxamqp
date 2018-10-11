@@ -30,7 +30,7 @@
 
     import flash.Vector;
 
-	class SS1 implements BasicConsumer, implements LifecycleEventHandler {
+	class SS1 implements BasicConsumer implements LifecycleEventHandler {
 
         public var ax:String ;
         public var q:String ;

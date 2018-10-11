@@ -19,7 +19,7 @@ package org.amqp;
 
     #if flash9
     import flash.events.EventDispatcher;
-    #elseif neko
+    #else
     import org.amqp.events.EventDispatcher;
     #end
 

@@ -33,7 +33,7 @@ package org.amqp.headers;
         public var correlationid : String;
         public var deliverymode : Int;
         public var expiration : String;
-        public var headers : Hash<Dynamic>;
+        public var headers : haxe.ds.StringMap<Dynamic>;
         public var messageid : String;
         public var priority : Int;
         public var replyto : String;
@@ -83,7 +83,7 @@ package org.amqp.headers;
         public var correlationid(getCorrelationid, setCorrelationid) : String;
         public var deliverymode(getDeliverymode, setDeliverymode) : Int;
         public var expiration(getExpiration, setExpiration) : String;
-        public var headers(getHeaders, setHeaders) : Hash<Dynamic>;
+        public var headers(getHeaders, setHeaders) : haxe.ds.StringMap<Dynamic>;
         public var messageid(getMessageid, setMessageid) : String;
         public var priority(getPriority, setPriority) : Int;
         public var replyto(getReplyto, setReplyto) : String;
@@ -92,7 +92,7 @@ package org.amqp.headers;
         public var userid(getUserid, setUserid) : String;
         var _contenttype:String;
         var _contentencoding:String;
-        var _headers:Hash<Dynamic>;
+        var _headers:haxe.ds.StringMap<Dynamic>;
         var _deliverymode:Int;
         var _priority:Int;
         var _correlationid:String;
@@ -107,7 +107,7 @@ package org.amqp.headers;
 
         public function getContenttype():String{return _contenttype;}
         public function getContentencoding():String{return _contentencoding;}
-        public function getHeaders():Hash<Dynamic>{return _headers;}
+        public function getHeaders():haxe.ds.StringMap<Dynamic>{return _headers;}
         public function getDeliverymode():Int{return _deliverymode;}
         public function getPriority():Int{return _priority;}
         public function getCorrelationid():String{return _correlationid;}
@@ -122,7 +122,7 @@ package org.amqp.headers;
 
         public function setContenttype(x:String):String{_contenttype = x;	return x;}
         public function setContentencoding(x:String):String{_contentencoding = x;	return x;}
-        public function setHeaders(x:Hash<Dynamic>):Hash<Dynamic>{_headers = x;	return x;}
+        public function setHeaders(x:haxe.ds.StringMap<Dynamic>):haxe.ds.StringMap<Dynamic>{_headers = x;	return x;}
         public function setDeliverymode(x:Int):Int{_deliverymode = x;	return x;}
         public function setPriority(x:Int):Int{_priority = x;	return x;}
         public function setCorrelationid(x:String):String{_correlationid = x;	return x;}

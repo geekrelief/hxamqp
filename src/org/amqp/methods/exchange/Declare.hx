@@ -23,9 +23,9 @@ package org.amqp.methods.exchange;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Declare extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Declare extends Method implements ArgumentReader implements ArgumentWriter {
          public var Internal : Bool;
-         public var arguments : Hash<Dynamic>;
+         public var arguments : haxe.ds.StringMap<Dynamic>;
          public var autodelete : Bool;
          public var durable : Bool;
          public var exchange : String;
@@ -44,7 +44,7 @@ package org.amqp.methods.exchange;
              autodelete = false;
              Internal = false;
              nowait = false;
-             arguments = new Hash();
+             arguments = new haxe.ds.StringMap();
              hasResponse = true;
              classId = 40;
              methodId = 10;

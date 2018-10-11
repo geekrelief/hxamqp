@@ -25,10 +25,10 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentWriter;
     import org.amqp.impl.ByteArrayLongString;
 
-    class Start extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Start extends Method implements ArgumentReader implements ArgumentWriter {
          public var locales : LongString;
          public var mechanisms : LongString;
-         public var serverproperties : Hash<Dynamic>;
+         public var serverproperties : haxe.ds.StringMap<Dynamic>;
          public var versionmajor : Int;
          public var versionminor : Int;
 
@@ -36,7 +36,7 @@ package org.amqp.methods.connection;
              super();
              versionmajor = 0;
              versionminor = 0;
-             serverproperties = new Hash();
+             serverproperties = new haxe.ds.StringMap();
              mechanisms = new ByteArrayLongString();
              locales = new ByteArrayLongString();
 

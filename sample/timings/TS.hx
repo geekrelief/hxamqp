@@ -54,7 +54,7 @@
             var bo = new BytesOutput();
             bo.bigEndian = true;
             for( i in 1...20000) {
-                bo.writeInt31(i);
+                bo.writeInt32(i);
             }
             data = bo.getBytes();
 

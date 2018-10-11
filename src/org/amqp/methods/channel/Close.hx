@@ -23,7 +23,7 @@ package org.amqp.methods.channel;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Close extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Close extends Method implements ArgumentReader implements ArgumentWriter {
          public var classid : Int;
          public var methodid : Int;
          public var replycode : Int;

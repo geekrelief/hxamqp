@@ -23,7 +23,7 @@ package org.amqp.methods.queue;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Purge extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Purge extends Method implements ArgumentReader implements ArgumentWriter {
          public var nowait : Bool;
          public var queue : String;
          public var ticket : Int;

@@ -21,7 +21,7 @@ package org.amqp.methods;
     import flash.Error;
     import flash.utils.ByteArray;
     import flash.utils.IDataOutput;
-    #elseif neko
+    #else
     import org.amqp.Error;
     import haxe.io.Bytes;
     import haxe.io.Output;
@@ -38,7 +38,7 @@ package org.amqp.methods;
         
         #if flash9
         var output:IDataOutput;
-        #elseif neko
+        #else
         var output:Output;
         #end
 
@@ -50,7 +50,7 @@ package org.amqp.methods;
 
         #if flash9
         public function new(output:IDataOutput) {
-        #elseif neko
+        #else
         public function new(output:Output) {
         #end
             this.output = output;
@@ -81,7 +81,7 @@ package org.amqp.methods;
             #if flash9
             output.writeByte(str.length);
             output.writeUTFBytes(str);
-            #elseif neko
+            #else
             output.writeByte(str.length);
             output.writeString(str);
             #end
@@ -93,7 +93,7 @@ package org.amqp.methods;
             writeLong(str.length());
             #if flash9
             output.writeBytes(str.getBytes());
-            #elseif neko
+            #else
             output.write(str.getBytes());
             #end
         }
@@ -105,7 +105,7 @@ package org.amqp.methods;
             writeLong(str.length);
             #if flash9
             output.writeUTFBytes(str);
-            #elseif neko
+            #else
             output.writeString(str);
             #end
         }
@@ -115,7 +115,7 @@ package org.amqp.methods;
             bitflush();
             #if flash9
             output.writeShort(s);
-            #elseif neko
+            #else
             output.writeUInt16(s);
             #end
         }
@@ -129,8 +129,8 @@ package org.amqp.methods;
             // as expected
             #if flash9
             output.writeInt(l);
-            #elseif neko
-            output.writeInt31(l);
+            #else
+            output.writeInt32(l);
             #end
         }
 
@@ -157,21 +157,21 @@ package org.amqp.methods;
         }
 
         /** Public API - encodes a table argument. */
-        public function writeTable(table:Hash<Dynamic>):Void {
+        public function writeTable(table:haxe.ds.StringMap<Dynamic>):Void {
 
             bitflush();
             if (table == null) {
                 // Convenience.
                 #if flash9
                 output.writeInt(0);
-                #elseif neko
-                output.writeInt31(0);
+                #else
+                output.writeInt32(0);
                 #end
             } else {
                 #if flash9
                 output.writeInt( FrameHelper.tableSize(table) );
-                #elseif neko
-                output.writeInt31( FrameHelper.tableSize(table) );
+                #else
+                output.writeInt32( FrameHelper.tableSize(table) );
                 #end
 
                 for (key in table.keys()) {
@@ -206,9 +206,9 @@ package org.amqp.methods;
                         writeOctet(84);//'T'
                         writeTimestamp(cast( value, Date));
                     }
-                    else if(Std.is( value, Hash)) {
+                    else if(Std.is( value, haxe.ds.StringMap)) {
                         writeOctet(70); // 'F"
-                        writeTable(cast( value, Hash<Dynamic>));
+                        writeTable(cast( value, haxe.ds.StringMap<Dynamic>));
                     }
                     else if (value == null) {
                         throw new Error("Value for key {" + key + "} was null");

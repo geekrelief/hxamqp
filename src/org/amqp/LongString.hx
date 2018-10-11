@@ -20,7 +20,7 @@ package org.amqp;
     #if flash9
     import flash.utils.IDataInput;
     import flash.utils.ByteArray;
-    #elseif neko
+    #else
     import haxe.io.Input;
     import haxe.io.Bytes;
     #end
@@ -31,7 +31,7 @@ package org.amqp;
         #if flash9
         function getStream():IDataInput;
         function getBytes():ByteArray;
-        #elseif neko
+        #else
         function getStream():Input;
         function getBytes():Bytes;
         #end

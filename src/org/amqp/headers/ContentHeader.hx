@@ -20,7 +20,7 @@ package org.amqp.headers;
     #if flash9
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
-    #elseif neko
+    #else
     import haxe.io.Input;
     import haxe.io.Output;
     #end
@@ -35,12 +35,12 @@ package org.amqp.headers;
             readPropertiesFrom(new ContentHeaderPropertyReader(input));
             return bodySize;
         }
-        #elseif neko
+        #else
         public function readFrom(input:Input):Int {
             var weight:Int = input.readUInt16();
             // TODO this is a workaround because AS doesn't support 64 bit integers
-            var bodySizeUpperBytes:Int = input.readInt31();
-            var bodySize:Int = input.readInt31();
+            var bodySizeUpperBytes:Int = input.readInt32();
+            var bodySize:Int = input.readInt32();
             readPropertiesFrom(new ContentHeaderPropertyReader(input));
             return bodySize;
         }
@@ -60,15 +60,15 @@ package org.amqp.headers;
             writePropertiesTo(writer);
             writer.dumpTo(out);
         }
-        #elseif neko
+        #else
         public function writeTo(out:Output, bodySize:Int):Void{
             out.writeUInt16(0); // weight
 
             // This is a hack because AS doesn't support 64-bit integers
             // The java code calls out.writeLong(bodySize)
             // so to fake this, write out 4 zero bytes before writing the body size
-            out.writeInt31(0);
-            out.writeInt31(bodySize);
+            out.writeInt32(0);
+            out.writeInt32(bodySize);
 
             var writer:ContentHeaderPropertyWriter = new ContentHeaderPropertyWriter();
             writePropertiesTo(writer);

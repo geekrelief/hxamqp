@@ -21,7 +21,7 @@ package org.amqp.methods.exchange;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
 
-    class DeclareOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class DeclareOk extends Method implements ArgumentReader implements ArgumentWriter {
 
         public function new() { 
             super();

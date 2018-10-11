@@ -19,27 +19,24 @@ package org.amqp.io;
 
     #if flash9
     import flash.net.Socket;
-    #elseif neko
-    import neko.net.Socket;
+    #else
+    import sys.net.Socket;
     import haxe.io.Input;
     import haxe.io.Output;
-    #end
-
-    import org.amqp.ConnectionParameters;
-    import org.amqp.IODelegate;
-
-    #if neko
     import org.amqp.events.EventDispatcher;
     import org.amqp.events.Event;
     import org.amqp.events.Handler;
     #end
 
-    class SocketDelegate extends Socket, implements IODelegate {
+    import org.amqp.ConnectionParameters;
+    import org.amqp.IODelegate;
+
+    class SocketDelegate extends Socket implements IODelegate {
         #if flash9
         public function new(?host:String=null, ?port:Int=0){
             super(host, port);
         }
-        #elseif neko
+        #else
         var dispatcher:EventDispatcher;
         
         public function new() {
@@ -51,7 +48,7 @@ package org.amqp.io;
         public function isConnected():Bool {
             #if flash9
             return connected;
-            #elseif neko
+            #else
             try {
                 super.peer();
             } catch (err: Dynamic) {
@@ -65,12 +62,12 @@ package org.amqp.io;
             #if flash9
             timeout = params.timeout;
             connect(params.serverhost, params.port);
-            #elseif neko
-            connect(new neko.net.Host(params.serverhost), params.port);
+            #else
+            connect(new sys.net.Host(params.serverhost), params.port);
             #end
         }
 
-        #if neko
+        #if !flash9
         public function addEventListener(type:String, h:Handler):Void {
             dispatcher.addEventListener(type, h);
         }

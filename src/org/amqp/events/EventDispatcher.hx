@@ -2,14 +2,15 @@ package org.amqp.events;
 
     //import haxe.FastList;
 
-    typedef Handlers = List<Handler>
+import haxe.ds.StringMap;
+typedef Handlers = List<Handler>
 
     class EventDispatcher {
 
-	var table:Hash<Handlers>;
+	var table:StringMap<Handlers>;
 
         public function new(){ 
-            table = new Hash();
+            table = new haxe.ds.StringMap();
         }
 
         public function addEventListener(type:String, h:Handler):Void {

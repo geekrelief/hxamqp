@@ -36,7 +36,7 @@ package samp;
 	import flash.display.Sprite;
 	import flash.display.Graphics;
 
-    class PublishSubscribeTest2 extends AbstractTest, implements BasicConsumer, implements LifecycleEventHandler {
+    class PublishSubscribeTest2 extends AbstractTest implements BasicConsumer implements LifecycleEventHandler {
         var consumerTag:String;
 		public var root:DisplayObjectContainer;
 		public var t:TextField;

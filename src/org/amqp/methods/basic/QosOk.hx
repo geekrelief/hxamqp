@@ -21,7 +21,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
 
-    class QosOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class QosOk extends Method implements ArgumentReader implements ArgumentWriter {
 
         public function new() { 
             super();

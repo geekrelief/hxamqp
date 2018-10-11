@@ -23,7 +23,7 @@ package org.amqp.methods.queue;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Delete extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Delete extends Method implements ArgumentReader implements ArgumentWriter {
          public var ifempty : Bool;
          public var ifunused : Bool;
          public var nowait : Bool;

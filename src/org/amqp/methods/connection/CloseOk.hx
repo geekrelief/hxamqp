@@ -21,7 +21,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.ArgumentReader;
     import org.amqp.methods.ArgumentWriter;
 
-    class CloseOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class CloseOk extends Method implements ArgumentReader implements ArgumentWriter {
 
         public function new() { 
             super();

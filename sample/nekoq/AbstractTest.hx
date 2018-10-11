@@ -73,7 +73,7 @@ package nekoq;
             params.username = "guest";
             params.password = "guest";
             params.vhostpath = "/";
-            params.serverhost = "10.0.0.17";
+            params.serverhost = "127.0.0.1";
             trace(params);
             return params;
         }

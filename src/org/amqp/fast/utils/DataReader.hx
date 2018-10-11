@@ -69,7 +69,7 @@ class DataReader {
         return (byte() == 1);
     }
 }
-#elseif neko
+#else
 import haxe.io.BytesInput;
 import haxe.io.Bytes;
 class DataReader {
@@ -98,7 +98,7 @@ class DataReader {
     inline public function object(decompress:Bool = false):Dynamic {
         // decompress if object was compressed
         if(decompress) {
-            return Unserializer.run(new BytesInput(neko.zip.Uncompress.run(bytes(long()))).readString(long()));
+            return Unserializer.run(new BytesInput(haxe.zip.Uncompress.run(bytes(long()))).readString(long()));
         } else {
             return Unserializer.run(string());
         }
@@ -113,7 +113,7 @@ class DataReader {
     }
 
     public function long():Int {
-        return b.readInt31();
+        return b.readInt32();
     }
 
     inline public function float():Float {

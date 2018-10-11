@@ -23,7 +23,7 @@ package org.amqp.methods.connection;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class OpenOk extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class OpenOk extends Method implements ArgumentReader implements ArgumentWriter {
         public var knownhosts : String;
 
         public function new() {

@@ -23,7 +23,7 @@ package org.amqp.methods.basic;
     import org.amqp.methods.MethodArgumentReader;
     import org.amqp.methods.MethodArgumentWriter;
 
-    class Deliver extends Method, implements ArgumentReader, implements ArgumentWriter {
+    class Deliver extends Method implements ArgumentReader implements ArgumentWriter {
          public var consumertag : String;
          public var deliverytag : Float;
          public var redelivered : Bool;
