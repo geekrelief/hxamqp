@@ -97,7 +97,7 @@ class DataWriter {
             var bo = new BytesOutput();
             var s = Serializer.run(o);
             bo.writeString(s);
-            var cb = neko.zip.Compress.run(bo.getBytes(), 9);
+            var cb = haxe.zip.Compress.run(bo.getBytes(), 9);
             long(cb.length);
             bytes(cb); 
             long(s.length);

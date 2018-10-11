@@ -27,7 +27,11 @@ package org.amqp;
     import flash.utils.ByteArray;
     #else
     import org.amqp.Error;
+    #if neko
     import neko.vm.Thread;
+    #elseif cpp
+    import cpp.vm.Thread;
+    #end
     import org.amqp.SMessage;
     #end
 
@@ -68,7 +72,7 @@ package org.amqp;
 
         public function new(state:ConnectionParameters) {
             
-            //trace("new");
+            trace("new");
             currentState = CLOSED;
             shuttingDown = false;
             frameMax = 0;
@@ -113,7 +117,7 @@ package org.amqp;
             if (currentState < CONNECTING) {
                 currentState = CONNECTING;
                 delegate.open(connectionParams);
-                #if neko
+                #if (neko || cpp)
 				onSocketConnect();
                 #end
             }
@@ -255,7 +259,7 @@ package org.amqp;
             var msg:SMessage;
             try{
                 while (true) {
-                    msg = neko.vm.Thread.readMessage(true);
+                    msg = Thread.readMessage(true);
                     switch(msg) {
                         case SRpc(s, cmd, fun): s.rpc(cmd, fun);
                         case SDispatch(s, cmd): s.dispatch(cmd);
@@ -293,7 +297,7 @@ package org.amqp;
         
             if (frame != null) {
                     if (frame.type == AMQP.FRAME_HEARTBEAT) {
-                        // just ignore this for now
+                        sendFrame(frame);
                     } else if (frame.channel == 0) {
                         session0.handleFrame(frame);
                     } else {

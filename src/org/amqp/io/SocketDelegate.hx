@@ -23,16 +23,13 @@ package org.amqp.io;
     import sys.net.Socket;
     import haxe.io.Input;
     import haxe.io.Output;
-    #end
-
-    import org.amqp.ConnectionParameters;
-    import org.amqp.IODelegate;
-
-    #if neko
     import org.amqp.events.EventDispatcher;
     import org.amqp.events.Event;
     import org.amqp.events.Handler;
     #end
+
+    import org.amqp.ConnectionParameters;
+    import org.amqp.IODelegate;
 
     class SocketDelegate extends Socket implements IODelegate {
         #if flash9
@@ -70,7 +67,7 @@ package org.amqp.io;
             #end
         }
 
-        #if neko
+        #if !flash9
         public function addEventListener(type:String, h:Handler):Void {
             dispatcher.addEventListener(type, h);
         }

@@ -1,15 +1,21 @@
 package org.amqp.fast.neko;
 // Amqp Channel instance
-    import haxe.io.Bytes;
+import org.amqp.methods.basic.Ack;
+import haxe.io.Bytes;
 
-    import org.amqp.fast.Import;
+    import org.amqp.fast.FastImport;
     import org.amqp.Connection;
     import org.amqp.SMessage;
     import org.amqp.Method;
     import org.amqp.SessionManager;
 
+    #if neko
     import neko.vm.Thread;
     import neko.vm.Deque;
+    #else
+    import cpp.vm.Thread;
+    import cpp.vm.Deque;
+    #end
 
     import org.amqp.methods.channel.Open;
 
@@ -214,17 +220,23 @@ package org.amqp.fast.neko;
             publishData(dw, exchange, routingkey, replyto);
         }
 
-        public function consume(q:String, dcb:DeliveryCallback):String {
+        public function consume(q:String, dcb:DeliveryCallback, noack: Bool = true ):String {
             var c = new Consume();
             c.queue =  q;
-            c.noack = true;
+            c.noack = noack;
             tag = consumeWith(c, dcb);
             return tag;
         }
 
+        public function ack(delivery: Delivery) {
+            var a = new Ack();
+            a.deliverytag = delivery.method.deliverytag;
+            ct.sendMessage(SDispatch(ssh, new Command(a, Properties.getBasicProperties())));
+        }
+
         public function consumeWith(c:Consume, dcb:DeliveryCallback):String {
             ++consumeCount;
-            ct.sendMessage(SRegister(ssh, c, new Consumer(callback(onDeliver, c, dcb), callback(onConsumeOk, c), callback(onCancelOk, c)))); 
+            ct.sendMessage(SRegister(ssh, c, new Consumer(onDeliver.bind(c, dcb), onConsumeOk.bind(c), onCancelOk.bind(c))));
             // loop to ignore repeats/previous Oks
             for(i in 0...consumeCount) {
                 tag = Thread.readMessage(true);

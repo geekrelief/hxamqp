@@ -1,5 +1,9 @@
 package org.amqp.fast;
 
+#if (neko || cpp)
+import haxe.io.BytesInput;
+#end
+
 typedef DeclareExchange = org.amqp.methods.exchange.Declare
 typedef DeclareExchangeOk = org.amqp.methods.exchange.DeclareOk
 typedef DeleteExchange = org.amqp.methods.exchange.Delete
@@ -49,11 +53,9 @@ typedef AmqpConnection = org.amqp.fast.flash.AmqpConnection
 typedef Channel = org.amqp.fast.flash.Channel
 
 #else
-
 typedef BytesInput = haxe.io.BytesInput;
 typedef BytesOutput = haxe.io.BytesOutput;
 typedef Bytes = haxe.io.Bytes;
-import haxe.io.BytesInput;
 typedef Delivery = { method:Deliver, properties:BasicProperties, body:BytesInput }
 
 // put these at the bottom to avoid recursive def issues

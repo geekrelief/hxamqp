@@ -190,15 +190,13 @@ package org.amqp;
         public function writeTo(os:Output):Void{
         #end
             finishWriting();
-            #if neko
-            var b:Bytes = payload.getBytes();
-            #end
             os.writeByte(type);
             #if flash9
             os.writeShort(channel);
             os.writeInt(payload.length);
             os.writeBytes(payload);
             #else
+            var b:Bytes = payload.getBytes();
             os.writeUInt16(channel);
             os.writeInt32(b.length);
             os.write(b);
